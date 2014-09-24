@@ -11,24 +11,23 @@ In recent years, parallelism, or doing multiple things at once, has been a power
 
 GPUs have also gained a lot of processing power, and are intrinsically better than traditional CPUs at performing relatively simple operations across large data sets in parallel, simply by virtue of their hardware design. By focusing on very high throughput, high latency operations, and including hardware support for thousands of threads and efficient thread context switching, GPUs are able to perform massive amounts of computation across independent pieces of data (elements in an array) much faster than CPU, and they scale better than CPUs as data size grows. The GPU multiprocessing paradigm is thus fundamentally different than that of CPUs, and is data-based rather than task based. 
   
-Currently, OpenCL is the only available general purpose programming language that can run on both CPUs and GPUs (and FPGAs). It's very powerful, but it exposes a lot of hardware details and options that are confusing for someone unfamiliar with general purpose GPU programming or concurrent programming. Our primary motivation then is for the programmer who wants to take advantage of the performance benefits of multiprocessing, and more specifically the large performance benefits of GPU execution for programs operating on large data sets, but is unfamiliar with hardware specifics and the details of concurrent programming and doesn't need all the optimization features provided by OpenCL.    
+Currently, OpenCL is the only available general purpose programming language that can run on both CPUs and GPUs (and FPGAs). It's very powerful, but it exposes a lot of hardware details and options that are confusing for someone unfamiliar with general purpose GPU programming or concurrent programming. Our primary motivation then is for the programmer who wants to take advantage of the performance benefits of multiprocessing, and more specifically the large performance benefits of GPU execution for programs operating on large data sets, but is unfamiliar with hardware specifics and the details of concurrent programming and doesn't need all the optimization features provided by OpenCL.
 
 ### Goals
 
 - make basic parallelism features available to programmers used to procdural languages (C/C++, Java, etc.)
-- provide concise, "Go-like" syntax for both task and data parallelism features
+- provide concise, "Go-like" syntax for both task and data-based parallelism features
 - leverage OpenCL to support high performance data parallelism on the GPU
 - expose OpenCL's distributed computation model with simplified syntax
 
 ### Domain Features
 
-- `pfor`
-- `map`, `reduce`
-- `spawn`
-- `barrier`
-- type inference
-- `:=` variable declaration and assignment
-- file I/O primitives
+- parallel `for` loops for simple "embarassingly parallel"
+  computations
+- vector and matrix primitives, up to what is supported by OpenCL
+- "Go-style" task-based concurrency primitives like asynchronous
+  thread spawning and inter-thread communication channels
+- File I/O primitives for reading large data files
 
 ### Code Sample
 Say we have a file (or several files) containing on the order of a billion 32-bit integers, and we want to find their sum...

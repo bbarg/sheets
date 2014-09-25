@@ -76,29 +76,40 @@ char[]           // Char Arrays (Strings)
 bit[]            // Bit Arrays, useful for bit masks
 ````
 
-### Sample Operations
+### Sample operations to be automatically parallelized
 
 ```
-array3 = array1 * array2
-array3 = array1 / array2
-array3 = array1 + array2
-array3 = array1 - array2
+/* all mathematical operations applied to entire arrays
+ * can be thought of as 'embarassingly parallelizable,'
+ * so in Sheets, we parallelize them automatically:
+ */
 
-array3 = array1                // copying
-array3 = 'array1               // reverse
-array3 = array1 ** array2      // matrix multiplication
+/* Math operations */
+array3 = array1 * array2       // multiplication
+array3 = array1 / array2       // division
+array3 = array1 + array2       // addition
+array3 = array1 - array2       // subtraction
 array3 = array1 ^ array2       // power
-array3 = -array1               // negate
+array3 = -array1               // negation
 array3 = array1++              // increment all values
 array3 = array1--              // decrement all values
 
-array3 = array1 AND array2
-array3 = array1 OR  array2
-array3 = array1 XOR array2
-array3 = array1 NOR array2
-array3 = array1 << 1 
-array3 = array1 >> 1
+/* Array-specific operations */
+array3 = array1                // copying
+array3 = 'array1               // reversing
+array3 = array1 ** array2      // matrix multiplication
+
+/* Bit-level operations */
+array3 = array1 AND array2     // 'and' operator
+array3 = array1 OR  array2     // 'or' operator
+array3 = array1 XOR array2     // 'xor' operator
+array3 = array1 NOR array2     // 'nor' operator
+
+/* Bitshifting to be applied to all values in array */
+array3 = array1 << 1           // left shift
+array3 = array1 >> 1           // right shift
 ```
+
 ### Use Case: Audio Mixing
 
 ```

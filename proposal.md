@@ -2,8 +2,11 @@
 *What's your thread count?*
 
 Benjamin Barg - The Heart (Language Guru)
-Gabriel Blanco - The Muscle (Tester) 
+
+Gabriel Blanco - The Muscle (Testing) 
+
 Ruchir Khaitan - The Brains (Systems Architect)
+
 Amelia Brunner - The Boss (Manager)
 
 ## Motivation

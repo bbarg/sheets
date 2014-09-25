@@ -1,7 +1,10 @@
 # Language Propoal: Sheets
 *What's your thread count?*
 
-Benjamin Barg, Gabriel Blanco, Ruchir Khaitan, Amelia Brunner
+Benjamin Barg - The Heart (Language Guru)
+Gabriel Blanco - The Muscle (Tester) 
+Ruchir Khaitan - The Brains (Systems Architect)
+Amelia Brunner - The Boss (Manager)
 
 ## Motivation
 

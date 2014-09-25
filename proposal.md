@@ -1,4 +1,4 @@
-# Language Propoal: Sheets
+# Language Proposal: Sheets
 *What's your thread count?*
 
 Benjamin Barg - The Heart (Language Guru)

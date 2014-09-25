@@ -61,6 +61,10 @@ not need all the optimization features provided by OpenCL. We believe that there
 - GPU-backed support for common matrix and vector operations
 - `import` and `write` primitives for reading and writing large data files, supporting multiple binary encodings
 
+##Language Design
+
+Sheets makes parallel computation on a GPU more accesible by abstracting away the features already found in OpenCL. The ideal user of our language is the programmer who wants to do simple operations on large data sets and therefore wants the benefits of GPU processing, but who doesn't want to worry about the extra level of complexity involved with GPU threading. Since familiarity and ease of use is a priority in our project goals, we are modelling the aesthetic of our language on both Python and C. Python's use of white space for dilineation makes it easier to read and write code; however, we are choosing not to implement Python's inferred data types because this would introduce unnecessary ambiguity when marshalling arguments for GPU computation. For the primitives, we are using a lot of the same data types as in C, and since OpenCL is based on C99, this will make porting our language down easier. With our syntax focused on ease of use, we've also added a few language features to aid with parallelizing large-scale array operations, which are outlined in more detail below.
+
 ## Code Samples
 
 ### Primitive Declarations

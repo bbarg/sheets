@@ -57,7 +57,7 @@ not need all the optimization features provided by OpenCL. We believe that there
 - compile into OpenCL to support multiple GPU architectures
 
 ## Domain Features
-*Don't worry about what's going on under the Sheets.*
+*You don't need to know what's going on underneath the Sheets*
 
 - single and multi-dimensional array primitives
 - `map` and `filter` operations implemented in underlying OpenCL library

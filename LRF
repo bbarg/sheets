@@ -1,0 +1,25 @@
+Amelia Brunner - arb2196
+Gabriel Blanco - gab2135
+Ruchir Khaitan - rk2660
+Benjamin Barg - bbb2123
+
+                 Sheets - Language Reference Manual
+
+1) TYPES
+    1.1) Primitives:
+    1.2) Non-Primitives:
+2) LEXICAL CONVENTIONS
+    2.1) Identifiers
+    2.2) Keywords
+    2.3) Literals
+    2.4) Punctuation
+    2.5) Comments
+    2.6) Operators
+3) SYNTAX
+    3.1) Program Structure
+    3.2) Expressions
+    3.3) Statements
+    3.4) Scope
+4) BUILT-IN FUNCTIONS
+5) OTHER FEATURES
+6) PROGRAM EXECUTION

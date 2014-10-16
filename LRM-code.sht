@@ -1,0 +1,120 @@
+/* wim: writeable index matrix
+ *
+ * ROWS: block number
+ * COLUMNS: writeable indices
+ *
+ *    0   1   2   3 
+ *    4   5   6   7
+ *    8   9   10  11
+ *    12  13  14  15
+ *
+ * The Writable Index Matrix gets passed into a gfunc, dictating which
+ * indices each "virtual output" block can write to in each thread, without
+ * having memory writing conflicts.
+ *
+ * For a linearly parallelizable block of size 8, you might get a value of:
+ *
+ * g.wim[3] => [24, 25, 26, 27, 28, 29, 30, 31]
+ */
+int g.wim[BLOCK][INDEX]
+
+/* GPU Function: switch()
+ *
+ * Takes in an integer array, "in", and reverses the values in the block of
+ * size g.blocksize into the output. For a GPU function, the input values
+ * immutable, and the output values are provided to you in such a way that
+ * two threads will not access the same memory at the same time.
+ * 
+ * The way in which this is done is by specifying which writable index values 
+ * get sent to each thread, so that no two threads are ever writing into the
+ * same address during a "GPU" operation.
+ */
+gfunc switch(int *in):
+    int i = 0
+    start = g.index[0]
+
+    for (i=0; i < g.blocksize; i++):
+        g.out[i] = in[start + g.blocksize-1 - i]
+
+
+/* CALLING A PARALLELIZABLE GFUNC:
+ * gfunc(ARGS).para([FUNC], [BLOCKSIZE])
+ *
+ * WIM indices for linear, reverse and front2back
+ *
+ *              [1 9 3 5 1 6 9 7 2 0]
+ *
+ *   iter.lin    0 1 2 3 4 5 6 7 8 9 
+ *   iter.rev    9 8 7 6 5 4 3 2 1 0
+ *   iter.f2b    0 9 1 8 2 7 3 6 4 5
+ *
+ * You can also specify custom wim functions if you want to iterate through
+ * the input in a different fashion
+ */
+int *out1 = switch(input1).para(iter.rev, 4)
+int *out2 = switch(input2).para(iter.lin, 8)
+
+/* Another Gfunc Example: BANDW
+ *
+ * Black and White:
+ * Takes a 2D matrix representing a picture (position and color), and returns
+ * a matrix in black and white, depending on whether the color is higher or
+ * lower than the mean.
+ */
+#DEFINE RED = 0
+#DEFINE GRN = 1
+#DEFINE BLU = 2
+
+gfunc bandw(int **img_array, int mean):
+    int i = g.arg_index[0]
+
+    int tmp = img_array[i][RED] + img_array[i][GRN] + img_array[i][BLU]
+
+    for (j=0;j<g.blocksize;j++):
+
+        if (tmp > 3*mean):
+            g.out[i][j] = 0           // if closer to white
+        else:
+            g.out[i][j] = 1           // if closer to black
+
+int **bandw_pic = bandw(color_pic,128).para(iter.lin, 8)
+
+
+/* iter.lin function defined in C 
+ * Example of Code Generated Output in OpenCL (since it has C like syntax)
+ */
+
+struct iter 
+{
+  int outlength;
+  int out[];
+  ...
+}
+
+struct g
+{
+  int **wim;
+  ...
+}
+
+void linpar(int blocksize) 
+{
+    int curr = 0;
+    int i    = 0;
+    int val  = 0;
+
+    int numblocks = iter.outlength/blocksize;    
+
+    while(i <= numblocks)
+    {
+        curr=0;
+    
+        while( curr < blocksize)
+        {
+            g.wim[i][curr] = val;
+            curr++;
+            val++;
+        }
+    i++;
+    }
+}

@@ -7,19 +7,131 @@ Benjamin Barg - bbb2123
 
 1) TYPES
     1.1) Primitives:
+        int
+        long
+        double
+        float
+        char
+
+        int[]
+        long[]
+        double[]
+        float[]
+        char[]
+
     1.2) Non-Primitives:
+        Strings
+        Block
+        Struct
+
 2) LEXICAL CONVENTIONS
     2.1) Identifiers
     2.2) Keywords
+        
+        if
+        else
+        elif
+        
+        while
+        for
+        
+        break
+        continue
+
+        TRUE
+        FALSE
+        NULL
+
+        return
+        
+        func
+        gfunc
+
     2.3) Literals
+        int literals
+            numbers without a decimal in them
+            \d
+        float literals 
+            numbers with a decimal in them
+            (\d+\./d+?)|(\d+?\.\d)
+        character literal
+            single quote - \'
+            double quote - \"
+            newline - \n
+            horizontal tab \t
+        string literal 
+            "string literal"
+        array literal
+            array = [1, 2, 3]
+
     2.4) Punctuation
+            ,           function params
+                        array literal separation
+            []          array literal declaration
+                        array access
+            ()          expression precedence
+                        conditional parameter
+                        function arguments
+            :           start of function
+            '           character literal declaration
+            "           string literal declaration
+            
     2.5) Comments
+        It's like threads coming out of a sheet!!
+
+        # for inline
+        
+        #~ for nested ~#
+        
+        #~
+         ~ for long nested
+         ~#
+
     2.6) Operators
+            .   Access                  
+            *   Multiplication
+            /   Division
+            %   Mod
+            +   Addition
+            -   Subtraction
+            ^   XOR
+            &   AND
+            |   OR
+            ~   NOT
+            >>  Right shift
+            <<  Left shift
+            =   Assignment
+            ==  Equivalence
+            !=  Non-equivalence
+            <   Less than
+            >   Greater than
+            <=  Less than or equal to
+            >=  Greater than or equal to
+        //todo: discuss differences between variables and matrices?
+
+    2.7) Whitespace
+        Blank, tab, and newline characters
+        Blank characters will be used for program string delimination
+        Blank characters directly following newline characters will 
+            be used for functions/blocks-ing.
+        Tabs will not be tolerated.
+
 3) SYNTAX
     3.1) Program Structure
+        A program consists of a sequence of zero or more valid statements
+        Generally speaking:
+            We have a main function, which is the program start point
+            There can also be other functions (funcs)
+            There can also be other GPU functions (gfuncs)
+            Order of functions and gfunctions doesn't matter
+            No concept of a class
+
     3.2) Expressions
+
     3.3) Statements
     3.4) Scope
 4) BUILT-IN FUNCTIONS
+    4.1) Matrix operations
 5) OTHER FEATURES
+    5.1) Gfuncs
 6) PROGRAM EXECUTION

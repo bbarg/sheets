@@ -24,8 +24,21 @@ Benjamin Barg - bbb2123
         Block
         Struct
 
+    1.3) Casting
+        Casting is allowed between:
+            -any two numbers
+            -floats/doubles to longs/ints lose precision
+            -longs/floats to ints/doubless get truncated
+            -No casting between primitives and non-primitives
+
 2) LEXICAL CONVENTIONS
     2.1) Identifiers
+        Refer to a variable or a function.
+        Must begin with alphabetic character or underscore.
+        But the rest of the identifier can be alphanumeric or underscores.
+        Capital and lowercase letters are treated differently.
+        We reject dashes.
+
     2.2) Keywords
         
         if
@@ -43,7 +56,8 @@ Benjamin Barg - bbb2123
         NULL
 
         return
-        
+        const
+
         func
         gfunc
 
@@ -72,6 +86,7 @@ Benjamin Barg - bbb2123
             ()          expression precedence
                         conditional parameter
                         function arguments
+                        Casting
             :           start of function
             '           character literal declaration
             "           string literal declaration
@@ -101,6 +116,7 @@ Benjamin Barg - bbb2123
             >>  Right shift
             <<  Left shift
             =   Assignment
+            !   Negation
             ==  Equivalence
             !=  Non-equivalence
             <   Less than
@@ -127,11 +143,53 @@ Benjamin Barg - bbb2123
             No concept of a class
 
     3.2) Expressions
+        An expression is a sequence of operators and operands that may
+        have side effects. The order of evaluation is left to right.
+        Operands must have the same type.
+
+        3.2.1) Assignment
+        3.2.2) Arithmetic
+        3.2.3) Comparison operators
+        3.2.4) Logical
 
     3.3) Statements
-    3.4) Scope
-4) BUILT-IN FUNCTIONS
-    4.1) Matrix operations
-5) OTHER FEATURES
-    5.1) Gfuncs
+        3.3.1) Expression statements
+            Assignment, for example
+        3.3.2) Conditional statements
+            if/else/elif
+            Using the comparison operators
+        3.3.3) Loop statements
+            while/for
+        3.3.4) Interruption statements
+            break/continue
+        3.3.5) Return statements
+        3.3.6) gfunc statements
+            statements invoking gfuncs are blocking
+            until they have completed.
+            
+    3.4) Functions
+        There are two kinds of functions- funcs and gfuncs.
+        
+    3.5) Scope
+        3.5.1) GPU related scope
+            GPU memory hierarchy
+            gfuncs do not have access to CPU memory space;
+            this means that all variables that need to be passed
+            into the GPU need to be done so through gfunc arguments.
+            gfuncs do not have access to global variables.
+            The only caveat to this is that global variables can also
+            be passed to the GPU through specified library functions,
+            such as .blockSize
+        3.5.2) CPU related scope
+            Global variables are variables that are declared outside
+            of a function. These can be accessed by all funcs.
+            Sheets will use block scoping, such that any variable defined
+            within or within a greater indentation level will be accessible.
+4) GFUNCS
+    Any call to gfuncs will be blocking.
+    Function arguments must be immutable.
+    
+5) BUILT-IN FUNCTIONS
+    5.1) Matrix operations
+    5.2) .blockSize
 6) PROGRAM EXECUTION

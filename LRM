@@ -20,14 +20,14 @@ Benjamin Barg - bbb2123
         char[]
 
     1.2) Non-Primitives:
-        Strings
-        Block
+        String
+        Block // TODO R/B need to decide how this maps to OpenCL NDrange
         Struct
 
     1.3) Casting
         Casting is allowed between:
             -any two numbers
-            -floats/doubles to longs/ints lose precision
+            -floats/doubles to longs/int lose precision
             -longs/floats to ints/doubless get truncated
             -No casting between primitives and non-primitives
 
@@ -144,7 +144,7 @@ Benjamin Barg - bbb2123
 
 3) SYNTAX
     3.1) Program Structure
-        A program consists of a sequence of zero or more valid statements
+        A program consists of a sequence of zero or more valid statement.
         Generally speaking:
             We have a main function, which is the program start point
             There can also be other functions (funcs)
@@ -227,6 +227,7 @@ Benjamin Barg - bbb2123
          of the gfunc, that contains all the information that will be passed into
          a block. 
         -block is essentially a struct, which contains:
+	// TODO restricted to certain output region; how does programmer reference input space
             -block.size         
                 the number of elements that a block can write into
             -block.index                    
@@ -245,3 +246,5 @@ Benjamin Barg - bbb2123
     5.2) vector library
          (Reverse)
     5.3) File I/O
+    // TODO can our language print thing (I realize this is just writing to stdout
+    // TODO can we build-in reduce/fold operations for summing, computing big conditional expressions

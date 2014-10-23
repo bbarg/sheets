@@ -47,7 +47,8 @@ Benjamin Barg - bbb2123
         
         while
         for
-        
+        in
+
         break
         continue
 
@@ -104,26 +105,35 @@ Benjamin Barg - bbb2123
 
     2.6) Operators
             .   Access                  
-            *   Multiplication
-            /   Division
-            %   Mod
-            +   Addition
-            -   Subtraction
-            ^   XOR
-            &   AND
-            |   OR
-            ~   NOT
-            >>  Right shift
-            <<  Left shift
-            =   Assignment
-            !   Negation
-            ==  Equivalence
-            !=  Non-equivalence
-            <   Less than
-            >   Greater than
-            <=  Less than or equal to
-            >=  Greater than or equal to
-        //todo: discuss differences between variables and matrices?
+            
+            *   Multiplication              :*  Vector multiplication
+            /   Division                    :/  Vector division
+            %   Mod                         :%  Vector mod
+            +   Addition                    :+  Vector addition
+            -   Subtraction                 :-  Vector subtraction
+            
+            ^   XOR                         :^  Vector XOR
+            &   AND                         :&  Vector AND
+            |   OR                          :|  Vector OR
+            ~   NOT                         :~  Vector NOT
+            >>  Right shift                 :>> Vector right shift
+            <<  Left shift                  :<< Vector left shift
+            
+            =   Assignment                  :=  Vector assignment
+            !   Negation                    :!  Vector negation
+            
+            ==  Equivalence                 :== Vector equivalence
+            !=  Non-equivalence             :!= Vector non-equivalence
+            <   Less than                   :<  Vector less-than
+            >   Greater than                :>  Vector greater-than
+            <=  Less than or equal to       :<= Vector less-than-or-equal-to
+            >=  Greater than or equal to    :>= Vector greater-than-or-equal-to
+
+        Precedence (from greatest to least):
+           We will only allow for expressions of only vector operators or only
+           non-vector operators. Within the two groups, order of precedence will
+           be the same as for C. The comparison operators will be treated the same
+           as in C.
 
     2.7) Whitespace
         Blank, tab, and newline characters
@@ -145,12 +155,25 @@ Benjamin Barg - bbb2123
     3.2) Expressions
         An expression is a sequence of operators and operands that may
         have side effects. The order of evaluation is left to right.
-        Operands must have the same type.
+        Operands must have the same type, except in the case of the 
+        vector operands (more below).
 
         3.2.1) Assignment
         3.2.2) Arithmetic
         3.2.3) Comparison operators
         3.2.4) Logical
+
+        3.2.5) Vector operators
+        Vector operators, as described above, are operators that we have included for
+        convenience in doing vector operations. They can be used as expressions, the same
+        way that other operators can be used. However, they actually correspond to a short
+        library of gfuncs that we have implemented for the user. All of these vector
+        gfuncs require that the operand on the left side of the operator be an array or
+        vector, and the operand on the right side of it be either an integer constant to 
+        apply to the entire left-hand operand, or another array/vector with the same 
+        dimensions, where the operation can be mapped exactly from one index to the other.
+        Precedence is applied the same as it is for the non-vector operators.
+        We do not tolerate mixed vector operators and normal operators on the same line.
 
     3.3) Statements
         3.3.1) Expression statements
@@ -160,6 +183,10 @@ Benjamin Barg - bbb2123
             Using the comparison operators
         3.3.3) Loop statements
             while/for
+            we allow for special for loops to iterate through arrays, 
+            using the syntax 'for <indexing variable> in <array>:'
+            
+
         3.3.4) Interruption statements
             break/continue
         3.3.5) Return statements
@@ -186,10 +213,35 @@ Benjamin Barg - bbb2123
             Sheets will use block scoping, such that any variable defined
             within or within a greater indentation level will be accessible.
 4) GFUNCS
-    Any call to gfuncs will be blocking.
-    Function arguments must be immutable.
-    
+    Contents of gfuncs will be compiled into the kernel OpenCL files, meaning
+    that they will be executed on the GPU. Because of this, we have to enforce
+    a few GPU-specific memory and concurrency limitations on the contents of
+    gfuncs; they must be parallelizable, meaning that they must 1) must not 
+    depend on previous values in array, 2) they must not write to overlapping
+    regions in memory, and 3) they should not require excessive shared memory. 
+    To enforce these, we have implemented the following: 
+        -Any call to gfuncs will be blocking.
+        -Function arguments must be immutable.
+        -Output length will always be equal to the length of the first argument.
+        -Includes special environmental variable, which only exists in the scope
+         of the gfunc, that contains all the information that will be passed into
+         a block. 
+        -block is essentially a struct, which contains:
+            -block.size         
+                the number of elements that a block can write into
+            -block.index                    
+                the index of the current block, meaning the index of the segmented
+                region of the output array that this block can write to-
+                    i.e. if the output array has 100 indices, and there are 20 total blocks 
+                    that the output could be split into, there are block indices 0-19, where 
+                    each index corresponds to the an increment of 5 in the index of the
+                    output array.
+            -block.out
+                array of size block.size, that represents the writable region in the
+                cumulative output for the block
+
 5) BUILT-IN FUNCTIONS
-    5.1) Matrix operations
-    5.2) .blockSize
-6) PROGRAM EXECUTION
+    5.1) length
+    5.2) vector library
+         (Reverse)
+    5.3) File I/O

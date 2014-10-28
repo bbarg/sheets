@@ -17,7 +17,7 @@ Although we are seeing more and more applications take advantage of the computat
 
 #### Integer Types 
 
-These are simply signed integral numbers (fixed precision) whose literals are sequences of digits. The difference between these types is their size in bytes, which correspondingly limits the range of numbers they can represent.  
+These are simply signed (two's complement) integral numbers (fixed precision) whose literals are sequences of digits. The difference between these types is their size in bytes, which correspondingly limits the range of numbers they can represent.  
 
 * `int`
 
@@ -127,9 +127,11 @@ Defined as a struct used for metadata holding input/output information for funct
 
 Casting is allowed between:
 * Any two numbers
-* floats/doubles to longs/int lose precision
-* longs/doubles to ints/floats get truncated
+* doubles/floats to longs/ints lose fractional precision
+* longs/doubles to ints/floats get truncated 
 * No casting between primitives and non-primitives
+* chars can be casted to ints/longs/floats/doubles 
+* longs/ints can be casted to chars (preserves least significant 8 bits)    
 
 ##3. Lexical Convections
 

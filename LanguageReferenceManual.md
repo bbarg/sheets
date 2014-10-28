@@ -41,54 +41,63 @@ Double precision floating point type, with a size of 64 bits.
 
 * `char`
 
-Single character 1 byte wide, which can be alphanumeric or a form of punctuation, or any other valid character that is escaped with a backslash '\' (see section 3.3). 
+A single character is 1 byte wide, which can be alphanumeric or a form of punctuation, or any other valid character that is escaped with a backslash '\' (see section 3.3). 
 
-```
-Vector/Array Types - multiple instances of primitive types allocated in contiguous ranges of memory, either on regular machine stack, heap, or in GPU global/local memory. Array allocation and data transfer between CPU/GPU is handled automatically. 
+#### Vector/Array Types 
 
-Arrays are zero indexed and can be accessed with the square-bracket notation, so 
-'array[7]' returns the element at index 7 of the array. 
+Vector/Array types represent multiple instances of primitive types allocated in contiguous ranges of memory, either on regular machine stack, heap, or in GPU global/local memory. Array allocation and data transfer between CPU/GPU is handled automatically. 
+
+Arrays are zero indexed and can be accessed with the square-bracket notation, so (for example) `array[7]` returns the element at index 7 of the variable `array`. 
 
 Arrays can be multi-dimensional, and can be indexed by separating the dimensional index numbers by commas so 'array[2, 5]' accesses row index 3, column index 5 of the two dimensional array. Arrays are limited to having at most 3 dimensions in the Sheets language.  
 
-Single dimension arrays can be defined as follows 
+Single dimension arrays can be defined as follows:
 
-<type T> arrayName [size]; - allocates an empty array of type T with size elements. 
+````
+ <type T> arrayName [size]
+ ````
+This will allocate an empty array of type T with size elements. The size parameter is optional, and arrays can be initialized as follows: 
 
-The size parameter is optional, and arrays can be initialized as follows: 
+````
+<type T> arrayName[] = [element, element, element, ...  ] 
+````
 
-<type T> arrayName[] = [element, element, element, ...  ]; 
+If you do give a size parameter, the number of elements within the right value  [] must be less than or equal to the size parameter. If it is less, then the remaining spaces in the array are initialized to zero.
 
-If you do give a size parameter, the number of elements within the right value  [] must be less than or equal to the size parameter. If it is less then the remaining spaces in the array are initialized to zero.
+#### Multi-dimensional arrays
+Multi-dimensional arrays are very similar to single-dimensional arrays/vectors:
 
-Multi-dimensional arrays are very similar: 
-
-<type T> arrayName [num_rows, num_cols]; - allocates an empty 2D array of type T with num_rows rows and num_cols columns for a total of num_rows * num_cols elements.
-
-If you do give a size parameter, the number of elements within the right value  [] must be less than or equal to the size parameter. If it is less then the remaining spaces in the array are initialized to zero.
+````
+<type T> arrayName [num_rows, num_cols]
+````
+This allocates an empty 2D array of type T with num_rows rows and num_cols columns for a total of num_rows * num_cols elements.
 
 Again, the  size parameters are optional, and arrays can be initialized as follows: 
 
-<type T> arrayName[,] = [[element, element],  [element, element, element],  ...  ]; 
+````
+<type T> arrayName[size1,size2] = [[element, element],  [element, element, element],  ...  ]
+````
 
-Here, all of the subarrays don't have to be the same length, and the array is initialized to be of dimensions '(maximum_subarray_size * number of subarrays)' with blank elements again initialized as zero.  
+Here, all of the subarrays don't have to be the same length, and the array is initialized to be of dimensions `(maximum_subarray_size * number of subarrays)` with blank elements again initialized as zero. Note that this example is of a 2-dimensional aray, but 3-dimensional arrays are also supported with the same syntax.
 
-int[] 
+Note that Sheets does not support arrays of arbitrary types. The total list of supported array types are as follows:
 
+* `int[]` -
 Contiguous array of integers as defined above
-long[]
 
+* `long[]` -
 Contiguous array of longs
-double[]
 
+* `double[]` -
 Contiguous arrays of doubles
-float[]
 
+* `float[]` -
 Contiguous arrays of floats
-char[]
 
-Contiguous arrays of chars. Used for strings as well. 
-```
+* `char[]` -
+Contiguous arrays of chars. Used in the underlying representation of Strings as well.
+
+
 
 
 ###2.2 Non-Primitive Types

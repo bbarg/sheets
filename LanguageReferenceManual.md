@@ -128,6 +128,7 @@ This accesses a variable named <element_name> inside of a struct named <var_name
 ###2.3 Casting
 
 Casting is allowed between:
+
 * Any two numbers
 * doubles/floats to longs/ints lose fractional precision
 * longs/doubles to ints/floats get truncated 

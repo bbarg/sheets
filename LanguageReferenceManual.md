@@ -479,17 +479,21 @@ If the `.[]` is omitted, the function is called with a `block` size of 1. The `.
 - `block_size` must evenly divide the input array size.
 
 ##6 Standard Library Functions
+Sheets will provide some simple library functions to assist with array manipulation and standard input output operations.
+
 ###6.1) Vector Operations
+The number of vector library functions that we provide in Sheets is limited for a purpose; we want to encourage our users to take advantage of how easy it is to write operations related to vectors on their own usinfg `gfunc`s! That being said, we also want to help our users out with a few extremely common operations:
+
 * `reverse()` - performs an in-place reversal of an array 
 * `length()` - returns the dimensionality of the array (number of elements)
 
-// TODO can we build-in reduce/fold operations for summing, computing big conditional expressions
+Note that these functions will be executed on the GPU.
 
 ###6.2) File I/O
-We will have a relatively simple I/O functions that take string literals or other variables as arguments, and perform print/reads either to/from terminals or to a specified file descriptor. 
-* `open` - opens a file specified by a string, and returns a file descriptor that can be read from or written to.  
-* `print` - write to stdout or other file descriptor.
-* `read` - read from stdin or other file descriptor 
-* `write` - write binary (non null terminated arrays) to a file descriptor 
+Sheets will have a few relatively simple I/O functions that take string literals or other variables as arguments, and perform print/reads either to/from terminals or to a specified file descriptor. These functions mirror the behavior of comparable functions in standard C libraries.
 
-// TODO can we build-in reduce/fold operations for summing, computing big conditional expressions
+* `int open(String)` - opens a file specified by the given path, and returns a file descriptor that can be read from or written to.  
+* `void print(int, String)` - write the contents of the String buffer specified in the second argument to the file descriptor specified in the first argument.
+* `void read(int, String)` - read from stdin or another file descriptor, as specified in the first argument, into the String buffer specified in the second argument.
+* `int write(int, array)` - write binary (non null terminated arrays), as specified in the second argument, to the file descriptor specified in the first argument, and return the number of bytes successfully written. Note that for brevity, we have written 'array' as the second argument in the function signature, which we are using to represent all possible array types.
+

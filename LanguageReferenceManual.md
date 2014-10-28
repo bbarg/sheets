@@ -95,12 +95,23 @@ Contiguous arrays of chars. Used for strings as well.
 * String 
 
 Defined as a wrapper over a character array, with an integer specifying length. Can be ASCII or Unicode encoded. String literals are defined as a sequence of characters enclosed by double quotes. 
-* Block  		
-
-**TODO:** Need to decide how this maps to OpenCL NDrange
 
 * Struct 
-A programmer defined data type consisting of variables of primitive types, and other structure data types. The size of a struct is large enough to hold all members of the struct. 
+A programmer defined data type consisting of variables of primitive types, and other structure data types. The size of a struct is large enough to hold all members of the struct.
+
+A structure is defined with the 'struct' keyword, followed by a name, followed by declarations of all the variables inside the struct, enclosed within an opening curly-brace '{' and a closing curly brace '}'. 
+
+You can declare an instance of a struct as 
+'struct <struct_name> <var_name>;' instantiates a struct <struct_name> named <var_name>. 
+You can access elements of a struct with a dot '.' and then the variable name, so for example 
+
+<var_name>.<element_name> accesses a variable named <element_name> inside of a struct named <var_name>
+
+* Block  		
+
+Defined as a struct used for metadata holding input/output information for functions executed on the GPU. See section 5.1
+
+ 
 
 
 ###2.3 Casting

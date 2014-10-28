@@ -10,7 +10,7 @@
 
 The *Graphics Processing Unit* (GPU) was invented in 1999 as a single-chip processor that allowed the CPU to offload graphics-intensive tasks to a separate processor. Unlike the CPU, which is built to contain only a handful of cores but a lot of cache memory, a GPU has limited memory but hundreds of cores, which, thanks to very efficient context switching, allows it to handle thousands of threads concurrently without significantly degrading the performance of the CPU. In the past, GPUs were seen as a luxury reserved for video processing and computer gaming. However, because of the advent of larger screen displays and a greater demand for video, image and signal processing applications, GPUs are quickly becoming more mainstream. 
 
-Although we are seeing more and more applications take advantage of the computational capabilities of the GPU, it is still very difficult to program for the GPU because of the many different types of GPU architectures and chip specific proprietary software. *Sheets* takes a high-level approach to programming on the GPU. By taking the basic concepts of parallelizability and repeatable mathematical operations, *Sheets* allows the user to write clean, concise code that takes advantage of a GPU's ability to handle large-vector data operations without having to worry about hardware specific implementations. It does so by compiling down into *OpenCL*, an open-source programming language that can run on a wide variety of GPUs.
+Although we are seeing more and more applications take advantage of the computational capabilities of the GPU, it is still very difficult to program for the GPU because of the many different types of GPU architectures and chip specific proprietary software. *Sheets* empowers engineers to take a high-level approach to programming on the GPU. With syntax, semantics and program structure to help programmers run parallelizable algorithms on the GPU, *Sheets* is a hardware-portable language that allows users to leverage the GPU's ability to handle large-vector data operations without needing to worry about hardware specifications. It does so by compiling down into *OpenCL*, an open-source programming language that can run on a wide variety of GPUs.
 
 ##2. Types
 
@@ -66,92 +66,89 @@ Casting is allowed between:
 
 ###3.1 Identifiers
 
-Refer to a variable or a function.
-Must begin with alphabetic character or underscore.
-But the rest of the identifier can be alphanumeric or underscores.
-Capital and lowercase letters are treated differently.
-We reject dashes.
+Identifiers refer to a variable, function, or function argument. They must begin with alphabetic character or underscore, but the rest of the identifier can be alphanumeric or underscores. Capital and lowercase letters are considered distinct. We reject dashes.
 
 ###3.2 Keywords
 
-```      
-if
-else
-elif
-while
-for
-in
-break
-continue
-TRUE
-FALSE
-NULL
-return
-const
-func
-gfunc
-main
-```
+- `if(`*boolean condition*`):` 
+  - execute the following block if the boolean condition is true
+- `elif(`*boolean expression*`):`
+  - following exactly one `if` statement and one or more `elif` statements, execute the following block if the *boolean condition* is true and all conditions in the preceding chain were false
+- `else`
+  - following exactly one `if` statement and zero or more `elif` statements, execute the following block if all conditions in said chain were false
+- `while (`*boolean condition*`):`
+  - execute the loop contents until the *boolean condition*, evaluated at the start of each iteration, is false
+- `for` loop execution in two formats:
+    + `for` *var* `in` *list*`:`
+      - iterate through each item in a list
+    + `for (`*assignment*`;`*boolean condition*`;`*iterative step*`):` 
+      - Assign a variable and loop on contents, performing the *iterative step* at the end of each loop, until the *boolean condition* (evaluated at the start of each iteration) is false
+- `break` 
+  - Jump out of the current scope and continue execution in the parent scope (invalid when used outside of a loop). Must be the only expression on its line. Any symbols following it on its line will be ignored.
+- `continue` 
+  - Skip forwards to the next iteration of the enclosing loop (invalid when used outside of a loop). Must be the only expresion on its line. Any symbols following it on its line will be ignored.
+- `TRUE`
+  - Constant "true" (i.e. a char with value '0') for use in boolean expressions.
+- `FALSE`
+  - Constant "false" (i.e. a char with a value of '1') for use in boolean expressions.
+- `NULL`
+  - Value of an unitialized object.
+- `return`*expression*
+  - In a `func` block, return *expression* by value to the caller.
+- `const`
+  - Variable identifier that indicates to the compiler that the variable cannot be modified.
+- `func` *type* *identifier*`(`*type* *identifier*`,` *type* *identifier*`,`*...*`):`
+  - Define a standard CPU function taking 0 or more arguments and return a value of a given *type*. Tabs and spaces between all components of the expression are ignored. *type* may be `void`.
+- `gfunc`
+  - Define a function that will run on the GPU (see section 5, GPU Functions, for a detailed description of the syntax).
+- `main`
+  - Name of the entry-point function. Every Sheets program must have a function called `main`. `main` must return a result of type `int`.
+- `void`
+  - A type keyword used solely in `func` declaractions indicating that the function does not return a value.
+
 
 ###3.3 Literals
 
-* int literals
-
-numbers without a decimal in them
-
-Regular Expression
-`\d+`
-
-* float literals 
-
-numbers with a decimal in them
-
-Regular Expression:
-`(\d+\./d+?)|(\d+?\.\d)`
-
-* character literal
-
-```
-single quote - \'
-
-double quote - \"
-
-newline - \n
-
-horizontal tab \t
-```
-
+* `int` literals
+  + an unbounded string of numerals without a decimal point with an optional sign character
+* `float` literals
+  + an unbounded string of numerals before and after a decimal point with an option sign character
+  
+For both integer and float literals, maximum representable values are limited by the underlying system's OpenCL implementation.
+  
+* `char` literals
+  + Some characters require escaping because they already have a syntactic meaning in the language, or because their representation is rejected by Sheets.  Character literals for these characters are expressed by a pair of single quotes surrounding one of the following expressions:
+     - `\'` - single quote
+     - `\"` - double quote, also referred to as a quotation mark
+     - `\n` - newline
+     - `\t` - horizontal tab
+     - `\\` - backslash
+  + for all other ASCII characters, the literal is expresssed a pair of single quotes surrounding the character 
 * string literal 
-
-```
-"string literal"
-```
-
+  - A sequence of ASCII characters (excepting those who have corresponding character literals) and character literals
 * array literal
-
-```
-array = [1, 2, 3]
-```
+  - An opening `[` followed by comma-delimited float and/or integer literals, followed by a `]`. If the array literal contains only float or only integer literals, it will be of the respective type, but a mix will always be interpreted as a float array (integer literals will be casted to floats). Whitespace between brackets, commas, and int/float literals is ignored.
 
 ###3.4 Punctuation
-```
-  ,           function params
-              array literal separation
-              
-  []          array literal declaration
-              array access
-              
-  ()          expression precedence
-              conditional parameter
-              function arguments
-              Casting
-              
-  :           start of function
-  
-  '           character literal declaration
-  
-  "           string literal declaration
-```
+
+-  `,`
+   + function parameters (see 3.2 Keywordss)
+   + array literal separation (see 3.3 Literals)            
+- `[]`
+   + array literal declaration (see 3.3 Literals)
+   + array access
+- `()`
+   + expression precedence
+   + conditional parameter
+   + function arguments
+   + type casting              
+- `:`
+   + start of scoped block (`if`, `else`, `elif`, `while`, `for`, `func`, `gfunc`)
+- `'`
+   + character literal declaration
+- `"`
+   + string literal declaration
+
 
 ###3.5 Comments
 It's like threads coming out of a sheet!
@@ -166,8 +163,14 @@ It's like threads coming out of a sheet!
 		 ~#
 ```
 
+In an individual line, all characters after a `#` are ignored by the compiler unless the `#` is a part of a string or character literal that is not itself part of a comment.
+
+All text from `#~` to the next `~#` is ignored, excepting those occurences of `#~` and `~#` that appear in a string literal that is not itseslf part of a comment.
 
 ###3.6 Operators
+Sheets includes basic arithmetic operators for both scalar and array types. **Because Sheets' intended use case is with arrays that are too large to efficiently manipulate on the CPU, the vector operations will always run on the GPU.** If the user wants vectorized operations to be executed on the CPU, they must use a loop keyword and implement their own operation.
+
+####3.6.1 Operator List
 ```
 	.   Access                  
 	
@@ -194,162 +197,299 @@ It's like threads coming out of a sheet!
 	<=  Less than or equal to       :<= Vector less-than-or-equal-to
 	>=  Greater than or equal to    :>= Vector greater-than-or-equal-to
 ```
-###3.7 Operator Precedence
 
-We will only allow for expressions of only vector operators or only
-non-vector operators. Within the two groups, order of precedence will
+####3.6.2 Operator Limitations
+
+An expression may include *either* scalar or vector operators *but not both*. This restriction is intended to force the user to package GPU operations into the largest chunks possible to minimize the number of times that operations must be sent to and retrieved from the GPU. 
+
+Vector operations may be applied in the following orders:
+
+1. *array* *vector_operator* *array*
+3. *array* *vector_operator* *scalar*
+
+**Any attempt to apply vector operations to arrays of unequal size results in a compiler error.**
+
+For case **1**, the result is an array for which the *i*th entry is equal to:
+
+*scalar* (*i*th value of lhs) *scalar_operator* *scalar* (*i*th value of rhs)
+
+For case **2**, the result is an array for which the *i*th entry is equal to:
+
+*scalar* *scalar_operator* *scalar* (*i*th value of rhs)
+
+####3.6.3 Operator Precedence
+
+Within the two groups, order of precedence will
 be the same as for C. The comparison operators will be treated the same
 as in C.
 
-###3.8 Whitespace
+###3.7 Whitespace
 
-Blank, tab, and newline characters
-Blank characters will be used for program string delimination
-Blank characters directly following newline characters will 
-    be used for functions/blocks-ing.
-Tabs will not be tolerated.
+Symbols that are considered to be whitespace are blank, tab, and newline characters. Blank characters will be used for token delimination within lines of the program. Additionally, any blank characters directly following newline characters will be used to block out functions (which is discussed more in depth in section 4.4: Scope). Tab characters are ignored.
 
 ##4. Syntax
 
 ###4.1 Program Structure
 
-A program consists of a sequence of zero or more valid statements.
+A program consists of a main function which can call any other functions within the program namespace or declared inside the program.
 
-Generally speaking:
-
-* The `main` function is the starting point of the function. If there is no `main` function, the compiler will throw an error.
-* There can also be other functions (`func`) that can be called by `main`
-* There is a special subcategory of functions called `gfunc`'s that get sent to the GPU. The ordering of gfuncs and funcs within the program does not matter
-* Not object oriented, no classes.
+* The `main` function is where the execution of the program begins. If there is no `main` function, the compiler will throw an error.
+* You can declare other functions besides `main`, however if they are not directly or indirectly called by `main`, then the code within them will not be executed.
+* There are two types of functions: `gfuncs` and `funcs`. Both can be called from main, although how they are executed will be different. The order in which you declare `gfuncs` and `funcs` in your program does not matter.
+* Sheets is not object oriented, and therefore there are no such things as classes.
 
 ###4.2 Expressions
 
-An expression is a sequence of operators and operands that may
-have side effects. The order of evaluation is left to right.
-Operands must have the same type, except in the case of the 
-vector operands (more below).
+Expressions in *Sheets* can be primary, unary or binary, with precedence being given in that order, from highest to lowest. The rules of precedence and associativity differ amongst operators within each category, and so we will explicitly state the cases in which one operator will bind tighter than another. 
 
 ####4.2.1 Assignment
 
+There are two assignment operators in *Sheets*, `=` and `:=`, and syntactically they behave in the same way. Both are binary operators that are right-binding. The value of the expression on the right is stored in the variable on the left hand side. The standard assignment operator (`=`) simply assigns the value to the left-hand variable, whereas the GPU assignment operator (`:=`) copies values from one array to another using parallel processing. 
+
+```
+# Simple Assignment
+a = 2
+
+# Parallel Assignment
+int[] A = [0,1,2,3,4,5]
+int[] B := A
+```
+
 ####4.2.2 Arithmetic
+
+For arithmetic expressions, you have an operator representing a simple mathematical operation and then the equivalent vector operation which performs the same arithmetic operation but on each element of the array. All arithmetic operations are left-associative by default, but that associativity can be superseded by standard mathematical order of operation: multiplication and division bind tighter than addition and subtraction, and mod (`%`) binds tightest of all. 
+
+```
+	%   Mod                     :%  Vector mod
+	*   Multiplication          :*  Vector multiplication
+	/   Division                :/  Vector division
+	+   Addition                :+  Vector addition
+	-   Subtraction             :-  Vector subtraction 
+```
+
+For vector arithmetic, you get a different type of operation depending on the types of the operands:
+
+For a vector operation on an **array and a scalar** (both of the same type), the scalar is applied to each element in the array via the operator (i.e. A :+ 3 would yeild an array in which each element was the same as it was in A but with the addition of 3). Note that in this case, the array must be the left-hand operand and the scalar must be the right-hand operand.
+
+Vector operations on **two arrays**, which must be of the same type and size, return an array where the vector operation was performed on each corresponding element in both arrays. 
+
+For example:
+
+```
+	int[] A = [0,1,2,3]
+	int[] B = [3,2,1,0]
+
+	int[] C = A :* B
+	# C has value [0,2,2,0]
+```
+
+If an arithmetic vector operation is called on **two scalar values**, e.g. `3 :+ 2`, the compiler will throw a warning but still calculate the operation on the GPU. This is a bad practice, and much less efficient than simply using a standard operation.
 
 ####4.2.3 Comparison Operators
 
+Comparisons are binary operators, returning a boolean value based on how the right-hand-side of the expression compares to the left-hand-side.
+
+```
+	==  equivalence                 :== Vector equivalence
+	!=  non-equivalence             :!= Vector non-equivalence
+	<   less-than                   :<  Vector less-than
+	>   greater-than                :>  Vector greater-than
+	<=  less-than-or-equal-to       :<= Vector less-than-or-equal-to
+	>=  greater-than-or-equal-to    :>= Vector greater-than-or-equal-to
+```
+
+Vector less-than (`:<`), greater-than (`:>`), less-than-or-equal-to (`:<=`) and greater-than-or-equal-to (`:>=`) all behave similar to the arithmetic vector operations, where the standard version of the operation is applied element by element and returns an array of booleans. If the two types are both arrays, then it will compare each element one by one, returning the boolean. 
+
+```
+	int[] A = [1,2,3,4,5]
+	int[] B = A :< 3
+
+	# B has value of [TRUE,TRUE,FALSE,FALSE]
+```
+
+However, equivalence (`:==`) and non-equivalence (`:!=`) behave slightly differently from the rest of the comparison operators. Array-to-scalar operations behave as you would expect, returning an array of booleans for the result of the operation, element by element.
+
+However, for array-to-array vector operations, instead of returning an array of booleans, these only return one char value, which represents the total outcome of the operation (0 for true, 1 for false). The expression `A :== B` asks if `int[] A` contains all the same values as `int[] B`, and returns `TRUE` if it is the case, `FALSE` otherwise. This allows a clean and simple way to do array content comparisons.
+
 ####4.2.4 Logical
 
-####4.2.5 Vector Operators
+Logical operators test the logical truth of expression.
 
-Vector operators, as described above, are operators that we have included for
-convenience in doing vector operations. They can be used as expressions, the same
-way that other operators can be used. However, they actually correspond to a short
-library of gfuncs that we have implemented for the user. All of these vector
-gfuncs require that the operand on the left side of the operator be an array or
-vector, and the operand on the right side of it be either an integer constant to 
-apply to the entire left-hand operand, or another array/vector with the same 
-dimensions, where the operation can be mapped exactly from one index to the other.
-Precedence is applied the same as it is for the non-vector operators.
-We do not tolerate mixed vector operators and normal operators on the same line.
+```
+	&&   AND                        :&& Vector Boolean AND
+	||   OR                         :|| Vector Boolean OR
+```
+
+AND (`&&`) and OR (`||`) compares the boolean values of its two operands. In the case of shifting, the right-hand operand must be a fixed point number. The vector version simply performs a given logical operation on every element of the array.
+
+####4.2.5 Bitwise
+Bitwise operators apply bit operations to the operands on either side of the operators.
+
+```
+	&	AND							 :& Vector AND
+	|	OR							 :| Vector OR
+	^   XOR                         :^  Vector XOR
+	
+	>>  Right shift                 :>> Vector right shift
+	<<  Left shift                  :<< Vector left shift
+	
+	~   NOT                         :~  Vector NOT
+```
+
+AND (`&`), OR (`|`) and XOR (`^`) are binary operators that apply corresponding bit operations from the right operand to the left one (i.e. following left associativity). Left shift (`<<`) and right shift (`>>`) are also binary operators, and they apply the a bit-level shift to the contents of left-hand-side operand.
+
+Not (`~`) is a unary operator which, as previously stated, takes precedence over binary operators. It returns a negated version of the operand, where all `FALSE` values are now `TRUE`, and `TRUE` values are `FALSE`.
+
+For all of the corresponding Vecotr operations, the same bit logic is applied to the left-hand vector operand in the same fashion as the other vector operators. 
+
 
 ###4.3 Statements
 
+A statement is a complete instruction that can be interpreted by the computer. Unless otherwise specified, statements are executed sequentially within a function.
 
 ####4.3.1 Expression statements
 
-Assignment, for example
+Expression statements are the most common type of statement. Because whitespace has syntactic meaning in *Sheets*, a statement is ended by a newline (`\n`). You can ignore a newline and continue an expression statement on the next line by using the continuation operator (`...`) at the end of a line.
+
+Expression statements can include any of the expressions previously covered. The only exception is that *Sheets* explicitly does not allow the mixed use of vector and non-vector operations in the same statement. This is an enforced standard which forces users to write better parallelizable functions.
 
 ####4.3.2 Conditional statements
 
-if/else/elif
-Using the comparison operators
+Conditional statements check the truth condition of an expression, and then choose a set of statements to execute depending on the result. Here is a common implementation of an `if`/`else` conditional statement
 
-####4.3.3 Loop statements
+```
+	if (expression): 
+		statement
+	elif (expression):
+		statement
+	else:
+		statement
+```
+
+Only the `if` statement is required, you can choose not to account for other conditions or to account for any number of additional conditions using `elif`. The `else` statements execute only if none of the preceding conditions returned true.
+
+####4.3.3 Loop Statements
 
 while/for
-we allow for special for loops to iterate through arrays, 
-using the syntax 'for <indexing variable> in <array>:'
-            
 
-####4.3.4 Interruption Statements
+Statements such as `while` or `for` allow you to iterate over blocks of code. In the case of `while` loops, the controlling expression is checked every time before the execution of the body of the `while` loop. `for` loops have two syntaxes:
 
-break/continue
+The first one has more functionality but is more verbose, that is:
+
+```
+	for (expression1; expression2; expression3):
+		...
+```
+
+Where expression 1 initializes the loop counter (an integer), expression 2 gives the controlling expression that is checked before every execution of the `for` loop body, and the third expression gives the action performed on the counting element after every execution of the loop -- usually incrementation.
+
+Because of how often we iterate over vectors in *Sheets*, there is one additional syntax for a `for` loop that is much cleaner and easier to write:
+
+```
+	for expression1 in vector:
+		...
+```
+
+Expression 1, similar to in the first syntax, is the declaration of a loop counter. This creates a loop that iterates from 0 to n-1, where n is the length of the array. This allows you to easily access the index of every element in the array without having to worry about fencepost errors.
+
+####4.3.4 Loop Interruption Statements
+
+There are two statements that allow you to interrupt the execution of statements in the body of either a `for` or a `while` loop. These are `break` and `continue`.
+
+The `break` statement will end the execution of the body of a loop, then exit the loop completely as if the controlling expression returned `FALSE`. 
+
+The `continue` statement also ends the execution of the body of a loop, but then returns to the top of the body to evaluate the controlling expression to see if the loop should continue. 
+
+Anything on the line following `break` or `continue` will be ignored.
             
 ####4.3.5 Return Statements
 
-return
+Ends the execution of a function, including the `main` function. If a function does not have a `return` statement at the end, it is assumed to be a void function without a return type. GPU functions (`gfunc`) do not return a value, instead they write to a an output block in memory, and therefore a `return` statement within the function does not cause the function to return a value; instead, it just ends the execution of that GPU function at a given statement.
 
-####4.3.6 gfunc Statements
+####4.3.6 Function Statements
 
-statements invoking gfuncs are blocking
-until they have completed.
-            
-###4.4 Functions
+Function statements call a function, returning a value if the function itself has a return type. Statements that invoke GPU functions will always block until every thread started by the `gfunc` has returned. 
 
-There are two kinds of functions: 
+###4.4 Scope
 
-`func` and `gfunc`
-        
-###4.5 Scope
+One of the difficulties with working simultaneously in the CPU and GPU domain is that each has its own private memory which the other cannot access, but can be sent back and forth via a memory bus. For those reasons, we limit the amount of memory that is shared/transferred between both domains.
 
-####4.5.1 Scope within the GPU 
+####4.4.1 Scope within the GPU 
 
 *GPU memory hierarchy*
 
-gfuncs do not have access to CPU memory space; This means that all variables that need to be passed into the GPU need to be done so through gfunc arguments. gfuncs do not have access to global variables declared in CPU space. The only caveat to this is that global variables can also be passed to the GPU through specified library functions, such as .blocksize
+Because of the memory limitations we mentioned, `gfuncs` do not have direct access variables declared in CPU memory space; this includes `global` variables. In order to pass data from the CPU into a `gfunc`, it has to be passed through the arguments of the function. The only caveat to this rule is that *Sheets* will implicitly pass a small set of parameters to the GPU and store them within the `block` environmental variable. These include things like `block.size`, `block.index` and `block.input_length`.
 
-####4.5.2 Scope within the CPU
+####4.4.2 Scope within the CPU
 
-Global variables are variables that are declared outside
-of a function. These can be accessed by all funcs.
-Sheets will use block scoping, such that any variable defined
-within or within a greater indentation level will be accessible.
+Variables that are denoted as `global` can be declared outside of a function and accessed within any CPU function. "Global" in this case only refers to being global in the CPU memory space, not within the GPU.
+
+Sheets will use block scoping, such that any variable defined within a given indentation level is accessible within that level and any level of indentation greater than that level.
             
-##5 GPU Functions (gfunc)
+##5 GPU Functions (`gfunc`)
 
+`gfunc` defines a function that will be run on the GPU. The contents of a `gfunc` are compiled into an OpenCL kernel and linked into a Sheets executable via the sheets runtime library.
 
-Contents of gfuncs will be compiled into the kernel OpenCL files, meaning that they will be executed on the GPU. Because of this, we have to enforce a few GPU-specific memory and concurrency limitations on the contents of gfuncs; they must be parallelizable, meaning that they must:
+Our goal for the `gfunc` keyword is to shield the programmer from writing blatantly unparallelizable code but to leave enough freedom that the resulting code is at least reasonably optimal. As such, we enforce the following rules:
 
-1. must not depend on previous values in array
-2. they must not write to overlapping regions in memory 
-3. they should not require excessive shared memory.
+* Any call to a `gfunc` is blocking.
+* `gfunc` function arguments are immutable.
+* `gfunc` function arguments are limited to arrays of equivalent size and scalar types (i.e. int, long, double, or float), and a `gfunc` must take at least one array as an argument.
+* There is no return value from a `gfunc`; it will write to a global output array that must be the same size as the first array of the arguments.
+* The code within a `gfunc` performs accesses and writes to the output array through an environment variable called `block` (see 5.1 "The `block` Keyword")
+* Vector operations as described in sections 3 and 4 cannot be called from within a `gfunc`, and doing so will result in a compile error. For example, the following code would not be accepted by the Sheets compiler:
 
-To enforce these, we have implemented the following: 
+````
+gfunc gadd(int[] A, int[] B):
+	A :+ B
+	
+````
 
-* Any call to gfuncs will be blocking.
-* Function arguments must be immutable.
-* Output length will always be equal to the length of the first argument.
-* Includes special environmental variable, which only exists in the scope of the gfunc, that contains all the information that will be passed into a block. 
-   
+A `gfunc` is thus declared:
+
+`gfunc` *array_type* *identifier*`(`*array_type* *identifier*`,`*type* *identifier*`,`*...*`):`
+
+###5.1 The `block` Keyword 
+
+In OpenCL, a kernel represents the smallest concurrently-executable chunk into which a problem may be divided. Through this structure, OpenCL forces programmers to conceive of their problem as a number (hopefully a large one) of concurrently-executable sub-problems that work with some subset of the entire input data.
+
+Sheets encouragess the programmer to conceive of their parallelizable problem according to this "sub-problem" format. To do this, Sheet provides the `block` keyword as a reference to the aforementioned "smallest concurrently-executable chunk" of the problem.
+
 `block` is a struct containing:
 
 * `block.size`
-        
-the number of elements that a block can write into
-
-* `block.index`                
-
-the index of the current block, meaning the index of the segmented region of the output array that this block can write to
-
-i.e. if the output array has 100 indices, and there are 20 total blocks 
-that the output could be split into, there are block indices 0-19, where 
-each index corresponds to the an increment of 5 in the index of the
-output array.
-        
+  - The number of elements referenced by the subproblem. Stored as an `unsigned int`.
+* `block.id`       
+  - The identifier of this instance of the subproblem, used for calculating the indices of the input array(s) to access.
 * `block.out`
+  - An array of size `block.size` that maps to the writable region of the output array in the block.
+  
+###5.2 Calling a `gfunc`
 
-array of size block.size, that represents the writable region in the
-cumulative output for the block
+A `gfunc` is called just like a standard `func` except for an optional argument at the end indicating the block size for this particular call.
+
+```
+my_gpu_function(arg1, arg2, arg3).[block_size]
+```
+
+If the `.[]` is omitted, the function is called with a `block` size of 1. The `.[]` argument has several restrictions:
+
+- `block_size` must be a positive integer.
+- `block_size` may not exceed the input array size.
+- `block_size` must evenly divide the input array size.
 
 ##6 Standard Library Functions
 ###6.1) Vector Operations
-* `reverse()`
-* `length()`
+* `reverse()` - performs an in-place reversal of an array 
+* `length()` - returns the dimensionality of the array (number of elements)
 
 // TODO can we build-in reduce/fold operations for summing, computing big conditional expressions
 
 ###6.2) File I/O
-
-* `print`
-* `read`
-* `write`
+We will have a relatively simple I/O functions that take string literals or other variables as arguments, and perform print/reads either to/from terminals or to a specified file descriptor. 
+* `open` - opens a file specified by a string, and returns a file descriptor that can be read from or written to.  
+* `print` - write to stdout or other file descriptor.
+* `read` - read from stdin or other file descriptor 
+* `write` - write binary (non null terminated arrays) to a file descriptor 
 
 // TODO can we build-in reduce/fold operations for summing, computing big conditional expressions

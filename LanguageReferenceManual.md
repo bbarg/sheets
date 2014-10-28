@@ -59,7 +59,7 @@ char[]
 Casting is allowed between:
 * Any two numbers
 * floats/doubles to longs/int lose precision
-* longs/floats to ints/doubles get truncated
+* longs/doubles to ints/floats get truncated
 * No casting between primitives and non-primitives
 
 ##3. Lexical Convections
@@ -126,8 +126,10 @@ For both integer and float literals, maximum representable values are limited by
   + for all other ASCII characters, the literal is expresssed a pair of single quotes surrounding the character 
 * string literal 
   - A sequence of ASCII characters (excepting those who have corresponding character literals) and character literals
-* array literal
+* single dimensional array literal
   - An opening `[` followed by comma-delimited float and/or integer literals, followed by a `]`. If the array literal contains only float or only integer literals, it will be of the respective type, but a mix will always be interpreted as a float array (integer literals will be casted to floats). Whitespace between brackets, commas, and int/float literals is ignored.
+* multi-dimensional array literals 
+ - An opening '[' followed by a comma delimited series of single or multi-dimensional array literals, all of the same dimensionality, but not necessarily the same size, followed by a closing ']'. The literal has dimension 1 + dimension of subarrays, and has size   
 
 ###3.4 Punctuation
 

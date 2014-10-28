@@ -11,48 +11,97 @@
 The *Graphics Processing Unit* (GPU) was invented in 1999 as a single-chip processor that allowed the CPU to offload graphics-intensive tasks to a separate processor. Unlike the CPU, which is built to contain only a handful of cores but a lot of cache memory, a GPU has limited memory but hundreds of cores, which, thanks to very efficient context switching, allows it to handle thousands of threads concurrently without significantly degrading the performance of the CPU. In the past, GPUs were seen as a luxury reserved for video processing and computer gaming. However, because of the advent of larger screen displays and a greater demand for video, image and signal processing applications, GPUs are quickly becoming more mainstream. 
 
 Although we are seeing more and more applications take advantage of the computational capabilities of the GPU, it is still very difficult to program for the GPU because of the many different types of GPU architectures and chip specific proprietary software. *Sheets* empowers engineers to take a high-level approach to programming on the GPU. With syntax, semantics and program structure to help programmers run parallelizable algorithms on the GPU, *Sheets* is a hardware-portable language that allows users to leverage the GPU's ability to handle large-vector data operations without needing to worry about hardware specifications. It does so by compiling down into *OpenCL*, an open-source programming language that can run on a wide variety of GPUs.
-
 ##2. Types
 
 ###2.1 Primitive Types
 
+#### Integer Types 
+
+These are simply signed integral numbers (fixed precision) whose literals are sequences of digits. The difference between these types is their size in bytes, which correspondingly limits the range of numbers they can represent.  
 
 * `int`
 
-Signed 32 bit integer type. Fixed-point number.
+Signed 32 bit integer type. An integer literal is a sequence of digits that fit within a 32 bit range. 
 
 * `long`
 
-Signed 64 bit integer type. Higher precision than an integer, also a fixed-point number.
+Signed 64 bit integer type.  An integer literal is a sequence of digits that fit within a 64 bit range. 
+
+#### Floating Point Types 
+
+The two types in this category correspond to IEEE single-precision and double precision floating point numbers, as defined in IEEE 754. s Floating point constants consist of an integer part, a decimal point, and a fraction part. 
 
 * `float`
 
-Single precision floating point type.
+Single precision floating point type, with a size of 32 bits. 
 
 * `double`
 
-Double precision floating point type.
+Double precision floating point type, with a size of 64 bits. 
 
 * `char`
 
-Single character, which can be alphanumeric or a form of punctuation
+Single character 1 byte wide, which can be alphanumeric or a form of punctuation, or any other valid character that is escaped with a backslash '\' (see section 3.3). 
 
 ```
-int[]
+Vector/Array Types - multiple instances of primitive types allocated in contiguous ranges of memory, either on regular machine stack, heap, or in GPU global/local memory. Array allocation and data transfer between CPU/GPU is handled automatically. 
+
+Arrays are zero indexed and can be accessed with the square-bracket notation, so 
+'array[7]' returns the element at index 7 of the array. 
+
+Arrays can be multi-dimensional, and can be indexed by separating the dimensional index numbers by commas so 'array[2, 5]' accesses row index 3, column index 5 of the two dimensional array. Arrays are limited to having at most 3 dimensions in the Sheets language.  
+
+Single dimension arrays can be defined as follows 
+
+<type T> arrayName [size]; - allocates an empty array of type T with size elements. 
+
+The size parameter is optional, and arrays can be initialized as follows: 
+
+<type T> arrayName[] = [element, element, element, ...  ]; 
+
+If you do give a size parameter, the number of elements within the right value  [] must be less than or equal to the size parameter. If it is less then the remaining spaces in the array are initialized to zero.
+
+Multi-dimensional arrays are very similar: 
+
+<type T> arrayName [num_rows, num_cols]; - allocates an empty 2D array of type T with num_rows rows and num_cols columns for a total of num_rows * num_cols elements.
+
+If you do give a size parameter, the number of elements within the right value  [] must be less than or equal to the size parameter. If it is less then the remaining spaces in the array are initialized to zero.
+
+Again, the  size parameters are optional, and arrays can be initialized as follows: 
+
+<type T> arrayName[,] = [[element, element],  [element, element, element],  ...  ]; 
+
+Here, all of the subarrays don't have to be the same length, and the array is initialized to be of dimensions '(maximum_subarray_size * number of subarrays)' with blank elements again initialized as zero.  
+
+int[] 
+
+Contiguous array of integers as defined above
 long[]
+
+Contiguous array of longs
 double[]
+
+Contiguous arrays of doubles
 float[]
+
+Contiguous arrays of floats
 char[]
+
+Contiguous arrays of chars. Used for strings as well. 
 ```
 
 
 ###2.2 Non-Primitive Types
-* String
+* String 
+
+Defined as a wrapper over a character array, with an integer specifying length. Can be ASCII or Unicode encoded. String literals are defined as a sequence of characters enclosed by double quotes. 
 * Block  		
 
 **TODO:** Need to decide how this maps to OpenCL NDrange
 
-* Struct
+* Struct 
+A programmer defined data type consisting of variables of primitive types, and other structure data types. The size of a struct is large enough to hold all members of the struct. 
+
 
 ###2.3 Casting
 
@@ -129,7 +178,7 @@ For both integer and float literals, maximum representable values are limited by
 * single dimensional array literal
   - An opening `[` followed by comma-delimited float and/or integer literals, followed by a `]`. If the array literal contains only float or only integer literals, it will be of the respective type, but a mix will always be interpreted as a float array (integer literals will be casted to floats). Whitespace between brackets, commas, and int/float literals is ignored.
 * multi-dimensional array literals 
- - An opening '[' followed by a comma delimited series of single or multi-dimensional array literals, all of the same dimensionality, but not necessarily the same size, followed by a closing ']'. The literal has dimension 1 + dimension of subarrays, and has size   
+ - An opening '[' followed by a comma delimited series of single or multi-dimensional array literals, all of the same dimensionality, but not necessarily the same size, followed by a closing ']'. The literal has dimension 1 + dimension of subarrays, and has size (number of subarrays * size of largest subarray)    
 
 ###3.4 Punctuation
 

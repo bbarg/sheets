@@ -534,6 +534,10 @@ In OpenCL, a kernel represents the smallest concurrently-executable chunk into w
 
 Sheets encouragess the programmer to conceive of their parallelizable problem according to this "sub-problem" format. To do this, Sheet provides the `block` keyword as a reference to the aforementioned "smallest concurrently-executable chunk" of the problem.
 
+```
+TODO: Capitallize Block or Not?
+```
+
 `block` is a struct containing:
 
 * `block.size`

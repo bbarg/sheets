@@ -180,6 +180,9 @@ Identifiers refer to a variable, function, or function argument. They must begin
 - `void`
   - A type keyword used solely in `func` declaractions indicating that the function does not return a value.
 
+```
+TODO: Void Type unnecessary?
+```
 
 ###3.3 Literals
 

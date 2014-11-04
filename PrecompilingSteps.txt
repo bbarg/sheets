@@ -1,0 +1,39 @@
+Precompiling Steps:
+
+1. Check for invalid:
+	* Indentation
+	* Semi-colons
+	* Braces
+
+2. Replace all newlines with semicolons
+	* Unless LINEJOIN keyword "\\"
+
+3. Indentation Algorithm:
+	* Add a '{' if you see a ':' after a 
+	    if
+	    else
+	    elif
+	    while
+	    for 
+	    func
+	    gfunc
+	    struct
+	    
+	* Push current indentation level to stack
+
+
+j is new indentation level
+
+if j == stack.peek:
+    Error
+
+else if j > stack.peek:
+    New LBRACK '{' after ':'
+    Push j to stack
+
+else:
+    while(stack.peek <= j):
+        add a RBRACK '}'
+
+        if stack.peek == j
+            exit

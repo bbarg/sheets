@@ -180,10 +180,6 @@ Identifiers refer to a variable, function, or function argument. They must begin
 - `void`
   - A type keyword used solely in `func` declaractions indicating that the function does not return a value.
 
-```
-TODO: Void Type unnecessary?
-```
-
 ###3.3 Literals
 
 * `int` literals
@@ -533,10 +529,6 @@ A `gfunc` is thus declared:
 In OpenCL, a kernel represents the smallest concurrently-executable chunk into which a problem may be divided. Through this structure, OpenCL forces programmers to conceive of their problem as a number (hopefully a large one) of concurrently-executable sub-problems that work with some subset of the entire input data.
 
 Sheets encouragess the programmer to conceive of their parallelizable problem according to this "sub-problem" format. To do this, Sheet provides the `block` keyword as a reference to the aforementioned "smallest concurrently-executable chunk" of the problem.
-
-```
-TODO: Capitallize Block or Not?
-```
 
 `block` is a struct containing:
 

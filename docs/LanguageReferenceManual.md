@@ -573,6 +573,12 @@ The number of vector library functions that we provide in Sheets is limited for 
 Note that these functions will be executed on the GPU.
 
 ###6.2) File I/O
+
+** TODO:**
+
+- how are we going to deal with variable length reads and stuff? - what if the user wants to read in binary data?
+- how is the "array" type for `write` serialized?
+
 Sheets will have a few relatively simple I/O functions that take string literals or other variables as arguments, and perform print/reads either to/from terminals or to a specified file descriptor. These functions mirror the behavior of comparable functions in standard C libraries.
 
 * `int open(String)` - opens a file specified by the given path, and returns a file descriptor that can be read from or written to.  

@@ -53,8 +53,8 @@ rule token = parse
 
 (* Loop Keywords*)
 | "while"  { WHILE }  | "for" { FOR }
-| "break"  { BREAK}   | "continue" { CONTINUE }
-| "return" { RETURN } 
+| "in"     { IN }     | "break"  { BREAK}   
+| "return" { RETURN } | "continue" { CONTINUE }
 
 (* Function Keywords *)
 | "func" { FUNC }     | "gfunc" { GFUNC }

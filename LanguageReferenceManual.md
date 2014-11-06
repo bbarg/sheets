@@ -120,7 +120,7 @@ You can access elements of a struct with a dot '.' and then the variable name. F
 ````
 This accesses a variable named <element_name> inside of a struct named <var_name>.
 
-* `Block` -  Defined as a struct used for metadata holding input/output information for functions executed on the GPU. See section 5.1
+* `block` -  Defined as a struct used for metadata holding input/output information for functions executed on the GPU. See section 5.1
 
  
 

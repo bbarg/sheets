@@ -1,9 +1,10 @@
-{ open Parser } (* Get the token types *)
+{ open Parser } (* Get the token types from Parser *)
+
+let num = ['0'-'9']
 
 rule token = parse
 (* Whitespace *)
-| ' ' { WHITESPACE }
-| ['\n','\r'] { NEWLINE}
+| [' ', '\t', '\n', '\r'] { token lexbuf } 
 
 (* Comments *)
 | "#~" { comment lexbuf }
@@ -15,6 +16,7 @@ rule token = parse
 | '['  { LBRACK }     | ']' { RBRACK }
 | ';'  { SEMI }       | ',' { COMMA }
 | '.'  { PERIOD }     | '\\'{ BACKSLASH }
+| ':'  { COLON }
 
 (* Arithmetic Operators *)
 | '+' { PLUS }        | ":+" { G_PLUS }
@@ -72,14 +74,12 @@ rule token = parse
 | ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 
 (* Literals *)
-| ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
+| num+ as lxm { LITERAL(int_of_string lxm) }
+| num+ . num* as lxm { LITERAL(string_of_float lxm) }
+| ".*" as lxm { LITERAL(lxm) } 
 
 (* TODO: 
- *   Write Regular Expressions for:
- *      Float Literals 
- *      String Literals
  *   Find out how to do inline comments
- *
  *)
 
 (* Throw Error for Invalid Token *)

@@ -54,11 +54,12 @@ rule token = parse
 (* Loop Keywords*)
 | "while"  { WHILE }  | "for" { FOR }
 | "in"     { IN }     | "break"  { BREAK}   
-| "return" { RETURN } | "continue" { CONTINUE }
+| "continue" { CONTINUE }
 
 (* Function Keywords *)
 | "func" { FUNC }     | "gfunc" { GFUNC }
 | "main" { MAIN }     | "struct" { STRUCT }
+| "return" { RETURN }
 
 (* Type Keywords*)
 | "int"   { INT }     | "long" { LONG }

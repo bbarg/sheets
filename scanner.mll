@@ -35,7 +35,7 @@ rule token = parse
 
 (* Assignment Operators *)
 | '=' { ASSIGN }      | ":=" { G_ASSIGN }
-| '!' { NEG}          | ":!" { G_NEG }
+| '!' { NEG }         | ":!" { G_NEG }
 
 (* Equivalence Operators *)
 | "==" { EQ }         | ":==" { G_EQ }

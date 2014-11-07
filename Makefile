@@ -122,6 +122,9 @@ WITHDBM =dbm.cma -cclib -lmldbm -cclib -lndbm
 ################ Nothing to set up or fix here
 ##############################################################
 
+scanner:
+	ocamllex scanner.mll
+
 all:: .depend.input .depend $(EXEC)
 
 opt : $(EXEC).opt
@@ -188,6 +191,7 @@ clean::
 	rm -f *.cm[iox] *~ .*~ #*#
 	rm -f $(EXEC)
 	rm -f $(EXEC).opt
+	rm -f scanner.ml
 
 .depend.input: Makefile
 	@echo -n '--Checking Ocaml input files: '

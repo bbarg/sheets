@@ -9,7 +9,7 @@
 
 (* Punctuation Tokens *)
 %token LAREN RPAREN LBRACE RBRACE LBRACK RBRACK SEMI COMMA PERIOD
-%token BACKSLASH COLON EOF
+%token COLON EOF
 
 (* Loop Keywords *)
 %token WHILE FOR IN BREAK CONTINUE
@@ -60,12 +60,25 @@
 %start sheet			(* start symbol *)
 %type <Ast.program> sheet	(* type returned by program *)
 
+(* Main Program *)
 sheet:
 		      { [], [] }
-
+    | program vdecl   { ($2 :: fst $1), snd $1 }
+    | program fdecl   { fst $1, ($2 :: snd $1) }
+	      
 (* Function Declarations *)
-
 fdecl:
-
+   FUNC TYPE ID LPAREN formals_opt RPAREN COLON 
+   LBRACE vdecl_list stmt_lists RBRACE
+                      { { fname   = $3;
+			  formals = $5;
+			  locals  = List.rev $9;
+			  body    = List.rev $10 } }
 
 gfdecl:
+   FUNC TYPE ID LPAREN formals_opt RPAREN COLON
+   LBRACE vdecl_list stmt_lists RBRACE blocksize
+                      { { fname   = $3;
+			  formals = $5;
+			  locals  = List.rev $9;
+			  body    = List.rev $10 } }

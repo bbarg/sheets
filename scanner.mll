@@ -1,10 +1,10 @@
-{ open Parser } (* Get the token types from Parser *)
+{ open parser } (* Get the token types from Parser *)
 
 let num = ['0'-'9']
 
 rule token = parse
 (* Whitespace *)
-| [' ', '\t', '\n', '\r'] { token lexbuf } 
+| [' ' '\t' '\n' '\r'] { token lexbuf } 
 
 (* Comments *)
 | "#~" { comment lexbuf }
@@ -35,7 +35,7 @@ rule token = parse
 
 (* Assignment Operators *)
 | '=' { ASSIGN }      | ":=" { G_ASSIGN }
-| '!' { NEG }         | ":!" { G_NEG }
+| '!' { NEG}          | ":!" { G_NEG }
 
 (* Equivalence Operators *)
 | "==" { EQ }         | ":==" { G_EQ }

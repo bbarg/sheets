@@ -19,3 +19,5 @@ need to do:
   + We PROBABLY need to have a "variable" type that keep track of its
     own type...
 - Should we be parsing literals into Ocaml types in the scanner?
+- Look through interpreter code (MicroC) to see how AST is used in the
+  next step?

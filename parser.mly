@@ -9,7 +9,7 @@
 
 (* Punctuation Tokens *)
 %token LAREN RPAREN LBRACE RBRACE LBRACK RBRACK SEMI COMMA PERIOD
-%token COLON EOF
+%token COLON EOF BACKSLASH
 
 (* Loop Keywords *)
 %token WHILE FOR IN BREAK CONTINUE
@@ -20,6 +20,7 @@
 (* Type Keywords *)
 %token INT LONG FOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK
 
+(* TODO not sure how to declare different type of literal *)
 %token LITERAL
 %token <string> ID
 

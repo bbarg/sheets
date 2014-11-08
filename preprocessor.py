@@ -15,35 +15,48 @@ def process(input_file):
     stack = [0]
     output = StringIO()
     newindent = False
+    commented = False
 
     for i, line in enumerate(input_file):
 
         if any(x in line for x in invalidchar):
             raise SyntaxError("Invalid character found on line {}".format(i))
     
+        if ('#~' in line and '~#' not in line):
+            commented = True
+
         lineout = line.rstrip()
         wcount = len(line) - len(line.lstrip(' '))
 
-        while(wcount < stack[-1]):
-            lineout = "}" + lineout
-            stack.pop()
+        if lineout and not commented:
 
-        if newindent == True:
-            stack.append(wcount)
-            newindent = False
+            while(wcount < stack[-1]):
+                lineout = "}" + lineout
+                stack.pop()
 
-        if lineout: 
+            if newindent == True:
+                stack.append(wcount)
+                newindent = False
 
-            if lineout[-1] == ':':
-                lineout = lineout + '{\n'
-                newindent = True
+            if lineout: 
 
-            elif lineout[-1] != '\\':
-                lineout = lineout + ';\n'
+                if lineout[-1] == ':':
+                    lineout = lineout + '{\n'
+                    newindent = True
 
-        output.write(lineout)
+                elif lineout[-1] != '\\':
+                    lineout = lineout + ';\n'
 
-    print(output.getvalue())
+            output.write(lineout)
+
+        if ('~#' in line):
+            commented = False
+
+    output.write("}")
+
+    print output.getvalue()
+
+    return output
 
 def usage():
     print"""
@@ -57,16 +70,19 @@ if __name__ == "__main__":
         sys.exit(2)
 
     try:
-        f = open(sys.argv[1],"r")
+        f_in = open(sys.argv[1],"r")
     except IOError:
         sys.stderr.write("ERROR: Cannot read input file %s.\n" % sys.argv[1])
         sys.exit(1)
 
-    name_ext = os.path.basename(f.name)
+    name_ext = os.path.basename(f_in.name)
 
     if name_ext.lower().endswith((".sht",".sheet")):
         fname = os.path.splitext(name_ext)[0]
     else:
         raise NameError('Input must have Sheets file extension')
 
-    process(f)
+    out_str = process(f_in)
+
+    f_out = open(fname+".proc.sht", 'a')
+    f_out.write(out_str.getvalue())

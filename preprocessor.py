@@ -26,7 +26,7 @@ def process(input_file):
             commented = True
 
         lineout = line.rstrip()
-        wcount = len(line) - len(line.lstrip(' '))
+        wcount  = len(line) - len(line.lstrip(' '))
 
         if lineout and not commented:
 
@@ -35,10 +35,14 @@ def process(input_file):
                 stack.pop()
 
             if newindent == True:
+
+                # if (wcount <= stack[-1]):
+                #     raise IndentationError("Error on line {}".format(i))
+                # else:
                 stack.append(wcount)
                 newindent = False
 
-            if lineout: 
+            if lineout:
 
                 if lineout[-1] == ':':
                     lineout = lineout + '{\n'

@@ -18,7 +18,7 @@
 %token FUNC GFUNC MAIN STRUCT RETURN
 
 (* Type Keywords *)
-%token INT LONG FOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK
+%token INT LONG FLOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK
 
 (* TODO not sure how to declare different type of literal *)
 %token LITERAL

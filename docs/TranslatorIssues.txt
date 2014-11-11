@@ -1,0 +1,8 @@
+Sending stuff to/from GPU
+-------------------------
+
+We need some sort of robust abstraction for doing individual gfunc
+calls. 
+
+Let's list the steps that need to occur:
+      

@@ -10,3 +10,9 @@
     our sheets compiler.
 
 - **Parser**: How can we get the parser to compile so we can test the lexer?
+
+## TA Questions (Nov 13)
+
+- should we deal with scoping in `parser.mly` or in a separate file that builds the symbol tables
+- what level of abstraction should we get to before we start actually generating OpenCL code?
+  + a followup, how many stages of this additional process are there, and what are they typically called?

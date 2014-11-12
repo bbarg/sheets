@@ -47,12 +47,14 @@ type scope = {
 
 type stmt =		      (* statements that can occur in funcs *)
     Scope of scope
+  | Expr of expr
   | Assign of string * expr
   | Return of expr
   | If of scalarExpr * scope * scope 	(* TODO deal with "elif" and "else" *)
   | For of expr * scalarExpr * expr * scope (* TODO deal with boolean? *)
   | While of expr * scope
-  
+(* TODO: function statements? *)
+
 type gStmt =		     (* statements that can occur in gfuncs *)
     Scope of scope
   | Assign of string * expr
@@ -60,21 +62,22 @@ type gStmt =		     (* statements that can occur in gfuncs *)
   | For of expr * scalarExpr * expr * scope
   | While of expr * scope
 
-type vDecl = {
+type vdecl = {
     _type     : varType;	   (* PARSER *)
     name      : string;
     isConst   : bool;
+    isStruct  : bool;
 } 
 
-type fDecl = {			   (* func declaration *)
-    name      : string;
+type fdecl = {			   (* func declaration *)
+    fname      : string;
     formals   : vDecl list;	   
     locals    : vDecl list;
     body      : stmt  list;
 }
 
-type gDecl  = {			   (* gfunc declaration *)
-    name      : string;
+type gdecl  = {			   (* gfunc declaration *)
+    gname      : string;
     formals   : vDecl list;	   
     locals    : vDecl list;
     body      : gStmt list;

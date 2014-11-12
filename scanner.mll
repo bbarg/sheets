@@ -67,6 +67,7 @@ rule token = parse
 | "char"  { CHAR }    | "const" { CONST }
 | "TRUE"  { TRUE }    | "FALSE" { FALSE}
 | "String" { STRING } | "Block" { BLOCK }
+| "boolean" { BOOL }
 
 (* End-of-File *)
 | eof { EOF }
@@ -75,11 +76,12 @@ rule token = parse
 | ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 
 (* Literals *)
-| num+ as lxm { LITERAL(int_of_string lxm) }
-| num+ . num* as lxm { LITERAL(string_of_float lxm) }
-| ".*" as lxm { LITERAL(lxm) } 
+| num+ as lxm { INT_LITERAL(int_of_string lxm) }
+(*| num+ . num* as lxm { FLOAT_LITERAL(string_of_float lxm) } *)
+| ".*" as lxm { STRING_LITERAL(lxm) } 
 
 (* TODO: 
+ *   Add literal support for all types
  *   Find out how to do inline comments
  *)
 

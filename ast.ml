@@ -1,15 +1,39 @@
 (* ast.ml
  * Abstract syntax tree for Sheets
  * 
- * Throughout the AST there is are instances of pairs of types "thing"
+ * Throughout the AST there are instances of pairs of types "thing"
  * and "gThing". In each instance, "thing" is a scalar type and
  * "gThing" is an array type.
  * 
  * author: Benjamin Barg
  * Copyright 2014, Symposium Software *)
 
-type arrayExpr
-type scalarExpr
+(* List of types that parse solely as tokens:
+   - varType
+   - arrayLiteral
+   - arrayOp
+   - scalarOp
+ *)
+
+type scalar = 
+  (* all the literal types *)
+  | Id of string 		(* scalar-valued variables *)
+
+(* TODO is it an issue that arrayExpr and scalarExpr will have really
+similar rule trees? *)
+type arrayExpr = 
+    Literal of arrayLiteral
+  | Id of string
+  (* | Assign of string * arrayExpr *) (* TODO are we supporting? *)
+  | Binop of arrayExpr * arrayOp * arrayExpr
+  | Binop of arrayExpr * arrayOp * scalar
+  | Call of string * expr list	
+
+type scalarExpr =
+    Scalar of scalar
+  (* | Assign of string * scalarExpr *) (* TODO are we supporting? *)
+  | Binop of scalarExpr * scalarOp * scalarExpr
+  | Call of string * expr list
 
 (* NOTE somtimes need to refer to all types of expressions, sometimes
  * either or *)
@@ -30,7 +54,11 @@ type stmt =		      (* statements that can occur in funcs *)
   | While of expr * scope
   
 type gStmt =		     (* statements that can occur in gfuncs *)
-  
+    Scope of scope
+  | Assign of string * expr
+  | If of scalarExpr * scope * scope
+  | For of expr * scalarExpr * expr * scope
+  | While of expr * scope
 
 type vDecl = {
     _type     : varType;	   (* PARSER *)

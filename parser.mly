@@ -20,6 +20,13 @@
 (* Type Keywords *)
 %token INT LONG FLOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK
 
+(* Operator Tokens *)
+%token LOR LAND OR XOR AND EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT PLUS
+%token MINUS TIMES DIVIDE MOD ASSIGN NEG
+%token G_LOR G_LAND G_OR G_XOR G_AND G_EQ G_NEQ G_LT G_LEQ G_GT G_GEQ 
+%token G_LSHIFT G_RSHIFT G_PLUS G_MINUS G_TIMES G_DIVIDE G_MOD G_ASSIGN 
+%token G_NEG
+
 (* TODO not sure how to declare different type of literal *)
 %token LITERAL
 %token <string> ID

@@ -16,3 +16,7 @@
 - should we deal with scoping in `parser.mly` or in a separate file that builds the symbol tables
 - what level of abstraction should we get to before we start actually generating OpenCL code?
   + a followup, how many stages of this additional process are there, and what are they typically called?
+
+## Preprocessor Issues:
+
+- Inline comments that start in the middle of a statement and continue into a new line

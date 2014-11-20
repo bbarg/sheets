@@ -44,6 +44,8 @@
 
 %token <string> ID
 
+(* TODO: types? *)
+
 (* Operator tokens
  *
  * Ordinarily we would need to deal with precedence of array operators
@@ -72,9 +74,6 @@ sheet:
     | program fdecl     { fst $1, ($2 :: snd $1) }
     | program gdecl     { fst $1, ($2 :: snd $1) }
    (* | program sdecl   { ($2 :: fst $1), snd $1 } *)
-
-(* TODO: check if const handling works? *)
-
 (* Function Declarations *)
 (* func int named_func(args):{ <statements>... } *)
 fdecl:
@@ -124,6 +123,9 @@ const:
     CONST       { true }
     | (* not const *) { false }
 
+(* TODO: check if const handling works? *)
+
+
 type_name:
      INT        { $1 }
     | FLOAT     { $1 }
@@ -159,12 +161,10 @@ stmt:
     stmt_list RBRACK SEMI { If($3, $7, $12) } 
     | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN RBRACK SEMI
     loop_stmt_list LBRACK SEMI { For($3, $5, $7, $11) }
+    | FOR ID IN ID COLOON LBRACK SEMI
     | WHILE LPAREN bool_expr RPAREN LBRACK SEMI loop_stmt_list RBRACK SEMI {
         While($3, $7) }
 
-    (* TODO: assuming elif has been transformed into else if *)
-    (* TODO: For ___ in ___? *)
-   
 (*
 scope:
     (* Nothing *)       { vLocals = []; sLocals = []; body = [] }

@@ -73,7 +73,8 @@ sheet:
     | program vdecl     { ($2 :: fst $1), snd $1 }
     | program fdecl     { fst $1, ($2 :: snd $1) }
     | program gdecl     { fst $1, ($2 :: snd $1) }
-   (* | program sdecl   { ($2 :: fst $1), snd $1 } *)
+
+    (* | program sdecl   { ($2 :: fst $1), snd $1 } *)
 
 (* Function Declarations *)
 (* func int named_func(args):{ <statements>... } *)
@@ -173,8 +174,6 @@ stmt:
     | WHILE LPAREN bool_expr RPAREN LBRACK SEMI stmt_lists RBRACK SEMI {
         While($3, $7) }
 
-    (* TODO: syntax requirements of expressions within loops? i.e.
-     * loop_expr_list? *)
 
 (* gstmts are similar to gstmts except they do not allow for returns *)
 (* they also allow for blocks in their expressions *) 

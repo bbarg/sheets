@@ -137,5 +137,7 @@ if __name__ == "__main__":
 
   out_str = process(f_in)
 
-  f_out = open(fname+".proc.sht", 'a')
+  desired_path = "./tests/processed_out/"
+
+  f_out = open(desired_path+fname+".proc.sht", 'a')
   f_out.write(out_str.getvalue())

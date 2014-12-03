@@ -17,7 +17,7 @@
 %token WHILE FOR IN BREAK CONTINUE
 
 /* Conditional Keywords */
-%token IF ELSE ELIF
+%token IF ELSE NOELSE
 
 /* Function Keywords */
 %token FUNC GFUNC MAIN STRUCT RETURN

@@ -1,6 +1,9 @@
-{ open parser } (* Get the token types from Parser *)
+{ 
+    open parser;;
+}
 
 let num = ['0'-'9']
+let flt = num+ '.' num* | '.' num+
 
 rule token = parse
 (* Whitespace *)
@@ -8,7 +11,7 @@ rule token = parse
 
 (* Comments *)
 | "#~" { comment lexbuf }
-| "#"  { INLINE }
+| "#"  { comment_il lexbuf }
 
 (* Punctuation *)
 | '('  { LPAREN }     | ')' { RPAREN }
@@ -48,7 +51,7 @@ rule token = parse
 | "||" { LOR }        | ":||" { G_LOR }
 
 (* Conditional Keywords *)
-| "if"   { IF }       | "elif" { ELIF }
+| "if"   { IF }       | "elif" { ELSE IF }
 | "else" { ELSE } 
 
 (* Loop Keywords*)
@@ -76,18 +79,17 @@ rule token = parse
 | ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 
 (* Literals *)
-| num+ as lxm { INT_LITERAL(int_of_string lxm) }
-(*| num+ . num* as lxm { FLOAT_LITERAL(string_of_float lxm) } *)
-| ".*" as lxm { STRING_LITERAL(lxm) } 
-
-(* TODO: 
- *   Add literal support for all types
- *   Find out how to do inline comments
- *)
+| num+ as intlit { INT_LITERAL(int_of_string intlit) }
+| flt  as fltlit { FLOAT_LITERAL(float_of_string fltlit) }
+| '"' ([^'"']* as strlit) '"' { STRING_LITERAL(str_lit) }
 
 (* Throw Error for Invalid Token *)
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse
-"~#" { token lexbuf }   (* End-of-comment *)
-| _ { comment lexbuf }  (* Eat everything else *)
+| "~#" { token lexbuf }      (* End-of-comment *)
+| _    { comment lexbuf }    (* Eat everything else *)
+
+and inlinecomment = parse
+| "\n" { token lexbuf }
+| _    { comment_il lexbuf }

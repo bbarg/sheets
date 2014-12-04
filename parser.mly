@@ -78,6 +78,7 @@ program:
     | program gfdecl            { fst $1, ($2 :: snd $1) }
     | program sdecl             { ($2 :: fst $1), snd $1 }
 
+
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -87,10 +88,10 @@ fdecl:
    FUNC type_name ID LPAREN formals_opt RPAREN COLON 
    LBRACE SEMI vdecl_list stmt_lists RBRACE SEMI
    { { 
-       fname   = $3;                    // function name
-       formals = $5;                    // argument list
-       locals  = List.rev $10;          // local variable list
-       body    = List.rev $11           // normal statement list
+       fname   = $3;                    (* function name *)
+       formals = $5;                    (* argument list *)
+       locals  = List.rev $10;          (* local variable list *)
+       body    = List.rev $11           (* normal statement list *)
    } }
 
 /* gfunc int named_gfunc(args).[5]:{; <statements>... }; */
@@ -98,17 +99,17 @@ gfdecl:
    GFUNC type_name ID LPAREN formals_opt RPAREN PERIOD LBRACK INT_LITERAL 
    RBRACK COLON LBRACE SEMI vdecl_list gfunc_stmt_lists RBRACE SEMI
    { { 
-       gname   = $3;                    // gfunc name
-       formals = $5;                    // argument list
-       locals  = List.rev $14;          // local variable list
-       body    = List.rev $15;          // gfunc statement list
-       blockSize = $9                   // block size
+       gname   = $3;                    (* gfunc name *)
+       formals = $5;                    (* argument list *)
+       locals  = List.rev $14;          (* local variable list *)
+       body    = List.rev $15;          (* gfunc statement list *)
+       blockSize = $9                   (* block size *)
    } }
 
 /* TODO: Calling functions from inside other functions? */
 /* TODO: mixed variable/statements */
 
-// we give the option of having no arguments with this switch
+/* we give the option of having no arguments with this switch */
 formals_opt:
       /* nothing */                     { [] }
     | formal_list                       { List.rev $1 }
@@ -119,7 +120,6 @@ formal_list:
       vdecl                             { [$1] }
     | formal_list COMMA vdecl           { $3 :: $1 }
 
-
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////VARIABLES/////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -128,10 +128,10 @@ formal_list:
 vdecl:
     const str type_name ID
     { { 
-        _type = $3;                     // variable type
-        name = $4;                      // variable name
-        isConst = $1;                   // true or false for if const
-        str = $2                        // true or false for if a struct
+        _type = $3;                     (* variable type *)
+        name = $4;                      (* variable name *)
+        isConst = $1;                   (* true or false for if const *)
+        str = $2                        (* true or false for if a struct *)
     } }
 
 str:
@@ -187,7 +187,6 @@ gfunc_stmt_lists:
  * if( <bool_expr> ){; <statements> }; else {; <statements> }; 
  */
 
-
 stmt:
       expr SEMI                                         { Expr($1) }
     | gexpr SEMI                                        { Expr($1) }
@@ -221,7 +220,7 @@ gstmt:
 
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
 
-// note that loop_stmt_lists can be used from inside if/else blocks
+/* note that loop_stmt_lists can be used from inside if/else blocks */
 block_body:  LBRACE SEMI loop_stmt_list RBRACE SEMI     { List.rev $3 }
 gblock_body: LBRACE SEMI gloop_stmt_list RBRACE SEMI    { List.rev $3 }
 
@@ -229,7 +228,7 @@ for_pt1: LPAREN expr_opt SEMI                           { $2 }
 for_pt2: bool_expr_opt SEMI                             { $1 }
 for_pt3: expr_opt RPAREN                                { $1 }
     
-// Loops can contain all normal expressions, and also Break and Continues
+/* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
      /* Nothing */                                      { [] }
     | stmt_lists SEMI                                   { $1 }

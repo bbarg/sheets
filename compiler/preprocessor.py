@@ -17,7 +17,7 @@ def process(input_file):
   newindent = False
   commented = False
   linejoin  = False
-  debug     = True
+  debug     = False
 
   for i, line in enumerate(input_file):
 
@@ -118,6 +118,8 @@ def usage():
 
 if __name__ == "__main__":
 
+  output_path = "../tests/suite/"
+  
   if len(sys.argv) != 2:
     usage()
     sys.exit(2)
@@ -137,7 +139,5 @@ if __name__ == "__main__":
 
   out_str = process(f_in)
 
-  desired_path = "./tests/processed_out/"
-
-  f_out = open(desired_path+fname+".proc.sht", 'a')
+  f_out = open(output_path+fname+".proc.sht", 'a')
   f_out.write(out_str.getvalue())

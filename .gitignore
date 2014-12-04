@@ -1,7 +1,7 @@
 *.DS_Store
 *.proc.sht
-/scanner.ml
-/parser.mli
-/.depend.input
-/parser.ml
-/.depend
+/compiler/scanner.ml
+/compiler/parser.mli
+/compiler/.depend.input
+/compiler/parser.ml
+/compiler/.depend

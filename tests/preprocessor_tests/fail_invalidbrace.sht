@@ -1,0 +1,4 @@
+String name = "gabe"
+for c in name: {
+    print(c)
+}

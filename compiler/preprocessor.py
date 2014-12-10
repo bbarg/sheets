@@ -9,6 +9,10 @@ try:
 except:
   from StringIO import StringIO
 
+def error(msg):
+  sys.stderr.write(msg+"\n")
+  sys.exit(2)
+
 def process(input_file):
 
   invalidchar = ('{','}','\t')
@@ -25,8 +29,10 @@ def process(input_file):
 
     if lineout:
 
-      if any(x in lineout for x in invalidchar):
-        raise SyntaxError("Invalid character found on line {}".format(i))
+      for x in invalidchar:
+        if x in lineout:
+
+          error("SyntaxError: Invalid character {} found on line {}".format(x,i))          
 
       # Check if first statement is a comment
       lstripline = lineout.lstrip()
@@ -53,7 +59,7 @@ def process(input_file):
               stack.append(wcount)
               newindent = False
             else:
-              raise IndentationError("Error on line {}".format(i))
+              error("IndentationError on line {}".format(i))
 
           # If the indentation level is greater than expected, throw an error
           if wcount > stack[-1]:
@@ -65,7 +71,7 @@ def process(input_file):
               print "stack[-1]:  {}".format(stack[-1])
               print "newindent:  {}".format(wcount)          
 
-            raise IndentationError("Error on line {}".format(i))
+            error("IndentationError on line {}".format(i))
 
           else:
 
@@ -85,7 +91,7 @@ def process(input_file):
                 print "stack[-1]: {}".format(stack[-1])
                 print "newindent: {}".format(wcount)  
 
-              raise IndentationError("Error on line {}".format(i))
+              error("IndentationError on line {}".format(i))
 
         # Given that the indentation level is correct, check for the start
         # of a new code block (where a line ends with a ':') and insert a 
@@ -117,8 +123,6 @@ def usage():
   """
 
 if __name__ == "__main__":
-
-  output_path = "../tests/suite/"
   
   if len(sys.argv) != 2:
     usage()
@@ -127,17 +131,17 @@ if __name__ == "__main__":
   try:
     f_in = open(sys.argv[1],"r")
   except IOError:
-    sys.stderr.write("ERROR: Cannot read input file %s.\n" % sys.argv[1])
-    sys.exit(1)
+    error("IOError: Cannot read input file %s.\n" % sys.argv[1])
 
   name_ext = os.path.basename(f_in.name)
+  dir_ext = os.path.dirname(f_in.name)+"/"
 
   if name_ext.lower().endswith((".sht",".sheet")):
     fname = os.path.splitext(name_ext)[0]
   else:
-    raise NameError('Input must have Sheets file extension')
+    error('NameError: Input must have Sheets file extension')
 
   out_str = process(f_in)
 
-  f_out = open(output_path+fname+".proc.sht", 'a')
+  f_out = open(dir_ext+fname+".proc.sht", 'w')
   f_out.write(out_str.getvalue())

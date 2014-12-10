@@ -8,6 +8,7 @@ path_to_name()
     local fullpath=$1
     testpath="${fullpath%.*}"   # Strip Extension
     test_name="${testpath##*/}" # Strip Preceding Path
+    ref_out=$(dirname $fullpath)/refout/$test_name.refout
 }
 
 printf "Preprocessor Unit Tests\n"
@@ -19,18 +20,15 @@ do
     
     python $preproc_path $file
     proc_out=$testpath.proc.sht
+    
 
-    printf "$proc_out\n"
-    
-    # # stdout of parser
-    # output=$(./sast < "$file" 2> "$tmp_file")
-    # # boolean result
-    # outcome=$(echo "$output" | grep $success)
-    # # true if test expected to fail
-    # fail_test=$(echo "$file" |  grep "fail_")
-    
+    if [[ outcome ]] && [[ !$(diff $proc_out $ref_out) ]]
+    then
+        echo "success: $test_name"
+    fi
+
 done
 
-rm -f suite/*.proc.sht
+rm -f preprocessor_tests/*.proc.sht
 
 exit

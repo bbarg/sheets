@@ -1,13 +1,13 @@
 #!/bin/bash
 
 compiler_tests=$(find suite -name *\.sht)
-preprocessor_path="../compiler/preprocessor.py"
+preproc_path="../compiler/preprocessor.py"
 
 path_to_name()
 {
-    local fullpath=$1 #strip file type & set global variable
-    testpath="${fullpath%.*}"
-    test_name="${testpath##*/}" #strip the preceding path
+    local fullpath=$1
+    testpath="${fullpath%.*}"   # Strip Extension
+    test_name="${testpath##*/}" # Strip Preceding Path
 }
 
 printf "Full Stack Sheets Test Suite\n"
@@ -17,7 +17,7 @@ do
     path_to_name "$file"
     printf "=== $test_name ===\n"
     
-    python $preprocessor_path $file
+    python $preproc_path $file
     proc_out=$testpath.proc.sht
 
     printf "$proc_out\n"

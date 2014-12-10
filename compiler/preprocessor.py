@@ -103,6 +103,7 @@ def process(input_file):
 
         elif lineout[-1] == '\\':
           linejoin = True
+          lineout = lineout[:-1]
 
         else:
           lineout = lineout + ';\n'

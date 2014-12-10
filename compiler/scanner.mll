@@ -7,7 +7,7 @@ let flt = num+ '.' num* | '.' num+
 
 rule token = parse
 (* Whitespace *)
-| [' ' '\t' '\n' '\r'] { token lexbuf } 
+| [' ' '\n' '\r'] { token lexbuf } 
 
 (* Comments *)
 | "#~" { comment lexbuf }

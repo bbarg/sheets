@@ -8,4 +8,4 @@ float[] func main:{
 }float[] gfunc mix(float[] a, float[] b):{
     for int i in block.out:{
         block.out[i] = a[block.index] + b[block.index];
-}
+}}

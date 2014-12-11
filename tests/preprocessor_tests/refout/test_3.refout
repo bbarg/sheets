@@ -1,0 +1,11 @@
+float[] func main:{
+    int[] signal1 = open('tests/media/music1.wav');
+    int[] signal2 = open('tests/media/music2.wav');
+    signal1 = signal1 :* .5      // scaling both signals and casting;
+    signal2 = signal2 :* .5      // them into float;
+    int[] signal_mix = mix(signal1,signal2);
+    return signal_mix;
+}float[] gfunc mix(float[] a, float[] b):{
+    for int i in block.out:{
+        block.out[i] = a[block.index] + b[block.index];
+}}

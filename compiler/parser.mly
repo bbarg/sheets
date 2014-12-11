@@ -30,11 +30,14 @@
 %token INT LONG FLOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK BOOL
 
 /* Operator Tokens */
-%token LOR LAND OR XOR NOT AND EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT
+%token LOR LAND OR XOR NOT AND 
+%token EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT
 %token PLUS MINUS TIMES DIVIDE MOD ASSIGN NEG
-%token G_LOR G_LAND G_OR G_XOR G_AND G_NOT G_EQ G_NEQ G_LT G_LEQ G_GT
-%token G_LSHIFT G_RSHIFT G_PLUS G_MINUS G_TIMES G_DIVIDE G_MOD 
-%token G_ASSIGN G_NEG
+
+/* G Operator Tokens */
+%token G_LOR G_LAND G_OR G_XOR G_NOT G_AND 
+%token G_EQ G_NEQ G_LT G_LEQ G_GT G_GEQ G_LSHIFT G_RSHIFT 
+%token G_PLUS G_MINUS G_TIMES G_DIVIDE G_MOD G_ASSIGN G_NEG
 
 %token <int> INT_LITERAL
 %token <string> STRING_LITERAL
@@ -48,7 +51,6 @@
 %token <bool list> BOOL_ARRAY_LITERAL
 
 %token <string> ID
-
 
 /* Precedence definition */
 %left LOR LAND OR XOR NOT AND EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT
@@ -69,7 +71,7 @@
 
 %%
 
-/* Main Program */
+/* Grammar Rules */
 program:
                                 /* [vdecls], [sdecls], [fdecls] */
       /* empty program */       { [], [], [] } 
@@ -331,6 +333,4 @@ gexpr:
     | gexpr G_MOD gexpr               { Binop($1, Mod, $3) }
     | gexpr G_NEG gexpr               { Binop($1, Neg, $3) }
     | LPAREN gexpr RPAREN             { $2 }
-
-
 

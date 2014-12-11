@@ -25,11 +25,11 @@ Signed 32 bit integer type. An integer literal is a sequence of digits that fit 
 
 * `long`
 
-Signed 64 bit integer type.  An integer literal is a sequence of digits that fit within a 64 bit range. 
+Signed 64 bit integer type. A long literal is a sequence of digits that cannot fit within a 32 bit range but can fit in a 64 bit range. 
 
 #### Floating Point Types 
 
-The two types in this category correspond to IEEE single-precision and double precision floating point numbers, as defined in IEEE 754. s Floating point constants consist of an integer part, a decimal point, and a fraction part. 
+The two types in this category correspond to IEEE single-precision and double precision floating point numbers, as defined in IEEE 754. A Floating point literal consists of an integer part, a decimal point, and a fractional part. 
 
 * `float`
 
@@ -41,7 +41,7 @@ Double precision floating point type, with a size of 64 bits.
 
 * `char`
 
-A single character is 1 byte wide, which can be alphanumeric or a form of punctuation, or any other valid character that is escaped with a backslash '\' (see section 3.3). 
+A single character is 1 byte long. Chars can be alphanumeric, a form of punctuation or an escaped character (such as a newline `\n`) within a pair of single quotess (see section 3.3). 
 
 #### Vector/Array Types 
 
@@ -49,34 +49,35 @@ Vector/Array types represent multiple instances of primitive types allocated in 
 
 Arrays are zero indexed and can be accessed with the square-bracket notation, so (for example) `array[7]` returns the element at index 7 of the variable `array`. 
 
-Arrays can be multi-dimensional, and can be indexed by separating the dimensional index numbers by commas so 'array[2, 5]' accesses row index 3, column index 5 of the two dimensional array. Arrays are limited to having at most 3 dimensions in the Sheets language.  
+Arrays can be multi-dimensional, and can be indexed by separating the dimensional index numbers by commas so 'array[2, 5]' accesses row index 2, column index 5 of the two dimensional array. Arrays are limited to having at most 3 dimensions in the Sheets language.  
 
 Single dimension arrays can be defined as follows:
 
-````
- <type T> arrayName [size]
- ````
+```
+<type T> arrayName [size]
+```
+
 This will allocate an empty array of type T with size elements. The size parameter is optional, and arrays can be initialized as follows: 
 
-````
+```
 <type T> arrayName[] = [element, element, element, ...  ] 
-````
+```
 
-If you do give a size parameter, the number of elements within the right value  [] must be less than or equal to the size parameter. If it is less, then the remaining spaces in the array are initialized to zero.
+If you do give a size parameter, the number of elements within the right value `[]` must be less than or equal to the size parameter. If it is less, then the remaining spaces in the array are initialized to zero.
 
 #### Multi-dimensional arrays
 Multi-dimensional arrays are very similar to single-dimensional arrays/vectors:
 
-````
+```
 <type T> arrayName [num_rows, num_cols]
-````
-This allocates an empty 2D array of type T with num_rows rows and num_cols columns for a total of num_rows * num_cols elements.
+```
+This allocates an empty 2D array of type T with `num_rows` rows and `num_cols` columns for a total of `num_rows` * `num_cols` elements.
 
 Again, the  size parameters are optional, and arrays can be initialized as follows: 
 
-````
+```
 <type T> arrayName[size1,size2] = [[element, element],  [element, element, element],  ...  ]
-````
+```
 
 Here, all of the subarrays don't have to be the same length, and the array is initialized to be of dimensions `(maximum_subarray_size * number of subarrays)` with blank elements again initialized as zero. Note that this example is of a 2-dimensional aray, but 3-dimensional arrays are also supported with the same syntax.
 

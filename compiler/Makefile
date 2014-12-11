@@ -69,7 +69,7 @@
 #
 # The Caml sources (including camlyacc and camllex source files)
 
-SOURCES = scanner.mll 
+SOURCES = scanner.mll parser.mly ast.ml
 
 # The executable file to generate
 
@@ -192,6 +192,10 @@ clean::
 	rm -f $(EXEC)
 	rm -f $(EXEC).opt
 	rm -f scanner.ml
+	rm -f parser.mli
+	rm -f parser.ml
+	rm -f .depend
+	rm -f .depend.input
 
 .depend.input: Makefile
 	@echo -n '--Checking Ocaml input files: '

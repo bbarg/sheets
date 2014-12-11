@@ -69,7 +69,7 @@
 #
 # The Caml sources (including camlyacc and camllex source files)
 
-SOURCES = scanner.mll parser.mly
+SOURCES = scanner.mll parser.mly ast.ml
 
 # The executable file to generate
 

@@ -1,3 +1,20 @@
+# Wednesday, Dec 10th
+**arb2196** --- Current updates about status of parser/ast:
+
+Good:
+- Everything compiles with no shift/reduce errors
+
+Bad:
+- Currently, Structs are not supported,
+- Functions cannot call other functions
+- Variables must be declared and then initialized on a separate line
+
+I will continue to tackle these problems moving forward, but the bright
+side is that now that it compiles, everything else should be fine, meaning
+that we can work with this for vertical testing of specific features for
+the time being. If anyone tries to work with the working features and they 
+are *not* working, please let me know ASAP so I can look at it.
+
 # Saturday, Nov 8th
 
 **bbarg** --- We've realized several major issues in our attempts to write

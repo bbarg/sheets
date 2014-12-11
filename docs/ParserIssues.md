@@ -63,3 +63,13 @@ Should assignment operations be expressions in Sheets? (i.e, should
 something like `foo = 5` have a value?). Right now these are **NOT**
 supported.
 
+# Tue, November 11
+
+## NEW QUESTIONS
+
+`break` and `continue` can only occur inside of a loop. Do we create
+yet another statement classification for JUST loop scopes?
+
+## TO ADD
+
+- unary operators (bitwise not, logical not, negation)

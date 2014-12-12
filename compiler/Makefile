@@ -1,26 +1,7 @@
-OBJS = ast.cmo parser.cmo scanner.cmo 
-#compile.cmo execute.cmo microc.cmo
+OBJS = ast.cmo parser.cmo scanner.cmo print_ast.cmo
 
-#TESTS = arith1 arith2 arith3 arith4 \
-	fib \
-	for1 for2 \
-	func1 func2 func3 func4 func5 \
-	gcd \
-	global1 \
-	hello \
-	if1 if2	if3 if4 if5 \
-	ops1 \
-	var1 var2 var3 var4 \
-	stmts1 \
-	while1
-
-#TARFILES = Makefile testall.sh scanner.mll parser.mly \
-	ast.ml bytecode.ml interpret.ml compile.ml execute.ml microc.ml \
-	$(TESTS:%=tests/test-%.mc) \
-	$(TESTS:%=tests/test-%.out)
-
-microc : $(OBJS)
-	ocamlc -o microc $(OBJS)
+print_ast : $(OBJS)
+	ocamlc -o print_ast $(OBJS)
 
 .PHONY : test
 test : microc testall.sh
@@ -38,9 +19,6 @@ parser.ml parser.mli : parser.mly
 %.cmi : %.mli
 	ocamlc -w A -c $<
 
-microc.tar.gz : $(TARFILES)
-	cd .. && tar czf microc/microc.tar.gz $(TARFILES:%=microc/%)
-
 .PHONY : clean
 clean :
 	rm -f microc parser.ml parser.mli scanner.ml testall.log \
@@ -51,7 +29,8 @@ ast.cmo :
 ast.cmx :
 parser.cmo : ast.cmo parser.cmi
 parser.cmx : ast.cmx parser.cmi
+print_ast.cmo : scanner.cmo parser.cmi
+print_ast.cmx : scanner.cmx parser.cmx
+scanner.cmo : parser.cmi
+scanner.cmx : parser.cmx
 parser.cmi : ast.cmo
-scanner.cmo :
-scanner.cmx :
-

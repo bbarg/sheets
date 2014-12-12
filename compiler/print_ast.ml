@@ -1,17 +1,27 @@
 open Scanner;;
 open Parser;;
+open Printf;; 
+
 
 exception SyntaxError of int * int * string
   
 let print_vdecls vdecls = 
-  let f (_type, name, isConst, isStruct) =
-    Printf.printf "%s, %s\n" _type name
+  let f (v_type, v_name, isConst, isStruct) =
+    printf "DEBUG printing vdecl: v_type: %s, v_name: %s, isConst: %B, isStruct %B\n" v_type v_name isConst isStruct
   in List.map f vdecls
 ;;
-	   
+
+let print_sdecls sdecls =
+    let f (s_name, s_elements) =
+        printf "%s: <" s_name;
+        print_vdecls s_elements;
+        printf(">\n");
+    in List.map f sdecls
+;;
+
 let print_everything (vdecls, sdecls, fdecls) =
-  print_vdecls vdecls
-  (* print_decl_list sdecls; *)
+    print_vdecls vdecls;
+    print_sdecls sdecls
   (* print_decl_list fdecls; *)
 ;;
 

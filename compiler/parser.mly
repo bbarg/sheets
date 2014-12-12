@@ -8,9 +8,11 @@
 %{ 
     open Ast;;
 
-    (* [bbarg] function for accessing third element of tuple, we can
-    move this to a helper file if necessary *)
-    let trd (a, b, c) = c;;
+    (* [bbarg] functions for accessing elts of tuple, we can move this
+    to a helper file if necessary *)
+    let first (a, _, _) = a;;
+    let second (_, b, _) = b;;
+    let third (_, _, c) = c;;
 %}
 
 /////////////////////////////////////////////////////////////////////
@@ -86,10 +88,10 @@
 
 program:                        /* [vdecls], [sdecls], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
-    | program vdecl SEMI        { ($2 :: fst $1), snd $1, trd $1 }
-    | program fdecl             { fst $1, snd $1, ($2 :: trd $1) }
-    | program gfdecl            { fst $1, snd $1, ($2 :: snd $1) }
-    | program sdecl             { fst $1, ($2 :: fst $1), snd $1 }
+    | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
+    | program fdecl             { first $1, second $1, ($2 :: third $1) }
+    | program gfdecl            { first $1, second $1, ($2 :: second $1) }
+    | program sdecl             { first $1, ($2 :: first $1), second $1 }
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////
@@ -234,7 +236,7 @@ stmt:
     | IF bool_block block_body %prec NOELSE             { If($2, $3, []) }   
     | IF bool_block block_body ELSE block_body          { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 block_body            { For($2, $3, $4, $5) }
-    | FOR ID IN ID COLON block_body                     { Forin($2, $4, $6) }
+    | FOR ID IN ID COLON block_body                     { ForIn($2, $4, $6) }
     | WHILE bool_block block_body                       { While($2, $3) }
   /* TODO: figure this out */
 
@@ -248,7 +250,7 @@ gstmt:
     | IF bool_block gblock_body %prec NOELSE            { If($2, $3, []) }   
     | IF bool_block gblock_body ELSE gblock_body        { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
-    | FOR ID IN ID COLON gblock_body                    { Forin($2, $4, $6) }
+    | FOR ID IN ID COLON gblock_body                    { ForIn($2, $4, $6) }
     | WHILE bool_block gblock_body                      { While($2, $3) }
 
 bool_block: LPAREN bool_expr RPAREN                     { $2 }

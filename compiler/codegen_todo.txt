@@ -1,0 +1,5 @@
+1. AST printout (EVERYTHING)
+2. List of symbols: variables and functions
+3. Print out all statements with a given operator
+4. Manual translation of test program to OpenCL
+

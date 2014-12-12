@@ -1,7 +1,7 @@
 /*
  * Sheets parser
  *
- * Authors: Ben Barg, Amelia Brunner
+ * Authors: Ben Barg, Amelia Brunner, Gabriel Blanco
  * Copyright 2014, Symposium Software
  */
 
@@ -30,11 +30,14 @@
 %token INT LONG FLOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK BOOL
 
 /* Operator Tokens */
-%token LOR LAND OR XOR NOT AND EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT
+%token LOR LAND OR XOR NOT AND 
+%token EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT
 %token PLUS MINUS TIMES DIVIDE MOD ASSIGN NEG
-%token G_LOR G_LAND G_OR G_XOR G_AND G_NOT G_EQ G_NEQ G_LT G_LEQ G_GT
-%token G_LSHIFT G_RSHIFT G_PLUS G_MINUS G_TIMES G_DIVIDE G_MOD 
-%token G_ASSIGN G_NEG
+
+/* G Operator Tokens */
+%token G_LOR G_LAND G_OR G_XOR G_NOT G_AND 
+%token G_EQ G_NEQ G_LT G_LEQ G_GT G_GEQ G_LSHIFT G_RSHIFT 
+%token G_PLUS G_MINUS G_TIMES G_DIVIDE G_MOD G_ASSIGN G_NEG
 
 %token <int> INT_LITERAL
 %token <string> STRING_LITERAL
@@ -49,16 +52,22 @@
 
 %token <string> ID
 
-
-/* Precedence definition */
-%left LOR LAND OR XOR NOT AND EQ NEQ LT LEQ GT GEQ LSHIFT RSHIFT
-%left PLUS MINUS TIMES DIVIDE MOD
-%left G_LOR G_LAND G_OR G_XOR G_AND G_NOT G_EQ G_NEQ G_LT G_LEQ G_GT
-%left G_LSHIFT G_RSHIFT G_PLUS G_MINUS G_TIMES G_DIVIDE G_MOD 
-
-%right ASSIGN G_ASSIGN NEG G_NEG
-
+/* Precedence Definition */
 %nonassoc NOELSE ELSE
+
+%right ASSIGN G_ASSIGN
+
+%left EQ NEQ G_EQ G_NEQ
+%left LAND LOR G_LAND G_LOR
+%left LT LEQ GT GEQ G_LT G_LEQ G_GT G_GEQ
+%left AND OR XOR NOT G_AND G_OR G_XOR G_NOT 
+
+%left PLUS MINUS G_PLUS G_MINUS
+%left TIMES DIVIDE G_TIMES G_DIVIDE
+%left MOD G_MOD
+
+%left LSHIFT RSHIFT G_LSHIFT G_RSHIFT
+%right NEG G_NEG
 
 /////////////////////////////////////////////////////////////////////
 ////////////////////////PROGRAM PARSING//////////////////////////////
@@ -69,59 +78,61 @@
 
 %%
 
-/* Main Program */
-program:
-                                /* [vdecls], [sdecls], [fdecls] */
-      /* empty program */       { [], [], [] } 
-    | program vdecl             { ($2 :: fst $1), snd $1 }
+/* Grammar Rules */
+
+program:                        /* [vdecls], [sdecls], [fdecls] */
+    | /* Empty Program */       { [], [], [] } 
+    | program vdecl SEMI        { ($2 :: fst $1), snd $1 }
     | program fdecl             { fst $1, ($2 :: snd $1) }
     | program gfdecl            { fst $1, ($2 :: snd $1) }
     | program sdecl             { ($2 :: fst $1), snd $1 }
-
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-/* func int named_func(args):{; <statements>... }; */
+/* func int named_func(args):{ <statements>... }; */
 fdecl:
-   FUNC type_name ID LPAREN formals_opt RPAREN COLON 
-   LBRACE SEMI vdecl_list stmt_list RBRACE SEMI
-   { { 
-       fname   = $3;                    (* function name *)
-       formals = $5;                    (* argument list *)
-       locals  = List.rev $10;          (* local variable list *)
-       body    = List.rev $11           (* normal statement list *)
-       gfunc   = false;
-       blocksize = 0
-    } }
+    FUNC type_name ID LPAREN formals_opt RPAREN COLON 
+    LBRACE vdecl_list_opt stmt_list_opt RBRACE
+    {{
+        fname     = $3;                  (* function name *)
+        formals   = $5;                  (* argument list *)
+        locals    = $9;                  (* local variable list *)
+        body      = $10;                 (* normal statement list *)
+        gfunc     = false;
+        blocksize = 0
+    }}
 
-/* gfunc int named_gfunc(args).[5]:{; <statements>... }; */
+/* gfunc int named_gfunc(args).[5]:{ <statements>... }; */
 gfdecl:
-   GFUNC type_name ID LPAREN formals_opt RPAREN PERIOD LBRACK INT_LITERAL 
-   RBRACK COLON LBRACE SEMI vdecl_list gfunc_stmt_list RBRACE SEMI
-   { { 
-       fname   = $3;                    (* gfunc name *)
-       formals = $5;                    (* argument list *)
-       locals  = List.rev $14;          (* local variable list *)
-       body    = List.rev $15;          (* gfunc statement list *)
-       gfunc   = true;
-       blocksize = $9                   (* block size *)
-   } }
+    GFUNC type_name ID LPAREN formals_opt RPAREN blocksize COLON 
+    LBRACE vdecl_list_opt gfunc_stmt_list_opt RBRACE
+    {{
+        fname     = $3;                    (* gfunc name *)
+        formals   = $5;                    (* argument list *)
+        locals    = $10;                   (* local variable list *)
+        body      = $11;                   (* gfunc statement list *)
+        gfunc     = true;
+        blocksize = $7                   (* block size *)
+    }}
 
 /* TODO: Calling functions from inside other functions? */
 /* TODO: mixed variable/statements */
 
 /* we give the option of having no arguments with this switch */
 formals_opt:
-      /* nothing */                     { [] }
-    | formal_list                       { List.rev $1 }
+    | /* Nothing */                        { [] }
+    | formal_list                          { List.rev $1 }
 
-// if there is content in the arguments, it needs to  be a 
-// list of variable declarations separated by commas
+/* Arguments are declared as a list of variables delimitted by commas */
 formal_list:
-      vdecl_ln                             { [$1] }
-    | formal_list COMMA vdecl_ln           { $3 :: $1 }
+    | vdecl                                { [$1] }
+    | formal_list COMMA vdecl              { $3 :: $1 }
+
+blocksize:
+    | /* Nothing */                        { 1 }
+    | PERIOD LBRACK INT_LITERAL RBRACK     { $3 }
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////VARIABLES/////////////////////////////////
@@ -129,34 +140,24 @@ formal_list:
 
 /* <const> <type> name */
 vdecl:
-    const str type_name ID SEMI
-    { { 
-        _type = $3;                     (* variable type *)
-        name = $4;                      (* variable name *)
-        isConst = $1;                   (* true or false for if const *)
-        isStruct = $2                        (* true or false for if a struct *)
-    } }
-
-vdecl_ln:
     const str type_name ID
-    { { 
-        _type = $3;                     (* variable type *)
-        name = $4;                      (* variable name *)
-        isConst = $1;                   (* true or false for if const *)
-        str = $2                        (* true or false for if a struct *)
-    } }
-
-
-str:
-      STRUCT                            { true }
-    | /* not struct */                  { false }
+    {{ 
+        _type    = $3;                  (* variable type *)
+        name     = $4;                  (* variable name *)
+        isConst  = $1;                  (* true or false for if const *)
+        isStruct = $2                   (* true or false for if a struct *)
+    }}
 
 const:
-      CONST                             { true }
-    | /* not const */                   { false }
+    | /* Nothing */                     { false }
+    | CONST                             { true }
+
+str:
+    | /* Nothing */                     { false }
+//    | STRUCT                            { true }
 
 type_name:
-      INT                               { "int" } 
+    | INT                               { "int" }
     | FLOAT                             { "float" }
     | LONG                              { "long" }
     | DOUBLE                            { "double" }
@@ -164,31 +165,43 @@ type_name:
     | CHAR                              { "char" }
     | BOOL                              { "bool" }
 
-vdecl_list:
-     vdecl_list vdecl SEMI              { $2 :: $1 }
-    |  /* nothing */                     { [] }
+vdecl_list_opt:
+    | /* Nothing */                     { [] }
+    | vdecl_list                        { List.rev $1 }
 
+vdecl_list:
+    | vdecl                             { [$1] }
+    | vdecl_list vdecl SEMI             { $2 :: $1 }
 
 sdecl:
-    STRUCT ID COLON LBRACE SEMI vdecl_list RBRACE SEMI
-    { {
+    STRUCT ID COLON LBRACE vdecl_list RBRACE
+    {{
         name = $2;
-        elements = List.rev $6
-    } }
+        elements = List.rev $5
+    }}
+
 
 /////////////////////////////////////////////////////////////////////
 //////////////////////////STATEMENTS/////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
+stmt_list_opt:
+    | /* Nothing */                    { [] }
+    | stmt_list                        { List.rev $1 }
+
 stmt_list:
-      /* nothing */                     { [] }
-    | stmt_list stmt                { $2 :: $1 }
+    | stmt                             { [$1] }    
+    | stmt_list stmt                   { $2 :: $1 }
+
+gfunc_stmt_list_opt:
+    | /* Nothing */                    { [] }
+    | gfunc_stmt_list                  { List.rev $1 }
 
 gfunc_stmt_list:
-      /* nothing */                     { [] }
-    | gfunc_stmt_list gstmt        { $2 :: $1 }
+    | gstmt                            { [$1] }
+    | gfunc_stmt_list gstmt            { $2 :: $1 }
 
-/*                  Note about gstmt vs stmts:
+/*    Note about gstmt vs stmts:
  *  The difference between these two is that gstmts are the
  *  statements that are allowed to be called within gfuncs and
  *  stmts are the statements that are allowed to be called within
@@ -199,19 +212,19 @@ gfunc_stmt_list:
  *  gstmts are DIFFERENT from statements containing gpu-expressions!
  * 
  * Some formatting assumptions:
- * for( <expr_opt>; <bool_expr_opt>; <expr_opt> ){; <statements> };
- * for <variable name> in <array name> : {; <statements> }; 
- * if( <bool_expr> ){; <statements> };
- * if( <bool_expr> ){; <statements> }; else {; <statements> }; 
+ * for( <expr_opt>; <bool_expr_opt>; <expr_opt> ){ <statements> };
+ * for <variable name> in <array name> : { <statements> }; 
+ * if( <bool_expr> ){ <statements> };
+ * if( <bool_expr> ){ <statements> }; else {; <statements> }; 
  */
 
 stmt:
-      expr SEMI                                         { Expr($1) }
+    | expr SEMI                                         { Expr($1) }
     | gexpr SEMI                                        { Expr($1) }
     | RETURN expr SEMI                                  { Return($2) }
     | RETURN gexpr SEMI                                 { Return($2) }
-  //  | vdecl_ln ASSIGN expr SEMI                         { Assign($1, $3) }
-  //  | vdecl_ln ASSIGN gexpr SEMI                        { Assign($1, $3) }
+//    | vdecl ASSIGN expr SEMI                            { Assign($1, $3) }
+//    | vdecl ASSIGN gexpr SEMI                           { Assign($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }
     | IF bool_block block_body %prec NOELSE             { If($2, $3, []) }   
@@ -219,13 +232,13 @@ stmt:
     | FOR for_pt1 for_pt2 for_pt3 block_body            { For($2, $3, $4, $5) }
     | FOR ID IN ID COLON block_body                     { Forin($2, $4, $6) }
     | WHILE bool_block block_body                       { While($2, $3) }
-//TODO: figure this out
+  /* TODO: figure this out */
 
 gstmt:
-      expr SEMI                                         { Expr($1) }
+    | expr SEMI                                         { Expr($1) }
     | blockexpr SEMI                                    { Expr($1) }
-   // | vdecl_ln ASSIGN expr SEMI                            { Assign($1, $3) }
-   // | vdecl_ln ASSIGN blockexpr SEMI                       { Assign($1, $3) }
+//    | vdecl ASSIGN expr SEMI                            { Assign($1, $3) }
+//    | vdecl ASSIGN blockexpr SEMI                       { Assign($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }
     | IF bool_block gblock_body %prec NOELSE            { If($2, $3, []) }   
@@ -233,7 +246,6 @@ gstmt:
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
     | FOR ID IN ID COLON gblock_body                    { Forin($2, $4, $6) }
     | WHILE bool_block gblock_body                      { While($2, $3) }
-
 
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
 
@@ -247,29 +259,28 @@ for_pt3: expr_opt RPAREN                                { $1 }
     
 /* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
-     /* Nothing */                                      { [] }
-    | stmt_list SEMI                                   { $1 }
+    | /* Nothing */                                     { [] }
+    | stmt_list SEMI                                    { $1 }
     | loop_stmt_list loopexpr SEMI                      { $2 :: $1 }
 
 gloop_stmt_list:
-    /* Nothing */                                       { [] }
-    | gfunc_stmt_list SEMI                             { $1 }
+    | /* Nothing */                                     { [] } 
+    | gfunc_stmt_list SEMI                              { $1 }
     | gloop_stmt_list loopexpr SEMI                     { $2 :: $1 }
-
 
 /////////////////////////////////////////////////////////////////////
 //////////////////////////EXPRESSIONS////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
 loopexpr:
-    CONTINUE                          { Continue }
+    | CONTINUE                        { Continue }
     | BREAK                           { Break }
 
 blockexpr:
     BLOCK PERIOD ID                   { StructID("Block", $3) }
 
 bool_expr:
-      expr EQ expr                    { Binop($1, Equal, $3) }
+    | expr EQ expr                    { Binop($1, Equal, $3) }
     | expr NEQ expr                   { Binop($1, Neq, $3) }
     | expr LT expr                    { Binop($1, Less, $3) }
     | expr LEQ expr                   { Binop($1, Leq, $3) }
@@ -279,15 +290,15 @@ bool_expr:
     | expr LOR expr                   { Binop($1, Lor, $3) }
 
 expr_opt:
-      /* Nothing */                   { Noexpr }
+    | /* Nothing */                   { Noexpr }
     | expr                            { $1 }
 
 bool_expr_opt:
-      /* Nothing */                   { True }
+    | /* Nothing */                   { True }
     | bool_expr                       { $1 }
 
 literal:
-      INT_LITERAL                     { Literal($1) }
+    | INT_LITERAL                     { Literal($1) }
     | CHAR_LITERAL                    { Literal($1) }
     | FLOAT_LITERAL                   { Literal($1) }
     | INT_ARRAY_LITERAL               { Literal($1) }
@@ -302,9 +313,9 @@ literal:
     * those with blocks
     * comparison operators */
 expr:
-      literal                         { $1 }
+    | literal                         { $1 }
     | ID                              { Id($1) }
- //   | ID PERIOD ID                    { StructID($1, $3) }
+    | ID PERIOD ID                    { StructID($1, $3) }
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }
     | expr NOT expr                   { Binop($1, Not, $3) }
@@ -331,6 +342,4 @@ gexpr:
     | gexpr G_MOD gexpr               { Binop($1, Mod, $3) }
     | gexpr G_NEG gexpr               { Binop($1, Neg, $3) }
     | LPAREN gexpr RPAREN             { $2 }
-
-
 

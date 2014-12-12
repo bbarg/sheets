@@ -21,6 +21,7 @@ type stmt =		      (* statements that can occur in funcs *)
   | If of expr * stmt * stmt 
   | For of expr * expr * expr * stmt
   | While of expr * stmt
+  | ForIn of expr * expr * stmt
 
 type vdecl = {
     _type     : string;	   (* PARSER *)

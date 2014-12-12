@@ -24,9 +24,9 @@ let print_sdefs sdefs =
   in List.iter f sdefs
 ;;
 
-let print_everything (vdecls, sdecls, fdecls) =
+let print_everything (vdecls, sdefs, fdecls) =
     print_vdecls vdecls;
-    print_sdecls sdecls
+    print_sdefs sdefs
   (* print_decl_list fdecls; *)
 ;;
 

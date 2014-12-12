@@ -6,7 +6,11 @@
  */
 
 %{ 
-    open Ast 
+    open Ast;;
+
+    (* [bbarg] function for accessing third element of tuple, we can
+    move this to a helper file if necessary *)
+    let trd (a, b, c) = c;;
 %}
 
 /////////////////////////////////////////////////////////////////////
@@ -78,14 +82,14 @@
 
 %%
 
-/* Grammar Rules */
+/* Grammar Rules */       
 
 program:                        /* [vdecls], [sdecls], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
-    | program vdecl SEMI        { ($2 :: fst $1), snd $1 }
-    | program fdecl             { fst $1, ($2 :: snd $1) }
-    | program gfdecl            { fst $1, ($2 :: snd $1) }
-    | program sdecl             { ($2 :: fst $1), snd $1 }
+    | program vdecl SEMI        { ($2 :: fst $1), snd $1, trd $1 }
+    | program fdecl             { fst $1, snd $1, ($2 :: trd $1) }
+    | program gfdecl            { fst $1, snd $1, ($2 :: snd $1) }
+    | program sdecl             { fst $1, ($2 :: fst $1), snd $1 }
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////

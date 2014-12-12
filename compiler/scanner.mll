@@ -1,5 +1,5 @@
 { 
-    open parser;;
+    open Parser;;
 }
 
 let num = ['0'-'9']

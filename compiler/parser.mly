@@ -90,8 +90,8 @@ program:                        /* [vdecls], [sdecls], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
     | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
     | program fdecl             { first $1, second $1, ($2 :: third $1) }
-    | program gfdecl            { first $1, second $1, ($2 :: second $1) }
-    | program sdecl             { first $1, ($2 :: first $1), second $1 }
+    | program gfdecl            { first $1, second $1, ($2 :: third $1) }
+    | program sdecl             { first $1, ($2 :: second $1), third $1 }
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////
@@ -148,8 +148,8 @@ blocksize:
 vdecl:
     const str type_name ID
     {{ 
-        _type    = $3;                  (* variable type *)
-        name     = $4;                  (* variable name *)
+        v_type   = $3;                  (* variable type *)
+        v_name   = $4;                  (* variable name *)
         isConst  = $1;                  (* true or false for if const *)
         isStruct = $2                   (* true or false for if a struct *)
     }}
@@ -182,8 +182,8 @@ vdecl_list:
 sdecl:
     STRUCT ID COLON LBRACE vdecl_list RBRACE
     {{
-        name = $2;
-        elements = List.rev $5
+        s_name = $2;
+        s_elements = List.rev $5
     }}
 
 
@@ -233,10 +233,11 @@ stmt:
 //    | vdecl ASSIGN gexpr SEMI                           { Assign($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }
-    | IF bool_block block_body %prec NOELSE             { If($2, $3, []) }   
+    | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
+    | IF bool_block block_body %prec NOELSE             { If($2, $3, Block[] ) }   
     | IF bool_block block_body ELSE block_body          { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 block_body            { For($2, $3, $4, $5) }
-    | FOR ID IN ID COLON block_body                     { ForIn($2, $4, $6) }
+    | FOR ID IN ID COLON block_body                     { ForIn(Id($2),Id($4), $6) }
     | WHILE bool_block block_body                       { While($2, $3) }
   /* TODO: figure this out */
 
@@ -247,17 +248,17 @@ gstmt:
 //    | vdecl ASSIGN blockexpr SEMI                       { Assign($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }
-    | IF bool_block gblock_body %prec NOELSE            { If($2, $3, []) }   
+    | IF bool_block gblock_body %prec NOELSE            { If($2, $3, Block([])) }   
     | IF bool_block gblock_body ELSE gblock_body        { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
-    | FOR ID IN ID COLON gblock_body                    { ForIn($2, $4, $6) }
+    | FOR ID IN ID COLON gblock_body                    { ForIn(Id($2), Id($4), $6) }
     | WHILE bool_block gblock_body                      { While($2, $3) }
 
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
 
 /* note that loop_stmt_list can be used from inside if/else blocks */
-block_body:  LBRACE SEMI loop_stmt_list RBRACE SEMI     { List.rev $3 }
-gblock_body: LBRACE SEMI gloop_stmt_list RBRACE SEMI    { List.rev $3 }
+block_body:  LBRACE SEMI loop_stmt_list RBRACE SEMI     { Block(List.rev $3) }
+gblock_body: LBRACE SEMI gloop_stmt_list RBRACE SEMI    { Block(List.rev $3) }
 
 for_pt1: LPAREN expr_opt SEMI                           { $2 }
 for_pt2: bool_expr_opt SEMI                             { $1 }
@@ -283,7 +284,7 @@ loopexpr:
     | BREAK                           { Break }
 
 blockexpr:
-    BLOCK PERIOD ID                   { StructID("Block", $3) }
+    BLOCK PERIOD ID                   { StructId("Block", $3) }
 
 bool_expr:
     | expr EQ expr                    { Binop($1, Equal, $3) }
@@ -300,20 +301,20 @@ expr_opt:
     | expr                            { $1 }
 
 bool_expr_opt:
-    | /* Nothing */                   { True }
+    | /* Nothing */                   { Noexpr }
     | bool_expr                       { $1 }
 
 literal:
-    | INT_LITERAL                     { Literal($1) }
-    | CHAR_LITERAL                    { Literal($1) }
-    | FLOAT_LITERAL                   { Literal($1) }
-    | INT_ARRAY_LITERAL               { Literal($1) }
-    | CHAR_ARRAY_LITERAL              { Literal($1) }
-    | FLOAT_ARRAY_LITERAL             { Literal($1) }
-    | STRING_LITERAL                  { Literal($1) }
-    | STRING_ARRAY_LITERAL            { Literal($1) }
-    | BOOL_LITERAL                    { Literal($1) }
-    | BOOL_ARRAY_LITERAL              { Literal($1) }
+    | INT_LITERAL                     { Literal_int($1) }
+    | CHAR_LITERAL                    { Literal_char($1) }
+    | FLOAT_LITERAL                   { Literal_float($1) }
+    | INT_ARRAY_LITERAL               { Literal_int_a($1) }
+    | CHAR_ARRAY_LITERAL              { Literal_char_a($1) }
+    | FLOAT_ARRAY_LITERAL             { Literal_float_a($1) }
+    | STRING_LITERAL                  { Literal_string($1) }
+    | STRING_ARRAY_LITERAL            { Literal_string_a($1) }
+    | BOOL_LITERAL                    { Literal_bool($1) }
+    | BOOL_ARRAY_LITERAL              { Literal_bool_a($1) }
 
 /* expr are all the expressions EXCEPT:
     * those with blocks
@@ -321,14 +322,14 @@ literal:
 expr:
     | literal                         { $1 }
     | ID                              { Id($1) }
-    | ID PERIOD ID                    { StructID($1, $3) }
+    | ID PERIOD ID                    { StructId($1, $3) }
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }
     | expr NOT expr                   { Binop($1, Not, $3) }
     | expr LSHIFT expr                { Binop($1, Lshift, $3) }
     | expr RSHIFT expr                { Binop($1, Rshift, $3) }
     | expr PLUS expr                  { Binop($1, Plus, $3) }
-    | expr MINUS expr                 { Binop($1, Minus $3) }
+    | expr MINUS expr                 { Binop($1, Minus, $3) }
     | expr TIMES expr                 { Binop($1, Times, $3) }
     | expr DIVIDE expr                { Binop($1, Divide, $3) }
     | expr MOD expr                   { Binop($1, Mod, $3) }
@@ -342,7 +343,7 @@ gexpr:
     | gexpr G_LSHIFT gexpr            { Binop($1, Lshift, $3) }
     | gexpr G_RSHIFT gexpr            { Binop($1, Rshift, $3) }
     | gexpr G_PLUS gexpr              { Binop($1, Plus, $3) }
-    | gexpr G_MINUS gexpr             { Binop($1, Minus $3) }
+    | gexpr G_MINUS gexpr             { Binop($1, Minus, $3) }
     | gexpr G_TIMES gexpr             { Binop($1, Times, $3) }
     | gexpr G_DIVIDE gexpr            { Binop($1, Divide, $3) }
     | gexpr G_MOD gexpr               { Binop($1, Mod, $3) }

@@ -1,17 +1,24 @@
 type op = Or | Xor | Not | Lshift | Rshift | 
-          Plus | Minus | Times | Divide | Mod | Neg
-
-type type_ = INT_LITERAL | CHAR_LITERAL | FLOAT_LITERAL | 
-             INT_ARRAY_LITERAL | CHAR_ARRAY_LITERAL | FLOAT_ARRAY_LITERAL |
-             STRING_LITERAL | STRING_ARRAY_LITERAL | BOOL_LITERAL | 
-             BOOL_ARRAY_LITERAL
+          Plus | Minus | Times | Divide | Mod | Neg |
+          Equal | Neq | Less | Leq | Greater | Geq |
+          Land | Lor
 
 type expr = 
-    Literal of type_
+    Literal_int of int
+  | Literal_char of char
+  | Literal_float of float
+  | Literal_string of string
+  | Literal_bool of bool
+  | Literal_int_a of int list
+  | Literal_char_a of char list
+  | Literal_float_a of float list
+  | Literal_string_a of string list
+  | Literal_bool_a of bool list
   | Noexpr
   | Id of string
   | Binop of expr * op * expr
   | Call of string * expr list
+  | StructId of string * string
 
 type stmt =		      (* statements that can occur in funcs *)
     Block of stmt list
@@ -22,10 +29,12 @@ type stmt =		      (* statements that can occur in funcs *)
   | For of expr * expr * expr * stmt
   | While of expr * stmt
   | ForIn of expr * expr * stmt
+  | Continue
+  | Break
 
 type vdecl = {
-    _type     : string;	   (* PARSER *)
-    name      : string;
+    v_type    : string;	   (* PARSER *)
+    v_name    : string;
     isConst   : bool;
     isStruct  : bool;
 } 
@@ -40,8 +49,8 @@ type fdecl = {			   (* func declaration *)
 }
 
 type sdecl = {			   (* struct declaration *)
-    name      : string;
-    elements  : vdecl list;
+    s_name     : string;
+    s_elements : vdecl list;
 }
 
 type program = vdecl list * sdecl list * fdecl list

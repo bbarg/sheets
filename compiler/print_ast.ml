@@ -18,7 +18,7 @@ let print_vdecls vdecls =
 let print_sdefs sdefs =
   let f { s_name     = s_name;
 	  s_elements = s_elements; } =
-    printf "%s: <" s_name;
+    printf "DEBUG printing sdefs: s_name=%s: s_elements=<" s_name;
     print_vdecls s_elements;
     printf(">\n");
   in List.iter f sdefs

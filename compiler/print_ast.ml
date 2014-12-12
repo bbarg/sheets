@@ -1,9 +1,11 @@
 open Scanner;;
 open Parser;;
+open Printf;; 
+
 
 let print_vdecls vdecls = 
-  let f (_type, name, isConst, isStruct) =
-    Printf.printf "%s, %s\n" _type name
+  let f (v_type, v_name, isConst, isStruct) =
+    printf "DEBUG printing vdecl: v_type: %s, v_name: %s, isConst: %B, isStruct %B\n" v_type v_name isConst isStruct
   in List.map f vdecls
 ;;
 	   

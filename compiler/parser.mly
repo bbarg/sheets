@@ -320,6 +320,7 @@ array_expr:
 
 assign_expr:
     | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }   
+    | LPAREN assign_expr RPAREN       { $2 }
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
 

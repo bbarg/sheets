@@ -39,6 +39,8 @@ type vdecl = {
 } 
 
 type fdecl = {			   (* func declaration *)
+    r_type    : string;
+    r_struct  : bool;
     fname     : string;
     formals   : vdecl list;	   
     locals    : vdecl list;

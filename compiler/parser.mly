@@ -97,6 +97,8 @@ fdecl:
     FUNC type_name ID LPAREN formals_opt RPAREN COLON 
     LBRACE vdecl_list_opt stmt_list_opt RBRACE
     {{
+        r_type    = fst $2;
+        r_struct  = snd $2;
         fname     = $3;                  (* function name *)
         formals   = $5;                  (* argument list *)
         locals    = $9;                  (* local variable list *)
@@ -110,6 +112,8 @@ gfdecl:
     GFUNC type_name ID LPAREN formals_opt RPAREN blocksize COLON 
     LBRACE vdecl_list_opt gfunc_stmt_list_opt RBRACE
     {{
+        r_type    = fst $2;
+        r_struct  = snd $2;
         fname     = $3;                  (* gfunc name *)
         formals   = $5;                  (* argument list *)
         locals    = $10;                 (* local variable list *)

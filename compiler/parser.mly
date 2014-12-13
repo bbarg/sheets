@@ -10,9 +10,9 @@
 
     (* [bbarg] functions for accessing elts of tuple, we can move this
     to a helper file if necessary *)
-    let first (a, _, _) = a;;
+    let first  (a, _, _) = a;;
     let second (_, b, _) = b;;
-    let third (_, _, c) = c;;
+    let third  (_, _, c) = c;;
 %}
 
 /////////////////////////////////////////////////////////////////////
@@ -86,12 +86,12 @@
 
 /* Grammar Rules */       
 
-program:                        /* [vdecls], [sdecls], [fdecls] */
+program:                        /* [vdecls], [sdef], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
     | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
+    | program sdef              { first $1, ($2 :: second $1), third $1 }    
     | program fdecl             { first $1, second $1, ($2 :: third $1) }
     | program gfdecl            { first $1, second $1, ($2 :: third $1) }
-    | program sdecl             { first $1, ($2 :: second $1), third $1 }
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////
@@ -106,7 +106,7 @@ fdecl:
         formals   = $5;                  (* argument list *)
         locals    = $9;                  (* local variable list *)
         body      = $10;                 (* normal statement list *)
-        gfunc     = false;
+        isGfunc   = false;               (* false b/c not a gfunc *)
         blocksize = 0
     }}
 
@@ -115,11 +115,11 @@ gfdecl:
     GFUNC type_name ID LPAREN formals_opt RPAREN blocksize COLON 
     LBRACE vdecl_list_opt gfunc_stmt_list_opt RBRACE
     {{
-        fname     = $3;                    (* gfunc name *)
-        formals   = $5;                    (* argument list *)
-        locals    = $10;                   (* local variable list *)
-        body      = $11;                   (* gfunc statement list *)
-        gfunc     = true;
+        fname     = $3;                  (* gfunc name *)
+        formals   = $5;                  (* argument list *)
+        locals    = $10;                 (* local variable list *)
+        body      = $11;                 (* gfunc statement list *)
+        isGfunc   = true;                (* true b/c a gfunc *)
         blocksize = $7                   (* block size *)
     }}
 
@@ -146,30 +146,28 @@ blocksize:
 
 /* <const> <type> name */
 vdecl:
-    const str type_name ID
+    const type_name ID
     {{ 
-        v_type   = $3;                  (* variable type *)
-        v_name   = $4;                  (* variable name *)
+        v_type   = fst $2;              (* variable type *)
+        v_name   = $3;                  (* variable name *)
         isConst  = $1;                  (* true or false for if const *)
-        isStruct = $2                   (* true or false for if a struct *)
+        isStruct = snd $2               (* true or false for if a struct *)
     }}
 
 const:
     | /* Nothing */                     { false }
     | CONST                             { true }
 
-str:
-    | /* Nothing */                     { false }
-//    | STRUCT                            { true }
-
 type_name:
-    | INT                               { "int" }
-    | FLOAT                             { "float" }
-    | LONG                              { "long" }
-    | DOUBLE                            { "double" }
-    | STRING                            { "string" }
-    | CHAR                              { "char" }
-    | BOOL                              { "bool" }
+    | INT                               { ("int",    false) }
+    | FLOAT                             { ("float",  false) }
+    | LONG                              { ("long",   false) }
+    | DOUBLE                            { ("double", false) }
+    | STRING                            { ("string", false) }
+    | CHAR                              { ("char",   false) }
+    | BOOL                              { ("bool",   false) }
+    /* TODO: find out why this line produces Shift/Reduce conflict */
+    //| STRUCT ID                         { ($2,       true) }
 
 vdecl_list_opt:
     | /* Nothing */                     { [] }
@@ -179,7 +177,7 @@ vdecl_list:
     | vdecl                             { [$1] }
     | vdecl_list vdecl SEMI             { $2 :: $1 }
 
-sdecl:
+sdef:
     STRUCT ID COLON LBRACE vdecl_list RBRACE
     {{
         s_name = $2;
@@ -286,6 +284,10 @@ loopexpr:
 blockexpr:
     BLOCK PERIOD ID                   { StructId("Block", $3) }
 
+bool_expr_opt:
+    | /* Nothing */                   { Noexpr }
+    | bool_expr                       { $1 }
+
 bool_expr:
     | expr EQ expr                    { Binop($1, Equal, $3) }
     | expr NEQ expr                   { Binop($1, Neq, $3) }
@@ -295,14 +297,6 @@ bool_expr:
     | expr GEQ expr                   { Binop($1, Geq, $3) }
     | expr LAND expr                  { Binop($1, Land, $3) }
     | expr LOR expr                   { Binop($1, Lor, $3) }
-
-expr_opt:
-    | /* Nothing */                   { Noexpr }
-    | expr                            { $1 }
-
-bool_expr_opt:
-    | /* Nothing */                   { Noexpr }
-    | bool_expr                       { $1 }
 
 literal:
     | INT_LITERAL                     { Literal_int($1) }
@@ -319,10 +313,16 @@ literal:
 /* expr are all the expressions EXCEPT:
     * those with blocks
     * comparison operators */
+
+expr_opt:
+    | /* Nothing */                   { Noexpr }
+    | expr                            { $1 }
+
 expr:
     | literal                         { $1 }
     | ID                              { Id($1) }
     | ID PERIOD ID                    { StructId($1, $3) }
+    | expr AND expr                    { Binop($1, And, $3) }    
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }
     | expr NOT expr                   { Binop($1, Not, $3) }

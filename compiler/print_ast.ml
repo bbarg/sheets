@@ -24,6 +24,41 @@ let print_sdefs sdefs =
   in List.iter f sdefs
 ;;
 
+let print_ops = function
+      Plus -> "+"
+    | Minus -> "-"
+    | Times -> "*"
+    | Divide -> "/"
+    | Mod -> "%"
+    | Neg -> "-"
+    | Equal -> "="
+    | Neq -> "!="
+    | Less -> "<"
+    | Leq -> "<="
+    | Greater -> ">"
+    | Geq -> ">="
+    | Or -> "|"
+    | Xor -> "^"
+    | Not -> "~"
+    | Lshift -> "<<"
+    | Rshift -> ">>"
+    | Land -> "&&"
+    | Lor -> "||"
+
+let print_expr expr =
+      Id s -> printf "ID=%s" s
+    | Binop(e1, o, e2)
+    | Call
+    | StructId(struct_type, var_name) -> printf "StructId: struct_type=%s,
+    var_name=%s" struct_type var_name
+    | _->"Literal or invalid expr"
+;;
+
+let print_funcs fdecls =
+    let f 
+    in List.iter fdecls f
+;;
+
 let print_everything (vdecls, sdefs, fdecls) =
     print_vdecls vdecls;
     print_sdefs sdefs

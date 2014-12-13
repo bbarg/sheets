@@ -20,7 +20,8 @@
 open Ast;;
 open Environment;;
 
-exception SyntaxError of int * int * string;;  
+exception SyntaxError of int * int * string;;
+exception NotImplementedError of string;;
 
 (* generate the C representation of an individual vdecl *)
 let c_vdecl_no_semi vdecl =
@@ -33,14 +34,43 @@ let c_vdecl_no_semi vdecl =
   (prefix vdecl) ^ vdecl.v_type ^ " " ^ vdecl.v_name
 ;;							       
 
+let process_vdecl (env, text) vdecl =
+    (* will throw NameAlreadyBoundError *)
+  (add_var vdecl env, text ^ (c_vdecl_no_semi vdecl) ^ ";\n")
+;;    
+  
 (* return updated table and a generated C string of the var-decs *)
 let gen_global_vdecls (vdecls, _, _) env =
-  let process_vdecl (env, text) vdecl =
-    (* will throw NameAlreadyBoundError *)
-    (add_var vdecl env, text ^ (c_vdecl_no_semi vdecl) ^ ";\n")
-  in
   List.fold_left process_vdecl (env, "") (List.rev vdecls)
 ;;
+
+(* take in the existing environment and generated c code (text)
+   and a list of statements and processes each statement in order
+
+   return the updated environment and generated code *)
+let rec process_stmt_list (env, text) stmt_list =
+  match stmt_list with
+    []     -> (env, text)
+  | [stmt] -> process_stmt (env, text) stmt
+  | stmt :: other_stmts -> process_stmt_list
+			     (process_stmt (env, text) stmt)
+			     other_stmts
+and process_stmt (env, text) stmt =
+  match stmt with
+    Vdecl(vdecl) -> process_vdecl (env, text) vdecl
+  | Block(stmt_list) -> process_stmt_list (env, text) stmt_list
+  | Expr(expr) -> raise (NotImplementedError("expr"))
+  | Assign(name, expr) -> raise (NotImplementedError("assign"))
+  | Return(expr) -> raise (NotImplementedError("return"))
+  | Init(vdecl, expr) -> raise (NotImplementedError("init and assign"))
+  | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else"))
+  | While(expr, stmt) -> raise (NotImplementedError("while"))
+  | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in"))
+  | Continue -> (env, text ^ "continue;\n")
+  | Break -> (env, text ^ "break:\n")
+  | _ -> raise (NotImplementedError("Undefined type of expression"))
+;;
+
 
 (* take in a list of formals and return a c string representation
    e.g. "int a, int b, int c" *)
@@ -50,22 +80,17 @@ let rec c_formals = function
   | vdecl :: other_vdecls -> (c_vdecl_no_semi vdecl) ^ ", "
 			     ^ (c_formals other_vdecls)
 ;;				 
-
-let c_body stmt_list =
   
-;;
-  
-let c_fdecl fdecl =
-  (*TODO Add in function typing *)
-  (*fdecl.ftype ^ " " ^ *)
-  "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")" ^
-    "{\n" ^ c_body fdecl.body ^ "}\n"
+let c_fdecl_prototype fdecl =
+  fdecl.r_type ^ " " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")"
 ;;								 
   
 let gen_fdecls (_, _, fdecls) env =
   let process_fdecl (env, text) fdecl =
     (* will throw NameAlreadyBoundError *)
-    (add_func fdecl env, text ^ (c_fdecl fdecl))
+    process_stmt_list
+      (add_func fdecl env, text ^ (c_fdecl_prototype fdecl))
+      (List.rev fdecl.body)
   in
   List.fold_left process_fdecl (env, "") (List.rev fdecls)
 ;;  

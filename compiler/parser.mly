@@ -303,9 +303,9 @@ bool_expr:
     | expr LOR expr                   { Binop($1, Lor, $3) }
 
 array_expr:
+    | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
     | array_literal                   { $1 }
-    | ID PERIOD ID                    { StructId($1, $3) }
 
 literal:
     | INT_LITERAL                     { Literal_int($1) }

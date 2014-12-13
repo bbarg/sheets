@@ -147,10 +147,8 @@ Identifiers refer to a variable, function, or function argument. They must begin
 
 - `if(`*boolean condition*`):` 
   - execute the following block if the boolean condition is true
-- `elif(`*boolean expression*`):`
-  - following exactly one `if` statement and one or more `elif` statements, execute the following block if the *boolean condition* is true and all conditions in the preceding chain were false
 - `else`
-  - following exactly one `if` statement and zero or more `elif` statements, execute the following block if all conditions in said chain were false
+  - following exactly one `if` statement, execute the following block if all conditions in said chain were false
 - `while (`*boolean condition*`):`
   - execute the loop contents until the *boolean condition*, evaluated at the start of each iteration, is false
 - `for` loop execution in two formats:
@@ -219,7 +217,7 @@ For both integer and float literals, maximum representable values are limited by
    + function arguments
    + type casting              
 - `:`
-   + start of scoped block (`if`, `else`, `elif`, `while`, `for`, `func`, `gfunc`)
+   + start of scoped block (`if`, `else`, `while`, `for`, `func`, `gfunc`)
 - `'`
    + character literal declaration
 - `"`
@@ -436,13 +434,13 @@ Conditional statements check the truth condition of an expression, and then choo
 ```
 	if (expression): 
 		statement
-	elif (expression):
+	else if (expression):
 		statement
 	else:
 		statement
 ```
 
-Only the `if` statement is required, you can choose not to account for other conditions or to account for any number of additional conditions using `elif`. The `else` statements execute only if none of the preceding conditions returned true.
+Only the `if` statement is required. The `else` statements execute only if none of the preceding conditions returned true.
 
 ####4.3.3 Loop Statements
 

@@ -27,10 +27,10 @@
 %token WHILE FOR IN BREAK CONTINUE
 
 /* Conditional Keywords */
-%token IF ELSE ELIF
+%token IF ELSE
 
 /* Function Keywords */
-%token FUNC GFUNC MAIN STRUCT RETURN
+%token FUNC GFUNC STRUCT RETURN
 
 /* Type Keywords */
 %token INT LONG FLOAT DOUBLE CHAR CONST TRUE FALSE STRING BLOCK BOOL
@@ -219,7 +219,7 @@ gfunc_stmt_list:
  * for( <expr_opt>; <bool_expr_opt>; <expr_opt> ){ <statements> };
  * for <variable name> in <array name> : { <statements> }; 
  * if( <bool_expr> ){ <statements> };
- * if( <bool_expr> ){ <statements> }; else {; <statements> }; 
+ * if( <bool_expr> ){ <statements> }; else { <statements> }; 
  */
 
 stmt:
@@ -247,7 +247,7 @@ gstmt:
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }
     | IF bool_block gblock_body %prec NOELSE            { If($2, $3, Block([])) }   
-    | IF bool_block gblock_body ELSE gblock_body        { If($2, $3, $5) } 
+    | IF bool_block gblock_body ELSE gblock_body   { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
     | FOR ID IN ID COLON gblock_body                    { ForIn(Id($2), Id($4), $6) }
     | WHILE bool_block gblock_body                      { While($2, $3) }
@@ -322,7 +322,7 @@ expr:
     | literal                         { $1 }
     | ID                              { Id($1) }
     | ID PERIOD ID                    { StructId($1, $3) }
-    | expr AND expr                    { Binop($1, And, $3) }    
+    | expr AND expr                   { Binop($1, And, $3) }    
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }
     | expr NOT expr                   { Binop($1, Not, $3) }
@@ -337,6 +337,7 @@ expr:
     | LPAREN expr RPAREN              { $2 }
 
 gexpr:
+    | gexpr AND gexpr                 { Binop($1, And, $3) }    
     | gexpr G_OR gexpr                { Binop($1, Or, $3) }
     | gexpr G_XOR gexpr               { Binop($1, Xor, $3) }
     | gexpr G_NOT gexpr               { Binop($1, Not, $3) }

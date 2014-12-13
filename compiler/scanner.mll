@@ -51,8 +51,7 @@ rule token = parse
 | "||" { LOR }        | ":||" { G_LOR }
 
 (* Conditional Keywords *)
-| "if"   { IF }       | "elif" { ELIF }
-| "else" { ELSE } 
+| "if"   { IF }       | "else" { ELSE } 
 
 (* Loop Keywords*)
 | "while"  { WHILE }  | "for"    { FOR }
@@ -61,8 +60,7 @@ rule token = parse
 
 (* Function Keywords *)
 | "func" { FUNC }     | "gfunc"  { GFUNC }
-| "main" { MAIN }     | "struct" { STRUCT }
-| "return" { RETURN }
+| "struct" { STRUCT } | "return" { RETURN }
 
 (* Type Keywords*)
 | "int"    { INT }    | "long"   { LONG }

@@ -70,6 +70,8 @@
 %left LSHIFT RSHIFT G_LSHIFT G_RSHIFT
 %right NEG G_NEG
 
+%left PERIOD
+
 /////////////////////////////////////////////////////////////////////
 ////////////////////////PROGRAM PARSING//////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -237,7 +239,7 @@ stmt:
     | IF bool_block COLON block_body %prec NOELSE       { If($2, $4, Block[] ) }   
     | IF bool_block COLON block_body ELSE COLON block_body    { If($2, $4, $7) } 
     | FOR for_pt1 for_pt2 for_pt3 COLON block_body      { For($2, $3, $4, $6) }
-    | FOR ID IN ID COLON block_body                     { ForIn(Id($2),Id($4), $6) }
+    | FOR ID IN array_expr COLON block_body             { ForIn(Id($2), $4, $6) }
     | WHILE bool_block COLON block_body                 { While($2, $4) }
 
 gstmt:
@@ -251,7 +253,7 @@ gstmt:
     | IF bool_block COLON gblock_body %prec NOELSE      { If($2, $4, Block([])) }   
     | IF bool_block COLON gblock_body ELSE COLON gblock_body    { If($2, $4, $7) } 
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
-    | FOR ID IN ID COLON gblock_body                    { ForIn(Id($2), Id($4), $6) }
+    | FOR ID IN array_expr COLON gblock_body            { ForIn(Id($2), $4, $6) }
     | WHILE bool_block gblock_body                      { While($2, $3) }
 
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
@@ -300,17 +302,25 @@ bool_expr:
     | expr LAND expr                  { Binop($1, Land, $3) }
     | expr LOR expr                   { Binop($1, Lor, $3) }
 
+array_expr:
+    | ID                              { Id($1) }
+    | array_literal                   { $1 }
+    | ID PERIOD ID                    { StructId($1, $3) }
+
 literal:
     | INT_LITERAL                     { Literal_int($1) }
     | CHAR_LITERAL                    { Literal_char($1) }
     | FLOAT_LITERAL                   { Literal_float($1) }
+    | STRING_LITERAL                  { Literal_string($1) }
+    | BOOL_LITERAL                    { Literal_bool($1) }
+    | array_literal                   { $1 }
+
+array_literal:
+    | BOOL_ARRAY_LITERAL              { Literal_bool_a($1) }
+    | STRING_ARRAY_LITERAL            { Literal_string_a($1) }
     | INT_ARRAY_LITERAL               { Literal_int_a($1) }
     | CHAR_ARRAY_LITERAL              { Literal_char_a($1) }
     | FLOAT_ARRAY_LITERAL             { Literal_float_a($1) }
-    | STRING_LITERAL                  { Literal_string($1) }
-    | STRING_ARRAY_LITERAL            { Literal_string_a($1) }
-    | BOOL_LITERAL                    { Literal_bool($1) }
-    | BOOL_ARRAY_LITERAL              { Literal_bool_a($1) }
 
 /* expr are all the expressions EXCEPT:
     * those with blocks

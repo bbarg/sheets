@@ -5,6 +5,6 @@
    first, second, or third element of a tuple. These simple accessors
    are defined here. *)
 
-let first (a, _, _) = a;;
+let first  (a, _, _) = a;;
 let second (_, b, _) = b;;
-let third (_, _, c) = c;;
+let third  (_, _, c) = c;;

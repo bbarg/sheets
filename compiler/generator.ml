@@ -21,13 +21,26 @@ type entry = Ast.vdecl | Ast.sdef | Ast.fdecl;;
 
 exception DuplicateNameError of Ast.vdecl
 
+(* generate the C representation of an individual vdecl *)
+let c_vdecl vdecl =
+  let prefix vdecl = match (vdecl.isConst, vdecl.isStruct) with
+    (true, true)  -> "const struct"
+  | (true, false) -> "const"
+  | (false, true) -> "struct"
+  | _             -> ""
+  in
+  (prefix vdecl) ^ " " ^ vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n"
+;;							       
+
+				  
 (* return updated table and a generated C string of the var-decs *)
 let gen_global_vdecls (vdecls, sdefs, fdecls) table =
   let validate_vdecl (table, text) vdecl =
-    SymbolTable.find vdecl.v_name table
+    try SymbolTable.find vdecl.v_name table
     with Not_found ->
-      (table.    
-  in
+      ((SymbolTable.add vdecl.v_name vdecl table), text ^ (c_vdecl vdecl));
+      raise (DuplicateNameError(vdecl))
+  and let text = "" in       
   List.fold_left validate_vdecl (table, text) (List.rev vdecls)
 ;;
   

@@ -254,8 +254,8 @@ gstmt:
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
 
 /* note that loop_stmt_list can be used from inside if/else blocks */
-block_body:  LBRACE SEMI loop_stmt_list RBRACE SEMI     { Block(List.rev $3) }
-gblock_body: LBRACE SEMI gloop_stmt_list RBRACE SEMI    { Block(List.rev $3) }
+block_body:  LBRACE loop_stmt_list RBRACE               { Block(List.rev $2) }
+gblock_body: LBRACE gloop_stmt_list RBRACE              { Block(List.rev $2) }
 
 for_pt1: LPAREN expr_opt SEMI                           { $2 }
 for_pt2: bool_expr_opt SEMI                             { $1 }

@@ -23,42 +23,26 @@ open Environment;;
 exception SyntaxError of int * int * string;;  
 
 (* generate the C representation of an individual vdecl *)
-let c_vdecl_no_semi vdecl =
+let c_vdecl vdecl =
   let prefix vdecl = match (vdecl.isConst, vdecl.isStruct) with
     (true, true)  -> "const struct "
   | (true, false) -> "const "
   | (false, true) -> "struct "
   | _             -> ""
   in
-  (prefix vdecl) ^ vdecl.v_type ^ " " ^ vdecl.v_name
+  (prefix vdecl) ^ vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n"
 ;;							       
 
 (* return updated table and a generated C string of the var-decs *)
 let gen_global_vdecls (vdecls, _, _) env =
-  let process_vdecl (env, text) vdecl =
+  let validate_vdecl (env, text) vdecl =
     (* will throw NameAlreadyBoundError *)
-    (add_var vdecl env, text ^ (c_vdecl_no_semi vdecl) ^ ";\n")
+    (add_var vdecl env, text ^ (c_vdecl vdecl))
   in
-  List.fold_left process_vdecl (env, "") (List.rev vdecls)
+  let text = "" in       
+  List.fold_left validate_vdecl (env, text) (List.rev vdecls)
 ;;
-
-let c_formals_opt formals =
-  let f text 
-  in let text = "" in
-  List.fold_left
   
-let c_fdecl fdecl =
-  fdecl.ftype ^ " " ^ decl.fname ^ "(" ^ c_formals_opt ^ ")"
-  ^ 
-  
-let gen_fdecls (_, fdecls, _) env =
-  let process_fdecl (env, text) fdecl =
-    (* will throw NameAlreadyBoundError *)
-    (add_fdecl fdecl env, text ^ (c_fdecl fdecl))
-  in
-  List.fold_left process_fdecl (env, "") (List.rev fdecls)
-;;  
-
 let _ =
   let lexbuf = Lexing.from_channel stdin in
   let program = try
@@ -72,6 +56,5 @@ let _ =
   in
   let env = Environment.empty() in
   let env, c_vdecls_text = gen_global_vdecls program env in
-  let env, c_fdecls_text = gen_fdecls program env in
   print_string c_vdecls_text
 ;;

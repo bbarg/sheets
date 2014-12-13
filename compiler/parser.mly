@@ -83,7 +83,7 @@
 
 program:                        /* [vdecls], [sdef], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
-    | program vdecl             { ($2 :: first $1), second $1, third $1 }
+    | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
     | program sdef              { first $1, ($2 :: second $1), third $1 }    
     | program fdecl             { first $1, second $1, ($2 :: third $1) }
     | program gfdecl            { first $1, second $1, ($2 :: third $1) }
@@ -141,7 +141,7 @@ blocksize:
 
 /* <const> <type> name */
 vdecl:
-    const type_name ID SEMI
+    const type_name ID 
     {{ 
         v_type   = fst $2;              (* variable type *)
         v_name   = $3;                  (* variable name *)
@@ -169,8 +169,8 @@ vdecl_list_opt:
     | vdecl_list                        { List.rev $1 }
 
 vdecl_list:
-    | vdecl                             { [$1] }
-    | vdecl_list vdecl                  { $2 :: $1 }
+    | vdecl SEMI                            { [$1] }
+    | vdecl_list vdecl SEMI                  { $2 :: $1 }
 
 sdef:
     STRUCT ID COLON LBRACE vdecl_list RBRACE

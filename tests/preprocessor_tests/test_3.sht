@@ -9,8 +9,8 @@ float[] func main:
  ~ of a section of code.
  ~#
 
-    signal1 = signal1 :* .5      // scaling both signals and casting
-    signal2 = signal2 :* .5      // them into float
+    signal1 = signal1 :* .5      ## scaling both signals and casting
+    signal2 = signal2 :* .5      ## them into float
 
         #~ Block quotes should also work regardless of indentation
          ~ level and content. You should be able to have as many
@@ -27,7 +27,7 @@ float[] gfunc mix(float[] a, float[] b):
     for int i in block.out:
         block.out[i] = a[block.index] + b[block.index]
 
-   // A little extra unnecessary comment
-       // That should not cause an error because
+   ## A little extra unnecessary comment
+       ## That should not cause an error because
 
-  // it's completely legal
+  ## it's completely legal

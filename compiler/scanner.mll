@@ -11,7 +11,6 @@ rule token = parse
 
 (* Comments *)
 | "#~" { comment lexbuf }
-| "#"  { comment_il lexbuf }
 
 (* Punctuation *)
 | '('  { LPAREN }     | ')' { RPAREN }
@@ -87,7 +86,3 @@ rule token = parse
 and comment = parse
 | "~#" { token lexbuf }      (* End-of-comment *)
 | _    { comment lexbuf }    (* Eat everything else *)
-
-and comment_il = parse
-| "\n" { token lexbuf }
-| _    { comment_il lexbuf }

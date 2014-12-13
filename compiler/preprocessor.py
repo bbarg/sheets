@@ -1,7 +1,7 @@
 #! /usr/bin/python
-
-import sys
 import os
+import re
+import sys
 
 # Find the best implementation available on this platform
 try:
@@ -9,13 +9,10 @@ try:
 except:
   from StringIO import StringIO
 
-def error(msg):
-  sys.stderr.write(msg+"\n")
-  sys.exit(2)
-
 def process(input_file):
-
   invalidchar = ('{','}','\t')
+  blockcomment = ['#~','~#']
+
   stack = [0]
   output = StringIO()
   newindent = False
@@ -24,31 +21,26 @@ def process(input_file):
   debug     = False
 
   for i, line in enumerate(input_file):
-
-    lineout = line.rstrip()
+    lineout = remove_inline(line)
 
     if lineout:
-
       for x in invalidchar:
         if x in lineout:
-
           error("SyntaxError: Invalid character {} found on line {}".format(x,i))          
 
-      # Check if first statement is a comment
+      # Check if first statement is a block comment
       lstripline = lineout.lstrip()
-      if ('#' == lstripline[0] and '~' == lstripline[1]) or \
-         ('/' == lstripline[0] and '/' == lstripline[1]):
+
+      if len(lstripline) > 1 and blockcomment[0] == lstripline[:2]:
         commented = True
 
-      # TODO: Fix for if comment was a '//'
+      # Checks if line gets uncommented
       if commented:
-        if ('~#' in lineout):
-          commented = False
-
+          if len(lineout) > 1 and blockcomment[1] == lineout[-2:]:
+            commented = False
       else:
 
         if not linejoin:
-
           wcount  = len(lineout) - len(lineout.lstrip(' '))
 
           # If the previous line began an indentation, add the new
@@ -65,7 +57,7 @@ def process(input_file):
           if wcount > stack[-1]:
 
             if debug:
-              print "=== ERROR ==="
+              print "=== ERROR 1 ==="
               print "proc. line: '{}'".format(lineout)
               print "wcount:     {}".format(wcount)
               print "stack[-1]:  {}".format(stack[-1])
@@ -85,7 +77,7 @@ def process(input_file):
             if wcount != stack[-1]:
 
               if debug:
-                print "=== ERROR ==="
+                print "=== ERROR 2 ==="
                 print "proc. line: '{}'".format(lineout)                
                 print "wcount:    {}".format(wcount)
                 print "stack[-1]: {}".format(stack[-1])
@@ -111,12 +103,27 @@ def process(input_file):
         
         output.write(lineout)
 
-  output.write("}")
+  while 0 < stack[-1]:
+    output.write("}")
+    stack.pop()
 
   if debug:
     print output.getvalue()
 
   return output
+
+def error(msg):
+  sys.stderr.write(msg+"\n")
+  sys.exit(2)
+
+def remove_inline(line):
+  if "##" in line:
+    regex = re.compile("^(.*?)#.*|.*")
+    m = regex.match(line)
+    comments_removed = m.group(1)
+  else:
+    comments_removed = line
+  return comments_removed.rstrip()
 
 def usage():
   print"""

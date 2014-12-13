@@ -228,7 +228,7 @@ For both integer and float literals, maximum representable values are limited by
 It's like threads coming out of a sheet!
 
 ```
-		# for inline comments
+		## for inline comments
 
 		#~ for nested comments ~#
 		
@@ -237,7 +237,7 @@ It's like threads coming out of a sheet!
 		 ~#
 ```
 
-In an individual line, all characters after a `#` are ignored by the compiler unless the `#` is a part of a string or character literal that is not itself part of a comment.
+In an individual line, all characters after a `##` are ignored by the compiler unless the `##` is a part of a string or character literal that is not itself part of a comment.
 
 All text from `#~` to the next `~#` is ignored, excepting those occurences of `#~` and `~#` that appear in a string literal that is not itseslf part of a comment.
 

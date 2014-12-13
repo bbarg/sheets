@@ -15,4 +15,4 @@ int func main:{
     int i;
     for i in block.out:{
         block.out[i] = -1 * a[block.index];
-}
+}}

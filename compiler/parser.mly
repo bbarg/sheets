@@ -222,11 +222,12 @@ gfunc_stmt_list:
  */
 
 stmt:
+    | vdecl SEMI                                        { Vdecl($1) }
     | expr SEMI                                         { Expr($1) }
     | gexpr SEMI                                        { Expr($1) }
     | RETURN expr SEMI                                  { Return($2) }
     | RETURN gexpr SEMI                                 { Return($2) }
-//    | vdecl ASSIGN expr SEMI                            { Assign($1, $3) }
+//    | vdecl  ASSIGN expr SEMI                         { Assign($1, $3) }
 //    | vdecl ASSIGN gexpr SEMI                           { Assign($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }

@@ -19,7 +19,14 @@ type expr =
   | Call of string * expr list
   | StructId of string * string
 
+type vdecl = {
+    v_type    : string;	   (* PARSER *)
+    v_name    : string;
+    isConst   : bool;
+    isStruct  : bool;
+} 
 type stmt =		      (* statements that can occur in funcs *)
+  | Vdecl of vdecl
   | Block of stmt list
   | Expr of expr
   | Assign of string * expr
@@ -31,12 +38,6 @@ type stmt =		      (* statements that can occur in funcs *)
   | Continue
   | Break
 
-type vdecl = {
-    v_type    : string;	   (* PARSER *)
-    v_name    : string;
-    isConst   : bool;
-    isStruct  : bool;
-} 
 
 type fdecl = {			   (* func declaration *)
     r_type    : string;

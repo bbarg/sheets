@@ -79,5 +79,6 @@ let _ =
   let env = Environment.empty() in
   let env, c_vdecls_text = gen_global_vdecls program env in
   let env, c_fdecls_text = gen_fdecls program env in
-  print_string c_vdecls_text
+  print_string c_vdecls_text;
+  print_string c_fdecls_text
 ;;

@@ -36,6 +36,7 @@ let print_ops = function
     | Greater ->printf ">"
     | Geq ->printf ">="
     | Or ->printf "|"
+    | And ->printf "&"
     | Xor ->printf "^"
     | Not ->printf "~"
     | Lshift ->printf "<<"
@@ -86,7 +87,7 @@ let rec print_stmt = function
 let print_funcs fdecls = 
     let f func =
         printf "DEBUG: printing fdecl, fname=%s, gfunc=%B, blocksize=%d\n"
-        func.fname func.gfunc func.blocksize;
+        func.fname func.isGfunc func.blocksize;
         printf "formals=<";
         print_vdecls func.formals;
         printf ">\n locals=<";

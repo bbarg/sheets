@@ -22,7 +22,7 @@ open Environment;;
 
 exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
-
+  
 (* generate the C representation of an individual vdecl *)
 let c_vdecl_no_semi vdecl =
   let prefix vdecl = match (vdecl.isConst, vdecl.isStruct) with
@@ -61,7 +61,7 @@ and process_stmt (env, text) stmt =
   | Block(stmt_list) -> process_stmt_list (env, text) stmt_list
   | Expr(expr) -> raise (NotImplementedError("expr"))
   | Assign(name, expr) -> raise (NotImplementedError("assign"))
-  | Return(expr) -> raise (NotImplementedError("return"))
+  | Return(expr) -> raise (NotImplementedError("expr"))
   | Init(vdecl, expr) -> raise (NotImplementedError("init and assign"))
   | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else"))
   | While(expr, stmt) -> raise (NotImplementedError("while"))

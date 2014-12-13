@@ -166,10 +166,6 @@ type_name:
     /* TODO: find out why this line produces Shift/Reduce conflict */
     //| STRUCT ID                         { ($2,       true) }
 
-vdecl_list_opt:
-    | /* Nothing */                     { [] }
-    | vdecl_list                        { List.rev $1 }
-
 vdecl_list:
     | vdecl SEMI                            { [$1] }
     | vdecl_list vdecl SEMI                  { $2 :: $1 }
@@ -225,8 +221,8 @@ stmt:
     | gexpr SEMI                                        { Expr($1) }
     | RETURN expr SEMI                                  { Return($2) }
     | RETURN gexpr SEMI                                 { Return($2) }
-//    | vdecl  ASSIGN expr SEMI                         { Assign($1, $3) }
-//    | vdecl ASSIGN gexpr SEMI                           { Assign($1, $3) }
+    | vdecl  ASSIGN expr SEMI                           { Init($1, $3) }
+    | vdecl ASSIGN gexpr SEMI                           { Init($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }
     | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
@@ -240,8 +236,8 @@ stmt:
 gstmt:
     | expr SEMI                                         { Expr($1) }
     | blockexpr SEMI                                    { Expr($1) }
-//    | vdecl ASSIGN expr SEMI                            { Assign($1, $3) }
-//    | vdecl ASSIGN blockexpr SEMI                       { Assign($1, $3) }
+    | vdecl ASSIGN expr SEMI                            { Init($1, $3) }
+    | vdecl ASSIGN blockexpr SEMI                       { Init($1, $3) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }
     | IF bool_block gblock_body %prec NOELSE            { If($2, $3, Block([])) }   

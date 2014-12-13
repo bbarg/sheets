@@ -42,19 +42,25 @@ let gen_global_vdecls (vdecls, _, _) env =
   List.fold_left process_vdecl (env, "") (List.rev vdecls)
 ;;
 
-let c_formals_opt formals =
-  let f text 
-  in let text = "" in
-  List.fold_left
+(* take in a list of formals and return a c string representation
+   e.g. "int a, int b, int c" *)
+let rec c_formals = function
+    [] -> ""
+  | [vdecl] -> (c_vdecl_no_semi vdecl)
+  | vdecl :: other_vdecls -> (c_vdecl_no_semi vdecl) ^ ", "
+			     ^ (c_formals other_vdecls)
+;;				 
   
 let c_fdecl fdecl =
-  fdecl.ftype ^ " " ^ decl.fname ^ "(" ^ c_formals_opt ^ ")"
-  ^ 
+  (*TODO Add in function typing *)
+  (*fdecl.ftype ^ " " ^ *)
+  "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")" ^ "{}\n"
+;;								 
   
-let gen_fdecls (_, fdecls, _) env =
+let gen_fdecls (_, _, fdecls) env =
   let process_fdecl (env, text) fdecl =
     (* will throw NameAlreadyBoundError *)
-    (add_fdecl fdecl env, text ^ (c_fdecl fdecl))
+    (add_func fdecl env, text ^ (c_fdecl fdecl))
   in
   List.fold_left process_fdecl (env, "") (List.rev fdecls)
 ;;  

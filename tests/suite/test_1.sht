@@ -1,5 +1,5 @@
 func int add (int x, int y):
-    return x + y; 
+    return x + y
 
 func int max (int[] a):
     max = a[0]
@@ -8,5 +8,3 @@ func int max (int[] a):
         if(a[i] > max):
             max = a[i]
     return max
-
- 

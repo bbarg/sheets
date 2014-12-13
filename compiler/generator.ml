@@ -20,24 +20,25 @@
 open Ast;;
 open Environment;;
 
-exception SyntaxError of int * int * string;;  
+exception SyntaxError of int * int * string;;
+exception NotImplementedError of string;;
 
 (* generate the C representation of an individual vdecl *)
-let c_vdecl vdecl =
+let c_vdecl_no_semi vdecl =
   let prefix vdecl = match (vdecl.isConst, vdecl.isStruct) with
     (true, true)  -> "const struct "
   | (true, false) -> "const "
   | (false, true) -> "struct "
   | _             -> ""
   in
-  (prefix vdecl) ^ vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n"
+  (prefix vdecl) ^ vdecl.v_type ^ " " ^ vdecl.v_name
 ;;							       
 
 (* return updated table and a generated C string of the var-decs *)
 let gen_global_vdecls (vdecls, _, _) env =
   let validate_vdecl (env, text) vdecl =
     (* will throw NameAlreadyBoundError *)
-    (add_var vdecl env, text ^ (c_vdecl vdecl))
+    (add_var vdecl env, text ^ (c_vdecl_no_semi vdecl) ^ ";\n")
   in
   let text = "" in       
   List.fold_left validate_vdecl (env, text) (List.rev vdecls)
@@ -51,11 +52,19 @@ let rec c_formals = function
   | vdecl :: other_vdecls -> (c_vdecl_no_semi vdecl) ^ ", "
 			     ^ (c_formals other_vdecls)
 ;;				 
+
+(* TODO implement this *)
+let c_body () = "";;
   
+(* take in a single fdecl and generate a c representation of the
+   function's prototype and body *)
 let c_fdecl fdecl =
   (*TODO Add in function typing *)
   (*fdecl.ftype ^ " " ^ *)
-  "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")" ^ "{}\n"
+  match fdecl.isGfunc with
+    true -> raise (NotImplementedError("gfuncs are not yet supported"))
+  | false -> "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")"
+	     ^ "{\n" ^ c_body() ^ "}\n"
 ;;								 
   
 let gen_fdecls (_, _, fdecls) env =

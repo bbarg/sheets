@@ -1,6 +1,6 @@
 #~ Third Test, tests many different kinds of comments ~#
 
-float[] func main:
+func float[] main:
     int[] signal1 = open('tests/media/music1.wav')
     int[] signal2 = open('tests/media/music2.wav')
 
@@ -23,11 +23,11 @@ float[] func main:
 #~ gfunc mix()
  ~ adds two input signals and returns the resulting signal
  ~#
-float[] gfunc mix(float[] a, float[] b):
+gfunc float[] mix(float[] a, float[] b):
     for int i in block.out:
         block.out[i] = a[block.index] + b[block.index]
 
-   // A little extra unnecessary comment
-       // That should not cause an error because
+   #  A little extra unnecessary comment
+       # That should not cause an error because
 
-  // it's completely legal
+  # it's completely legal

@@ -14,7 +14,6 @@ type expr =
   | Literal_float_a of float list
   | Literal_string_a of string list
   | Literal_bool_a of bool list
-  | Noexpr
   | Id of string
   | Binop of expr * op * expr
   | Call of string * expr list
@@ -25,7 +24,9 @@ type vdecl = {
     v_name    : string;
     isConst   : bool;
     isStruct  : bool;
-} 
+    a_size    : expr;
+}
+
 type stmt =		      (* statements that can occur in funcs *)
   | Vdecl of vdecl
   | Block of stmt list

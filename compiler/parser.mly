@@ -96,11 +96,11 @@ program:                        /* [vdecls], [sdef], [fdecls] */
 
 /* func int named_func(args):{ <statements>... }; */
 fdecl:
-    FUNC type_name ID LPAREN formals_opt RPAREN COLON 
+    FUNC type_name_t ID LPAREN formals_opt RPAREN COLON 
     LBRACE stmt_list_opt RBRACE
     {{
-        r_type    = fst $2;
-        r_struct  = snd $2;
+        r_type    = first $2;
+        r_struct  = second $2;
         fname     = $3;                  (* function name *)
         formals   = $5;                  (* argument list *)
         body      = $9;                 (* normal statement list *)
@@ -110,11 +110,11 @@ fdecl:
 
 /* gfunc int named_gfunc(args).[5]:{ <statements>... }; */
 gfdecl:
-    GFUNC type_name ID LPAREN formals_opt RPAREN blocksize COLON 
+    GFUNC type_name_t ID LPAREN formals_opt RPAREN blocksize COLON 
     LBRACE gfunc_stmt_list_opt RBRACE
     {{
-        r_type    = fst $2;
-        r_struct  = snd $2;
+        r_type    = first $2;
+        r_struct  = second $2;
         fname     = $3;                  (* gfunc name *)
         formals   = $5;                  (* argument list *)
         body      = $10;                 (* gfunc statement list *)
@@ -143,31 +143,46 @@ blocksize:
 ///////////////////////////VARIABLES/////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
+type_name_t:
+    | INT                               { ("int",    false, Literal_int(-1)) }
+    | FLOAT                             { ("float",  false, Literal_int(-1)) }
+    | LONG                              { ("long",   false, Literal_int(-1)) }
+    | DOUBLE                            { ("double", false, Literal_int(-1)) }
+    | STRING                            { ("string", false, Literal_int(-1)) }
+    | CHAR                              { ("char",   false, Literal_int(-1)) }
+    | BOOL                              { ("bool",   false, Literal_int(-1)) }
+    /* TODO: find out why this line produces Shift/Reduce conflict */
+    //| STRUCT ID                         { ($2,       true) }
+    | INT LBRACK expr RBRACK            { ("int[]",  false, $3) }
+    | INT LBRACK RBRACK                 { ("int[]",  false, Literal_int(0)) }
+    | FLOAT LBRACK expr RBRACK          { ("float[]",false, $3) }
+    | FLOAT LBRACK RBRACK               { ("float[]",false, Literal_int(0)) }
+    | LONG LBRACK expr RBRACK           { ("long[]", false, $3) }
+    | LONG LBRACK RBRACK                { ("long[]", false, Literal_int(0)) }
+    | DOUBLE LBRACK expr RBRACK         { ("double[]",false,$3) }
+    | DOUBLE LBRACK RBRACK              { ("double[]",false, Literal_int(0)) }
+    | STRING LBRACK expr RBRACK         { ("string[]",false,$3) }
+    | STRING LBRACK RBRACK              { ("string[]",false, Literal_int(0)) }
+    | CHAR LBRACK expr RBRACK           { ("char[]", false, $3) }
+    | CHAR LBRACK RBRACK                { ("char[]", false, Literal_int(0)) }
+    | BOOL LBRACK expr RBRACK           { ("bool[]", false, $3) }
+    | BOOL LBRACK RBRACK                { ("bool[]", false, Literal_int(0)) }
+
+
 /* <const> <type> name */
 vdecl:
-    const type_name ID 
+    const type_name_t ID 
     {{ 
-        v_type   = fst $2;              (* variable type *)
+        v_type   = first $2;              (* variable type *)
+        a_size   = third $2 
         v_name   = $3;                  (* variable name *)
         isConst  = $1;                  (* true or false for if const *)
-        isStruct = snd $2               (* true or false for if a struct *)
+        isStruct = second $2;               (* true or false for if a struct *)
+       
     }}
-
 const:
     | /* Nothing */                     { false }
     | CONST                             { true }
-
-type_name:
-    | INT                               { ("int",    false) }
-    | FLOAT                             { ("float",  false) }
-    | LONG                              { ("long",   false) }
-    | DOUBLE                            { ("double", false) }
-    | STRING                            { ("string", false) }
-    | CHAR                              { ("char",   false) }
-    | BOOL                              { ("bool",   false) }
-    /* TODO: find out why this line produces Shift/Reduce conflict */
-    //| STRUCT ID                         { ($2,       true) }
-
 vdecl_list:
     | vdecl SEMI                            { [$1] }
     | vdecl_list vdecl SEMI                  { $2 :: $1 }
@@ -262,9 +277,9 @@ bool_block: LPAREN bool_expr RPAREN                     { $2 }
 block_body:  LBRACE loop_stmt_list RBRACE               { Block(List.rev $2) }
 gblock_body: LBRACE gloop_stmt_list RBRACE              { Block(List.rev $2) }
 
-for_pt1: LPAREN expr_opt SEMI                           { $2 }
-for_pt2: bool_expr_opt SEMI                             { $1 }
-for_pt3: expr_opt RPAREN                                { $1 }
+for_pt1: LPAREN expr SEMI                               { $2 }
+for_pt2: bool_expr SEMI                                 { $1 }
+for_pt3: expr RPAREN                                    { $1 }
     
 /* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
@@ -287,10 +302,6 @@ loopexpr:
 
 blockexpr:
     BLOCK PERIOD ID                   { StructId("Block", $3) }
-
-bool_expr_opt:
-    | /* Nothing */                   { Noexpr }
-    | bool_expr                       { $1 }
 
 bool_expr:
     | expr EQ expr                    { Binop($1, Equal, $3) }
@@ -325,10 +336,6 @@ array_literal:
 /* expr are all the expressions EXCEPT:
     * those with blocks
     * comparison operators */
-
-expr_opt:
-    | /* Nothing */                   { Noexpr }
-    | expr                            { $1 }
 
 expr:
     | literal                         { $1 }

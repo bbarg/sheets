@@ -1,6 +1,7 @@
 type op = Lor      | Land    | Or      | Xor     | Not     | And     |
           Equal    | Neq     | Less    | Leq     | Greater | Geq     |
-          Plus     | Minus   | Times   | Divide  | Mod     | Neg     | Lshift        | Rshift
+          Plus     | Minus   | Times   | Divide  | Mod     | Neg     | 
+          Lshift   | Rshift
 
 type expr = 
   | Literal_int of int

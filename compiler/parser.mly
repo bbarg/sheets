@@ -83,7 +83,7 @@
 
 program:                        /* [vdecls], [sdef], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
-    | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
+    | program vdecl             { ($2 :: first $1), second $1, third $1 }
     | program sdef              { first $1, ($2 :: second $1), third $1 }    
     | program fdecl             { first $1, second $1, ($2 :: third $1) }
     | program gfdecl            { first $1, second $1, ($2 :: third $1) }

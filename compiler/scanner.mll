@@ -55,21 +55,21 @@ rule token = parse
 | "else" { ELSE } 
 
 (* Loop Keywords*)
-| "while"  { WHILE }  | "for" { FOR }
+| "while"  { WHILE }  | "for"    { FOR }
 | "in"     { IN }     | "break"  { BREAK}   
 | "continue" { CONTINUE }
 
 (* Function Keywords *)
-| "func" { FUNC }     | "gfunc" { GFUNC }
+| "func" { FUNC }     | "gfunc"  { GFUNC }
 | "main" { MAIN }     | "struct" { STRUCT }
 | "return" { RETURN }
 
 (* Type Keywords*)
-| "int"   { INT }     | "long" { LONG }
-| "float" { FLOAT }   | "double" { DOUBLE }
-| "char"  { CHAR }    | "const" { CONST }
-| "TRUE"  { TRUE }    | "FALSE" { FALSE}
-| "String" { STRING } | "Block" { BLOCK }
+| "int"    { INT }    | "long"   { LONG }
+| "float"  { FLOAT }  | "double" { DOUBLE }
+| "char"   { CHAR }   | "const"  { CONST }
+| "TRUE"   { TRUE }   | "FALSE"  { FALSE}
+| "String" { STRING } | "Block"  { BLOCK }
 | "boolean" { BOOL }
 
 (* End-of-File *)

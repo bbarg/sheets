@@ -198,6 +198,14 @@ gfunc_stmt_list:
     | gstmt                            { [$1] }
     | gfunc_stmt_list gstmt            { $2 :: $1 }
 
+args_opt:
+    /* Nothing */                      { [] }
+    | args_list                        { List.rev $1 }
+
+args_list:
+    | expr                             { [$1] }                               
+    | args_list COMMA expr             { $3 :: $1 }
+
 /*    Note about gstmt vs stmts:
  *  The difference between these two is that gstmts are the
  *  statements that are allowed to be called within gfuncs and
@@ -225,13 +233,13 @@ stmt:
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }    
     | vdecl  ASSIGN expr SEMI                           { Init($1, $3) }
     | vdecl ASSIGN gexpr SEMI                           { Init($1, $3) }
+
     | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
     | IF bool_block COLON block_body %prec NOELSE       { If($2, $4, Block[] ) }   
     | IF bool_block COLON block_body ELSE block_body    { If($2, $4, $6) } 
     | FOR for_pt1 for_pt2 for_pt3 COLON block_body      { For($2, $3, $4, $6) }
     | FOR ID IN ID COLON block_body                     { ForIn(Id($2),Id($4), $6) }
     | WHILE bool_block COLON block_body                 { While($2, $4) }
-  /* TODO: figure this out */
 
 gstmt:
     | vdecl SEMI                                        { Vdecl($1) }
@@ -315,8 +323,9 @@ expr_opt:
 
 expr:
     | literal                         { $1 }
-    | ID                              { Id($1) }
+    | ID LPAREN args_opt RPAREN       { Call($1, $3) }   
     | ID PERIOD ID                    { StructId($1, $3) }
+    | ID                              { Id($1) }
     | expr AND expr                   { Binop($1, And, $3) }    
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }

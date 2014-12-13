@@ -6,21 +6,18 @@ open Printf;;
 exception SyntaxError of int * int * string
   
 let print_vdecls vdecls = 
-  let f { v_type   = v_type;
-	  v_name   = v_name;
-	  isConst  = isConst;
-	  isStruct = isStruct } = 
+  let f v =
     printf "DEBUG printing vdecl: v_type: %s, v_name: %s, isConst: %B, isStruct %B\n"
-	   v_type v_name isConst isStruct
+	   v.v_type v.v_name v.isConst v.isStruct
   in List.iter f vdecls
 ;;
 
 let print_sdefs sdefs =
-  let f { s_name     = s_name;
-	  s_elements = s_elements; } =
-    printf "DEBUG printing sdefs: s_name=%s: s_elements=<" s_name;
+  let f s =
+    printf "DEBUG printing sdefs: s_name=%s: s_elements=<"
+	   s.s_name;
     print_vdecls s_elements;
-    printf(">\n");
+    printf ">\n";
   in List.iter f sdefs
 ;;
 

@@ -3,7 +3,7 @@
  ~ absolute value of the two 
  ~#
 
-func int main:
+func int main():
     int first_num = 3
     int second_num = 4
     int absolute_val

@@ -35,7 +35,7 @@ type stmt =		      (* statements that can occur in funcs *)
   | Vdecl of vdecl
   | Block of stmt list
   | Expr of expr
-  | Assign of string * expr
+  | Assign of expr * expr
   | Return of expr
   | Init of vdecl * expr
   | If of expr * stmt * stmt 

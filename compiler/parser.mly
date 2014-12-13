@@ -246,8 +246,8 @@ stmt:
     | gexpr SEMI                                        { Expr($1) }
     | RETURN expr SEMI                                  { Return($2) }
     | RETURN gexpr SEMI                                 { Return($2) }
-    | ID ASSIGN expr SEMI                               { Assign($1, $3) }
-    | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }    
+    | assign_expr ASSIGN expr SEMI                      { Assign($1, $3) }
+    | assign_expr ASSIGN gexpr SEMI                     { Assign($1, $3) }    
     | vdecl ASSIGN expr SEMI                            { Init($1, $3) }
     | vdecl ASSIGN gexpr SEMI                           { Init($1, $3) }
     | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
@@ -261,8 +261,8 @@ gstmt:
     | vdecl SEMI                                        { Vdecl($1) }
     | expr SEMI                                         { Expr($1) }
     | blockexpr SEMI                                    { Expr($1) }
-    | ID ASSIGN expr SEMI                               { Assign($1, $3) }
-    | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }    
+    | assign_expr ASSIGN expr SEMI                      { Assign($1, $3) }
+    | assign_expr ASSIGN blockexpr SEMI                 { Assign($1, $3) }    
     | vdecl ASSIGN expr SEMI                            { Init($1, $3) }
     | vdecl ASSIGN blockexpr SEMI                       { Init($1, $3) }
     | IF bool_block COLON gblock_body %prec NOELSE      { If($2, $4, Block([])) }   
@@ -317,6 +317,11 @@ array_expr:
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
     | array_literal                   { $1 }
+
+assign_expr:
+    | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }   
+    | ID PERIOD ID                    { StructId($1, $3) }
+    | ID                              { Id($1) }
 
 literal:
     | INT_LITERAL                     { Literal_int($1) }

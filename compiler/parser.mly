@@ -336,7 +336,6 @@ array_literal:
 /* expr are all the expressions EXCEPT:
     * those with blocks
     * comparison operators */
-
 expr:
     | literal                         { $1 }
     | ID LPAREN args_opt RPAREN       { Call($1, $3) }

@@ -17,7 +17,8 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Call of string * expr list
-  | StructId of string * string
+  | StructId of string * string 
+  (* StructId: string1=name of struct var, string2=name of element to be accessed *)
 
 type vdecl = {
     v_type    : string;	   (* PARSER *)

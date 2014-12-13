@@ -232,11 +232,11 @@ stmt:
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }
     | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
-    | IF bool_block COLON block_body %prec NOELSE             { If($2, $3, Block[] ) }   
-    | IF bool_block COLON block_body ELSE block_body          { If($2, $3, $5) } 
-    | FOR for_pt1 for_pt2 for_pt3 COLON block_body            { For($2, $3, $4, $5) }
+    | IF bool_block COLON block_body %prec NOELSE       { If($2, $4, Block[] ) }   
+    | IF bool_block COLON block_body ELSE block_body    { If($2, $4, $6) } 
+    | FOR for_pt1 for_pt2 for_pt3 COLON block_body      { For($2, $3, $4, $6) }
     | FOR ID IN ID COLON block_body                     { ForIn(Id($2),Id($4), $6) }
-    | WHILE bool_block COLON block_body                       { While($2, $3) }
+    | WHILE bool_block COLON block_body                 { While($2, $4) }
   /* TODO: figure this out */
 
 gstmt:
@@ -247,7 +247,7 @@ gstmt:
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }
     | IF bool_block gblock_body %prec NOELSE            { If($2, $3, Block([])) }   
-    | IF bool_block gblock_body ELSE gblock_body   { If($2, $3, $5) } 
+    | IF bool_block gblock_body ELSE gblock_body        { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
     | FOR ID IN ID COLON gblock_body                    { ForIn(Id($2), Id($4), $6) }
     | WHILE bool_block gblock_body                      { While($2, $3) }

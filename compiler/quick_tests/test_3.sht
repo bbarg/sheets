@@ -1,6 +1,6 @@
 #~ Third Test, tests many different kinds of comments ~#
 
-func float[] main:
+func float[] main():
     int[] signal1 = open('tests/media/music1.wav')
     int[] signal2 = open('tests/media/music2.wav')
 
@@ -9,8 +9,8 @@ func float[] main:
  ~ of a section of code.
  ~#
 
-    signal1 = signal1 :* .5      // scaling both signals and casting
-    signal2 = signal2 :* .5      // them into float
+    signal1 = signal1 :* .5      ## scaling both signals and casting
+    signal2 = signal2 :* .5      ## them into float
 
         #~ Block quotes should also work regardless of indentation
          ~ level and content. You should be able to have as many

@@ -1,0 +1,13 @@
+const  int    a
+float  my_list
+double ballon_volume
+char   im_a_char
+
+func int add (int x, int y):
+    int a
+    int b
+    float c
+    const float d
+
+func int add (int b):
+    return b

@@ -1,0 +1,11 @@
+const  int    a
+float  my_list
+double ballon_volume
+char   im_a_char
+
+func int max (int x, int y):
+    int b
+    
+    if( b == 3 ):
+        int c
+    return c

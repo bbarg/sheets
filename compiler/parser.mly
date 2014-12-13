@@ -141,7 +141,7 @@ blocksize:
 
 /* <const> <type> name */
 vdecl:
-    const type_name ID
+    const type_name ID SEMI
     {{ 
         v_type   = fst $2;              (* variable type *)
         v_name   = $3;                  (* variable name *)
@@ -170,7 +170,7 @@ vdecl_list_opt:
 
 vdecl_list:
     | vdecl                             { [$1] }
-    | vdecl_list vdecl SEMI             { $2 :: $1 }
+    | vdecl_list vdecl                  { $2 :: $1 }
 
 sdef:
     STRUCT ID COLON LBRACE vdecl_list RBRACE

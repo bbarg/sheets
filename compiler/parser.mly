@@ -199,7 +199,7 @@ gfunc_stmt_list:
     | gfunc_stmt_list gstmt            { $2 :: $1 }
 
 args_opt:
-    /* Nothing */                      { [] }
+    | /* Nothing */                      { [] }
     | args_list                        { List.rev $1 }
 
 args_list:
@@ -231,9 +231,8 @@ stmt:
     | RETURN gexpr SEMI                                 { Return($2) }
     | ID ASSIGN expr SEMI                               { Assign($1, $3) }
     | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }    
-    | vdecl  ASSIGN expr SEMI                           { Init($1, $3) }
+    | vdecl ASSIGN expr SEMI                            { Init($1, $3) }
     | vdecl ASSIGN gexpr SEMI                           { Init($1, $3) }
-
     | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
     | IF bool_block COLON block_body %prec NOELSE       { If($2, $4, Block[] ) }   
     | IF bool_block COLON block_body ELSE block_body    { If($2, $4, $6) } 

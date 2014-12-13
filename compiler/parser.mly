@@ -221,10 +221,10 @@ stmt:
     | gexpr SEMI                                        { Expr($1) }
     | RETURN expr SEMI                                  { Return($2) }
     | RETURN gexpr SEMI                                 { Return($2) }
+    | ID ASSIGN expr SEMI                               { Assign($1, $3) }
+    | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }    
     | vdecl  ASSIGN expr SEMI                           { Init($1, $3) }
     | vdecl ASSIGN gexpr SEMI                           { Init($1, $3) }
-    | ID ASSIGN expr SEMI                               { Assign($1, $3) }
-    | ID ASSIGN gexpr SEMI                              { Assign($1, $3) }
     | LBRACE stmt_list RBRACE                           { Block(List.rev $2) }
     | IF bool_block COLON block_body %prec NOELSE       { If($2, $4, Block[] ) }   
     | IF bool_block COLON block_body ELSE block_body    { If($2, $4, $6) } 
@@ -234,12 +234,13 @@ stmt:
   /* TODO: figure this out */
 
 gstmt:
+    | vdecl SEMI                                        { Vdecl($1) }
     | expr SEMI                                         { Expr($1) }
     | blockexpr SEMI                                    { Expr($1) }
+    | ID ASSIGN expr SEMI                               { Assign($1, $3) }
+    | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }    
     | vdecl ASSIGN expr SEMI                            { Init($1, $3) }
     | vdecl ASSIGN blockexpr SEMI                       { Init($1, $3) }
-    | ID ASSIGN expr SEMI                               { Assign($1, $3) }
-    | ID ASSIGN blockexpr SEMI                          { Assign($1, $3) }
     | IF bool_block gblock_body %prec NOELSE            { If($2, $3, Block([])) }   
     | IF bool_block gblock_body ELSE gblock_body        { If($2, $3, $5) } 
     | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }

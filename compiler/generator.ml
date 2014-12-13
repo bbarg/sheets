@@ -12,12 +12,13 @@
     strings that can be printed to a file or printed to stdout
   - scoped symbol tables will be implemented with a list of
     Map.Make(String) (we may need several maps for variables,
-    structs, etc *)
+    structs, etc 
+  - any name collision exceptions raised by the Environment module
+    will simply cause the generator to fail, reporting the cause of
+    the error *)
 
-open Parser;;
-open Scanner;;
 open Ast;;
-open Printf;;  
+open Environment;;
 
 exception SyntaxError of int * int * string;;  
 
@@ -33,10 +34,10 @@ let c_vdecl vdecl =
 ;;							       
 
 (* return updated table and a generated C string of the var-decs *)
-let gen_global_vdecls (vdecls, sdefs, fdecls) env =
+let gen_global_vdecls (vdecls, _, _) env =
   let validate_vdecl (env, text) vdecl =
-    try
-      (add_var vdecl env, text ^ (c_vdecl vdecl))
+    (* will throw NameAlreadyBoundError *)
+    (add_var vdecl env, text ^ (c_vdecl vdecl))
   in
   let text = "" in       
   List.fold_left validate_vdecl (env, text) (List.rev vdecls)
@@ -53,7 +54,7 @@ let _ =
         let tok = Lexing.lexeme lexbuf in
         raise (SyntaxError (line, col, tok))
   in
-  let env = Environment.empty in
-  let env, c_vdecls_text = gen_global_vdecls program table in
+  let env = Environment.empty() in
+  let env, c_vdecls_text = gen_global_vdecls program env in
   print_string c_vdecls_text
 ;;

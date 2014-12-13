@@ -25,14 +25,15 @@ module VariableMap = Map.Make(String);;
 module FunctionMap = Map.Make(String);;
 module StructMap   = Map.Make(String);;
 
+exception EmptyEnvironmentError;;
 exception NameAlreadyBoundError of string;;
 
 (* Get variable, function, and struct maps from a level *)
-let vars level = fst level;
-let funcs level = snd level;
-let structs level = trd level;
+let vars level = first level;;
+let funcs level = second level;;
+let structs level = third level;;
   
-(* return a list containing one element: a tuple three empty maps *)
+(* return a list containing one element: a tuple of three empty maps *)
 let empty () =
   [ (VariableMap.empty, FunctionMap.empty, StructMap.empty) ]
 ;;      
@@ -43,7 +44,7 @@ let empty () =
    when descending a level in the generator, pass in `new_scope
    current_table` as the table argument *)
 let new_scope env =
-  empty @ env
+  empty() @ env
 ;;		       
 
 (* Membership Functions: each of these returns true if the name is
@@ -71,26 +72,39 @@ let unbound_struct s_name env =
 (* if the var, func, or struct id doesn't already exist, add it to the
 map, otherwise throw an exception *)
 let add_var var env =
+  let _add = function
+      [] -> raise EmptyEnvironmentError
+    | current_level :: upper_levels
+      -> (VariableMap.add var.v_name var (vars current_level),
+	  funcs current_level,
+	  structs current_level) :: upper_levels
+  in      
   match (unbound_var var.v_name env) with
-    true  -> match env with
-	       current_level :: upper_levels
-	       -> (VariableMap.add var.v_name var current_level)
-		    :: upper_levels
-    false -> raise (NameAlreadyBoundError(var.v_name))
+    true -> _add env
+  | false -> raise (NameAlreadyBoundError(var.v_name))
 ;;
 let add_func func env =
-  match (unbound_func func.f_name env) with
-    true  -> match env with
-	       current_level :: upper_levels
-	       -> (VariableMap.add func.f_name func current_level)
-		    :: upper_levels
-    false -> raise (NameAlreadyBoundError(func.f_name))
+  let _add = function
+      [] -> raise EmptyEnvironmentError
+    | current_level :: upper_levels
+      -> (vars current_level,
+	  FunctionMap.add func.fname func (funcs current_level),
+	  structs current_level) :: upper_levels
+  in      
+  match (unbound_func func.fname env) with
+    true -> _add env
+  | false -> raise (NameAlreadyBoundError(func.fname))
 ;;
 let add_struct struc env =
+  let _add = function
+      [] -> raise EmptyEnvironmentError
+    | current_level :: upper_levels
+      -> (vars current_level,
+	  funcs current_level,
+	  FunctionMap.add struc.s_name struc (structs current_level)) :: upper_levels
+  in      
   match (unbound_struct struc.s_name env) with
-    true  -> match env with
-	       current_level :: upper_levels
-	       -> (VariableMap.add struc.s_name struc current_level)
-		    :: upper_levels
-    false -> raise (NameAlreadyBoundError(struc.s_name))
+    true -> _add env
+  | false -> raise (NameAlreadyBoundError(struc.s_name))
 ;;
+

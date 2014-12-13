@@ -19,9 +19,6 @@ open Scanner;;
 open Ast;;
 open Printf;;  
 
-module SymbolTable = Map.Make(String);;
-
-exception DuplicateNameError of Ast.vdecl;;
 exception SyntaxError of int * int * string;;  
 
 (* generate the C representation of an individual vdecl *)
@@ -36,16 +33,13 @@ let c_vdecl vdecl =
 ;;							       
 
 (* return updated table and a generated C string of the var-decs *)
-let gen_global_vdecls (vdecls, sdefs, fdecls) table =
-  let validate_vdecl (table, text) vdecl =
+let gen_global_vdecls (vdecls, sdefs, fdecls) env =
+  let validate_vdecl (env, text) vdecl =
     try
-      SymbolTable.find vdecl.v_name table;
-      raise (DuplicateNameError(vdecl))
-    with Not_found ->
-      ((SymbolTable.add vdecl.v_name vdecl table), text ^ (c_vdecl vdecl));
+      (add_var vdecl env, text ^ (c_vdecl vdecl))
   in
   let text = "" in       
-  List.fold_left validate_vdecl (table, text) (List.rev vdecls)
+  List.fold_left validate_vdecl (env, text) (List.rev vdecls)
 ;;
   
 let _ =
@@ -59,7 +53,7 @@ let _ =
         let tok = Lexing.lexeme lexbuf in
         raise (SyntaxError (line, col, tok))
   in
-  let table = SymbolTable.empty in
-  let table, c_vdecls_text = gen_global_vdecls program table in
+  let env = Environment.empty in
+  let env, c_vdecls_text = gen_global_vdecls program table in
   print_string c_vdecls_text
 ;;

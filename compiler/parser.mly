@@ -5,14 +5,9 @@
  * Copyright 2014, Symposium Software
  */
 
-%{ 
+%{
+    open Three_tuple;;
     open Ast;;
-
-    (* [bbarg] functions for accessing elts of tuple, we can move this
-    to a helper file if necessary *)
-    let first  (a, _, _) = a;;
-    let second (_, b, _) = b;;
-    let third  (_, _, c) = c;;
 %}
 
 /////////////////////////////////////////////////////////////////////
@@ -88,10 +83,10 @@
 
 program:                        /* [vdecls], [sdef], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
-    | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
-    | program sdef              { first $1, ($2 :: second $1), third $1 }    
-    | program fdecl             { first $1, second $1, ($2 :: third $1) }
-    | program gfdecl            { first $1, second $1, ($2 :: third $1) }
+    | program vdecl SEMI        { ($2 :: fst $1), snd $1, trd $1 }
+    | program sdef              { fst $1, ($2 :: snd $1), trd $1 }    
+    | program fdecl             { fst $1, snd $1, ($2 :: trd $1) }
+    | program gfdecl            { fst $1, snd $1, ($2 :: trd $1) }
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////////FUNCTIONS/////////////////////////////////

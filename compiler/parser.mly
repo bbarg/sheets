@@ -5,14 +5,9 @@
  * Copyright 2014, Symposium Software
  */
 
-%{ 
+%{
+    open Three_tuple;;
     open Ast;;
-
-    (* [bbarg] functions for accessing elts of tuple, we can move this
-    to a helper file if necessary *)
-    let first  (a, _, _) = a;;
-    let second (_, b, _) = b;;
-    let third  (_, _, c) = c;;
 %}
 
 /////////////////////////////////////////////////////////////////////
@@ -146,7 +141,7 @@ blocksize:
 
 /* <const> <type> name */
 vdecl:
-    const type_name ID
+    const type_name ID 
     {{ 
         v_type   = fst $2;              (* variable type *)
         v_name   = $3;                  (* variable name *)
@@ -174,8 +169,8 @@ vdecl_list_opt:
     | vdecl_list                        { List.rev $1 }
 
 vdecl_list:
-    | vdecl                             { [$1] }
-    | vdecl_list vdecl SEMI             { $2 :: $1 }
+    | vdecl SEMI                            { [$1] }
+    | vdecl_list vdecl SEMI                  { $2 :: $1 }
 
 sdef:
     STRUCT ID COLON LBRACE vdecl_list RBRACE

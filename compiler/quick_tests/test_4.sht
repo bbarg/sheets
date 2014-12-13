@@ -1,0 +1,12 @@
+const  int    a
+float  my_list
+double ballon_volume
+char   im_a_char
+
+func int max (int x, int y):
+    int b
+    
+    y = x + y
+    if (x < y): 
+        x = x - y  
+    return y

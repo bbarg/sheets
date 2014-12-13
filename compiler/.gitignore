@@ -2,3 +2,4 @@ parser.output
 *.cmi
 *.cmo
 /print_ast
+/generator

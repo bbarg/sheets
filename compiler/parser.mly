@@ -144,27 +144,27 @@ blocksize:
 /////////////////////////////////////////////////////////////////////
 
 type_name:
-    | INT LBRACK expr RBRACK            { ("int[]",  false, $3) }
-    | INT LBRACK RBRACK                 { ("int[]",  false, Literal_int(0)) }
-    | FLOAT LBRACK expr RBRACK          { ("float[]",false, $3) }
-    | FLOAT LBRACK RBRACK               { ("float[]",false, Literal_int(0)) }
-    | LONG LBRACK expr RBRACK           { ("long[]", false, $3) }
-    | LONG LBRACK RBRACK                { ("long[]", false, Literal_int(0)) }
-    | DOUBLE LBRACK expr RBRACK         { ("double[]",false,$3) }
-    | DOUBLE LBRACK RBRACK              { ("double[]",false, Literal_int(0)) }
-    | STRING LBRACK expr RBRACK         { ("string[]",false,$3) }
-    | STRING LBRACK RBRACK              { ("string[]",false, Literal_int(0)) }
-    | CHAR LBRACK expr RBRACK           { ("char[]", false, $3) }
-    | CHAR LBRACK RBRACK                { ("char[]", false, Literal_int(0)) }
-    | BOOL LBRACK expr RBRACK           { ("bool[]", false, $3) }
-    | BOOL LBRACK RBRACK                { ("bool[]", false, Literal_int(0)) }
-    | INT                               { ("int",    false, Literal_int(-1)) }
-    | FLOAT                             { ("float",  false, Literal_int(-1)) }
-    | LONG                              { ("long",   false, Literal_int(-1)) }
-    | DOUBLE                            { ("double", false, Literal_int(-1)) }
-    | STRING                            { ("string", false, Literal_int(-1)) }
-    | CHAR                              { ("char",   false, Literal_int(-1)) }
-    | BOOL                              { ("bool",   false, Literal_int(-1)) }
+    | INT LBRACK expr RBRACK            { ("int[]",    false, $3) }
+    | INT LBRACK RBRACK                 { ("int[]",    false, Literal_int(0)) }
+    | FLOAT LBRACK expr RBRACK          { ("float[]",  false, $3) }
+    | FLOAT LBRACK RBRACK               { ("float[]",  false, Literal_int(0)) }
+    | LONG LBRACK expr RBRACK           { ("long[]",   false, $3) }
+    | LONG LBRACK RBRACK                { ("long[]",   false, Literal_int(0)) }
+    | DOUBLE LBRACK expr RBRACK         { ("double[]", false, $3) }
+    | DOUBLE LBRACK RBRACK              { ("double[]", false, Literal_int(0)) }
+    | STRING LBRACK expr RBRACK         { ("string[]", false, $3) }
+    | STRING LBRACK RBRACK              { ("string[]", false, Literal_int(0)) }
+    | CHAR LBRACK expr RBRACK           { ("char[]",   false, $3) }
+    | CHAR LBRACK RBRACK                { ("char[]",   false, Literal_int(0)) }
+    | BOOL LBRACK expr RBRACK           { ("bool[]",   false, $3) }
+    | BOOL LBRACK RBRACK                { ("bool[]",   false, Literal_int(0)) }
+    | INT                               { ("int",      false, Literal_int(-1)) }
+    | FLOAT                             { ("float",    false, Literal_int(-1)) }
+    | LONG                              { ("long",     false, Literal_int(-1)) }
+    | DOUBLE                            { ("double",   false, Literal_int(-1)) }
+    | STRING                            { ("string",   false, Literal_int(-1)) }
+    | CHAR                              { ("char",     false, Literal_int(-1)) }
+    | BOOL                              { ("bool",     false, Literal_int(-1)) }
     /* TODO: find out why this line produces Shift/Reduce conflict */
     //| STRUCT ID                         { ($2,       true) }
 

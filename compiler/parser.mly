@@ -95,14 +95,13 @@ program:                        /* [vdecls], [sdef], [fdecls] */
 /* func int named_func(args):{ <statements>... }; */
 fdecl:
     FUNC type_name ID LPAREN formals_opt RPAREN COLON 
-    LBRACE vdecl_list_opt stmt_list_opt RBRACE
+    LBRACE stmt_list_opt RBRACE
     {{
         r_type    = fst $2;
         r_struct  = snd $2;
         fname     = $3;                  (* function name *)
         formals   = $5;                  (* argument list *)
-        locals    = $9;                  (* local variable list *)
-        body      = $10;                 (* normal statement list *)
+        body      = $9;                 (* normal statement list *)
         isGfunc   = false;               (* false b/c not a gfunc *)
         blocksize = 0
     }}
@@ -110,14 +109,13 @@ fdecl:
 /* gfunc int named_gfunc(args).[5]:{ <statements>... }; */
 gfdecl:
     GFUNC type_name ID LPAREN formals_opt RPAREN blocksize COLON 
-    LBRACE vdecl_list_opt gfunc_stmt_list_opt RBRACE
+    LBRACE gfunc_stmt_list_opt RBRACE
     {{
         r_type    = fst $2;
         r_struct  = snd $2;
         fname     = $3;                  (* gfunc name *)
         formals   = $5;                  (* argument list *)
-        locals    = $10;                 (* local variable list *)
-        body      = $11;                 (* gfunc statement list *)
+        body      = $10;                 (* gfunc statement list *)
         isGfunc   = true;                (* true b/c a gfunc *)
         blocksize = $7                   (* block size *)
     }}

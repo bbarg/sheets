@@ -44,7 +44,6 @@ type fdecl = {			   (* func declaration *)
     r_struct  : bool;
     fname     : string;
     formals   : vdecl list;	   
-    locals    : vdecl list;
     body      : stmt  list;
     isGfunc   : bool;
     blocksize : int;

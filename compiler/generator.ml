@@ -42,30 +42,7 @@ let gen_global_vdecls (vdecls, _, _) env =
   let text = "" in       
   List.fold_left validate_vdecl (env, text) (List.rev vdecls)
 ;;
-
-(* take in a list of formals and return a c string representation
-   e.g. "int a, int b, int c" *)
-let rec c_formals = function
-    [] -> ""
-  | [vdecl] -> (c_vdecl_no_semi vdecl)
-  | vdecl :: other_vdecls -> (c_vdecl_no_semi vdecl) ^ ", "
-			     ^ (c_formals other_vdecls)
-;;				 
   
-let c_fdecl fdecl =
-  (*TODO Add in function typing *)
-  (*fdecl.ftype ^ " " ^ *)
-  "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")" ^ "{}\n"
-;;								 
-  
-let gen_fdecls (_, _, fdecls) env =
-  let process_fdecl (env, text) fdecl =
-    (* will throw NameAlreadyBoundError *)
-    (add_func fdecl env, text ^ (c_fdecl fdecl))
-  in
-  List.fold_left process_fdecl (env, "") (List.rev fdecls)
-;;  
-
 let _ =
   let lexbuf = Lexing.from_channel stdin in
   let program = try
@@ -79,7 +56,5 @@ let _ =
   in
   let env = Environment.empty() in
   let env, c_vdecls_text = gen_global_vdecls program env in
-  let env, c_fdecls_text = gen_fdecls program env in
-  print_string c_vdecls_text;
-  print_string c_fdecls_text
+  print_string c_vdecls_text
 ;;

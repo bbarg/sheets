@@ -1,10 +1,10 @@
-type op = Or | Xor | Not | Lshift | Rshift | 
-          Plus | Minus | Times | Divide | Mod | Neg |
-          Equal | Neq | Less | Leq | Greater | Geq |
-          Land | Lor
+type op = Lor      | Land    | Or      | Xor     | Not     | And     |
+          Equal    | Neq     | Less    | Leq     | Greater | Geq     |
+          Plus     | Minus   | Times   | Divide  | Mod     | Assign  |
+          Neg      | Lshift  | Rshift
 
 type expr = 
-    Literal_int of int
+  | Literal_int of int
   | Literal_char of char
   | Literal_float of float
   | Literal_string of string
@@ -21,7 +21,7 @@ type expr =
   | StructId of string * string
 
 type stmt =		      (* statements that can occur in funcs *)
-    Block of stmt list
+  | Block of stmt list
   | Expr of expr
   | Assign of string * expr
   | Return of expr
@@ -44,14 +44,14 @@ type fdecl = {			   (* func declaration *)
     formals   : vdecl list;	   
     locals    : vdecl list;
     body      : stmt  list;
-    gfunc     : bool;
+    isGfunc   : bool;
     blocksize : int;
 }
 
-type sdecl = {			   (* struct declaration *)
+type sdef = {			     (* struct definition *)
     s_name     : string;
     s_elements : vdecl list;
 }
 
-type program = vdecl list * sdecl list * fdecl list
-(* program = global variables, global structs, funcs and gfuncs *)
+type program = vdecl list * sdef list * fdecl list
+(* program = global variables, global structs, functions *)

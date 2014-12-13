@@ -50,11 +50,16 @@ let rec c_formals = function
   | vdecl :: other_vdecls -> (c_vdecl_no_semi vdecl) ^ ", "
 			     ^ (c_formals other_vdecls)
 ;;				 
+
+let c_body stmt_list =
+  
+;;
   
 let c_fdecl fdecl =
   (*TODO Add in function typing *)
   (*fdecl.ftype ^ " " ^ *)
-  "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")" ^ "{}\n"
+  "F_TYPE " ^ fdecl.fname ^ "(" ^ c_formals fdecl.formals ^ ")" ^
+    "{\n" ^ c_body fdecl.body ^ "}\n"
 ;;								 
   
 let gen_fdecls (_, _, fdecls) env =

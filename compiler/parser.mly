@@ -254,8 +254,8 @@ gstmt:
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
 
 /* note that loop_stmt_list can be used from inside if/else blocks */
-block_body:  LBRACE SEMI loop_stmt_list RBRACE SEMI     { Block(List.rev $3) }
-gblock_body: LBRACE SEMI gloop_stmt_list RBRACE SEMI    { Block(List.rev $3) }
+block_body:  LBRACE loop_stmt_list RBRACE               { Block(List.rev $2) }
+gblock_body: LBRACE gloop_stmt_list RBRACE              { Block(List.rev $2) }
 
 for_pt1: LPAREN expr_opt SEMI                           { $2 }
 for_pt2: bool_expr_opt SEMI                             { $1 }
@@ -264,21 +264,21 @@ for_pt3: expr_opt RPAREN                                { $1 }
 /* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
     | /* Nothing */                                     { [] }
-    | stmt_list SEMI                                    { $1 }
-    | loop_stmt_list loopexpr SEMI                      { $2 :: $1 }
+    | stmt_list                                         { $1 }
+    | loop_stmt_list loopexpr                           { $2 :: $1 }
 
 gloop_stmt_list:
     | /* Nothing */                                     { [] } 
-    | gfunc_stmt_list SEMI                              { $1 }
-    | gloop_stmt_list loopexpr SEMI                     { $2 :: $1 }
+    | gfunc_stmt_list                                   { $1 }
+    | gloop_stmt_list loopexpr                          { $2 :: $1 }
 
 /////////////////////////////////////////////////////////////////////
 //////////////////////////EXPRESSIONS////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
 loopexpr:
-    | CONTINUE                        { Continue }
-    | BREAK                           { Break }
+    | CONTINUE SEMI                   { Continue }
+    | BREAK SEMI                      { Break }
 
 blockexpr:
     BLOCK PERIOD ID                   { StructId("Block", $3) }

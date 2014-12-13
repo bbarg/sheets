@@ -79,6 +79,7 @@ rule token = parse
 | '-'?num+ as intlit { INT_LITERAL(int_of_string intlit) }
 | flt  as fltlit { FLOAT_LITERAL(float_of_string fltlit) }
 | '"' ([^'"']* as str_lit) '"' { STRING_LITERAL(str_lit) }
+| '\'' ([^'\'']* as str_lit) '\'' { STRING_LITERAL(str_lit) }
 
 (* Throw Error for Invalid Token *)
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }

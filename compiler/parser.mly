@@ -264,12 +264,12 @@ for_pt3: expr_opt RPAREN                                { $1 }
 /* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
     | /* Nothing */                                     { [] }
-    | stmt_list SEMI                                    { $1 }
+    | stmt_list                                         { $1 }
     | loop_stmt_list loopexpr SEMI                      { $2 :: $1 }
 
 gloop_stmt_list:
     | /* Nothing */                                     { [] } 
-    | gfunc_stmt_list SEMI                              { $1 }
+    | gfunc_stmt_list                                   { $1 }
     | gloop_stmt_list loopexpr SEMI                     { $2 :: $1 }
 
 /////////////////////////////////////////////////////////////////////

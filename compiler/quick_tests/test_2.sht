@@ -11,9 +11,9 @@ func int main():
     if (second_num > first_num):
         absolute_val = \       
             subtract(second_num, first_num)
-    else if (second_num < first_num):
+    #~ else if (second_num < first_num):
         absolute_val =  \
-            subtract(first_num, second_num)
+            subtract(first_num, second_num) ~#
     else:
         return 0
 

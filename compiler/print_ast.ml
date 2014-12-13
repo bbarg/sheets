@@ -29,7 +29,7 @@ let print_ops = function
     | Divide -> printf "/"
     | Mod ->printf "%c" '%'
     | Neg ->printf "-"
-    | Equal ->printf "="
+    | Equal ->printf "=="
     | Neq -> printf"!="
     | Less ->printf "<"
     | Leq ->printf "<="

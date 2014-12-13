@@ -105,7 +105,7 @@ fdecl:
         formals   = $5;                  (* argument list *)
         body      = $9;                 (* normal statement list *)
         isGfunc   = false;               (* false b/c not a gfunc *)
-        blocksize = 0
+        blocksize = -1
     }}
 
 /* gfunc int named_gfunc(args).[5]:{ <statements>... }; */
@@ -174,12 +174,13 @@ vdecl:
     const type_name_t ID 
     {{ 
         v_type   = first $2;              (* variable type *)
-        a_size   = third $2 
+        a_size   = third $2; 
         v_name   = $3;                  (* variable name *)
         isConst  = $1;                  (* true or false for if const *)
         isStruct = second $2;               (* true or false for if a struct *)
        
     }}
+
 const:
     | /* Nothing */                     { false }
     | CONST                             { true }

@@ -33,10 +33,20 @@ let vars level = first level;;
 let funcs level = second level;;
 let structs level = third level;;
   
+(* START OF NEW DEFINITION for ENV *)
+(* let create = *)
+(*    { *)
+(*      var_map_stack = VariableMap.empty :: []; *)
+(*      func_map = FunctionMap.empty; *)
+(*      struct_map = StructMap.empty; *)
+(*      containing_func = "";	(\* initialize as null fdecl *\) *)
+(*    }  *)
+(* ;; *)
+
 (* return a list containing one element: a tuple of three empty maps *)
 let empty () =
-  [ (VariableMap.empty, FunctionMap.empty, StructMap.empty) ]
-;;      
+  [ (VariableMap.empty, FunctionMap.empty, StructMap.empty) ] 
+;;
 
 (* takes in the table list from the current scope level and
    returns a new table list with an empty_table appended.

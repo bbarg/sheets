@@ -1,6 +1,5 @@
 (* Utilities to parse expressions for generate.ml *)
 
-
 (* Utilities for type checking *) 
 
 (* Takes an environment and text tuple and an id of a variable, and returns its type as a string. If the variable does not exist it raises an error *)
@@ -12,6 +11,8 @@ let lookup_id_type (env, text) id = "TODO" ;;
 
 let lookup_func_type (env, text) f = "TODO";;
 (* Takes an expression and the corresponding environment and current text and evaluates the type of the expression, returning a string corresponding to the type of the expression *)
+exception TypeError of string;;
+
 let rec typeof (env, text) expr = 
     match expr with 
      Literal_int(i) -> "int"
@@ -32,4 +33,18 @@ let rec typeof (env, text) expr =
 ;;
 
 
-let process_expr (env, tex) expr 
+let process_expr (env, tex) expr = (env, tex);;
+
+(* take in the current environment and text and return the updated
+   environment and text with the c code for the assignment
+   raises TypeError if the type of the variable and expression do not
+   match
+ *)
+let process_assign (env, text) name expr =
+  raise Generator.NotImplementedError("utilities: process_assign")
+(* TODO *)
+;;
+
+let process_return (env, text) expr =
+  
+;;

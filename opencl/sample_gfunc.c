@@ -37,6 +37,12 @@ cl_kernel compiled_kernels[NKERNELS];
 ////// [END]
 
 int
+in_thrsh(float v, float lo, float hi)
+{
+  return (v > lo && v < hi);
+}
+
+int
 main (int argv, char **argc)
 {
   /////////////////////////
@@ -66,14 +72,19 @@ main (int argv, char **argc)
 
   ////// [END]
 
-  size_t __SIZE_wav = 10000;
+  size_t __SIZE_wav = 10;
 
   float wav[__SIZE_wav];
   const char *file_name = "mytune.wav";
+  int in_thrsh_cnt;
 
   for (_i = 0; _i < 10000; _i++) {
-    wav[_i] = random() / RAND_MAX;
+    wav[_i] = (float) rand() / RAND_MAX;
+    printf("%f ", wav[_i]);
+    if (in_thrsh(wav[_i], 0.1112, 0.7888))
+      in_thrsh_cnt++;
   }
+  printf("\n");
 
   printf("Beginning wav masking from file [%s]\n", file_name);
 
@@ -143,7 +154,7 @@ main (int argv, char **argc)
 		   __CLMEM_band_restrict_ARG0,
 		   CL_TRUE,	 /* blocking read */
 		   0,		 /* 0 offset */
-		   __SIZE_wav, 	 /* read whole buffer */
+		   sizeof(float) * __SIZE_wav, 	 /* read whole buffer */
 		   (void *) out, /* host pointer */
 		   1,		 /* wait for gfunc to finish */
 		   &__CLEVENT_band_restrict_CALL, /* "" */
@@ -155,11 +166,18 @@ main (int argv, char **argc)
   printf("Done wav masking from file [%s]\n", file_name);
 
   ////// Validate call
+  int c;
 
   for (_i = 0; _i < __SIZE_wav; _i++) {
-    assert(out[_i] > __PRIM_band_restrict_ARG2 &&
-	   out[_i] < __PRIM_band_restrict_ARG3);
+    if (in_thrsh(out[_i], 0.1112, 0.7888)) {
+      c++;
+    } else if(out[_i]) {
+      fprintf(stderr, "Value outside of band is non-zero.\n");
+      exit(1);
+    }
   }
+
+  assert(in_thrsh_cnt == c);
 
   return 0;
 }

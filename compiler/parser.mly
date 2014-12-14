@@ -316,7 +316,6 @@ bool_expr:
 array_expr:
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
-//    | array_literal                   { $1 }
 
 assign_expr:
     | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }   
@@ -332,14 +331,19 @@ literal:
     | BOOL_LITERAL                    { Literal_bool($1) }
     | LBRACK int_literal_list RBRACK  { Literal_int_a(List.rev $2) }
     | LBRACK flt_literal_list RBRACK  { Literal_float_a(List.rev $2) }
+    | LBRACK str_literal_list RBRACK  { Literal_str_a(List.rev $2) }
 
 int_literal_list:
-    | INT_LITERAL                      { [$1] }
-    | int_literal_list COMMA INT_LITERAL { $3 :: $1 }
+    | INT_LITERAL                           { [$1] }
+    | int_literal_list COMMA INT_LITERAL    { $3 :: $1 }
 
 flt_literal_list:
-    | FLOAT_LITERAL                    { [$1] }
-    | flt_literal_list COMMA FLOAT_LITERAL { $3 :: $1 }
+    | FLOAT_LITERAL                         { [$1] }
+    | flt_literal_list COMMA FLOAT_LITERAL  { $3 :: $1 }
+
+str_literal_list:
+    | STRING_LITERAL                        { [$1] }
+    | str_literal_list COMMA STRING_LITERAL { $3 :: $1 }    
 
 /* expr are all the expressions EXCEPT:
     * those with blocks

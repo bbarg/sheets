@@ -22,12 +22,10 @@ rule token = parse
 | '+' { PLUS }        | ":+" { G_PLUS }
 | '-' { MINUS }       | ":-" { G_MINUS }
 | '*' { TIMES }       | ":*" { G_TIMES }
-| '/' { DIVIDE }      | ":/" { G_DIVIDE }
-
-(* 
+| '/' { DIVIDE }      | ":/" { G_DIVIDE } 
 | '%' { MOD }         | ":%" { G_MOD }
 
-Bit Operations 
+(*Bit Operations*)
 | '~'  { NOT }        | ":~"  { G_NOT}
 | '^'  { XOR }        | ":^"  { G_MOD }
 | '&'  { AND }        | ":%"  { G_MOD } 
@@ -38,7 +36,7 @@ Bit Operations
 (* Assignment Operators *)
 | '=' { ASSIGN }      | ":=" { G_ASSIGN }
 | '!' { NEG}          | ":!" { G_NEG }
-*)
+
 
 (* Equivalence Operators *)
 | "==" { EQ }         | ":==" { G_EQ }
@@ -67,10 +65,9 @@ Bit Operations
 | "const"  { CONST }  | "String" { STRING } 
 | "Block"  { BLOCK }
 
-(* UNUSED TYPES:
-   | "char" { CHAR }  | "TRUE" { TRUE } 
-   | "FALSE" { FALSE} | "boolean" { BOOL } 
-   | "long" { LONG }  | "double" { DOUBLE } *)
+| "char" { CHAR }  | "TRUE" { TRUE } 
+| "FALSE" { FALSE} | "boolean" { BOOL } 
+| "long" { LONG }  | "double" { DOUBLE }
 
 (* End-of-File *)
 | eof { EOF }

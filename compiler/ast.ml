@@ -1,26 +1,24 @@
-type op = Lor     | Land     | Neq     | Less    | Leq     | Greater | 
-          Geq     | Plus     | Minus   | Times   | Divide  | Equal   
-
-(*  UNUSED OPERATORS: 
- *
- *  Or | Xor | And | Mod | Lshift  | Rshift 
- *  type unary_op = Neg | Not
- *)
+type op = Lor   | Land     | Neq      | Less   | Leq     | Greater | 
+          Geq   | Plus     | Minus    | Times  | Divide  | Equal   |
+          Or    | Xor      | And      | Mod    | Lshift  | Rshift  | 
+          Not   | Neg      | G_And    | G_Or   | G_Xor   | G_Not   |
+          G_Neg | G_Lshift | G_Rshift | G_Plus | G_Minus | G_Times |
+          G_Mod | G_Divide 
 
 type expr = 
   | Literal_int of int
   | Literal_float of float
   | Literal_string of string
-(*| Literal_bool of bool
-  | Literal_char of char*)
+  | Literal_bool of bool
+  | Literal_char of char
   | Literal_int_a of int list
   | Literal_float_a of float list
   | Literal_string_a of string list
-(*| Literal_bool_a of bool list
-  | Literal_char_a of char list*)
+  | Literal_bool_a of bool list
+  | Literal_char_a of char list
   | Id of string
   | Binop of expr * op * expr
-(*| Unop of unary_op * expr*)
+ (* | Unop of unary_op * expr *)
   | Call of string * expr list
   | StructId of string * string 
   (* StructId: string1=name of struct var, string2=name of element to be accessed *)
@@ -33,7 +31,7 @@ type vdecl = {
     v_name    : string;
     isConst   : bool;
     isStruct  : bool;
-    a_size    : expr;
+    a_size    : int;
 }
 
 type stmt =		      (* statements that can occur in funcs *)
@@ -68,7 +66,7 @@ type sdef = {			     (* struct definition *)
 type program = vdecl list * sdef list * fdecl list
 (* program = global variables, global structs, functions *)
 
-type datatype = 
+(*type datatype = 
  | Int of string 
  | Float of string 
- | Array of datatype 
+ | Array of datatype *)

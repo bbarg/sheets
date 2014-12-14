@@ -3,6 +3,16 @@ type op = Lor      | Land    | Or      | Xor     | Not     | And     |
           Plus     | Minus   | Times   | Divide  | Mod     | Neg     | 
           Lshift   | Rshift
 
+type datatype =
+  | INT              
+  | LONG
+  | FLOAT     
+  | DOUBLE
+  | CHAR      
+  | STRING
+  | BOOL
+  | ArrayType of datatype
+
 type expr = 
   | Literal_int of int
   | Literal_char of char
@@ -45,7 +55,6 @@ type stmt =		      (* statements that can occur in funcs *)
   | Continue
   | Break
 
-
 type fdecl = {			   (* func declaration *)
     r_type    : string;
     r_struct  : bool;
@@ -61,5 +70,14 @@ type sdef = {			     (* struct definition *)
     s_elements : vdecl list;
 }
 
+(* program = global variables, global structs & functions *)
 type program = vdecl list * sdef list * fdecl list
-(* program = global variables, global structs, functions *)
+
+let type_of_string = function
+  | "int"     -> INT              
+  | "long"    -> LONG
+  | "float"   -> FLOAT     
+  | "double"  -> DOUBLE
+  | "char"    -> CHAR      
+  | "String"  -> STRING
+  | "boolean" -> BOOL

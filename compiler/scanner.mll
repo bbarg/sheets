@@ -1,6 +1,4 @@
-{ 
-    open Parser;;
-}
+{ open Parser;; }
 
 let num = ['0'-'9']
 let flt = num+ '.' num* | '.' num+
@@ -58,16 +56,18 @@ rule token = parse
 | "continue" { CONTINUE }
 
 (* Function Keywords *)
-| "func" { FUNC }     | "gfunc"  { GFUNC }
+| "func"   { FUNC }   | "gfunc"  { GFUNC }
 | "struct" { STRUCT } | "return" { RETURN }
 
 (* Type Keywords*)
-| "int"    { INT }    | "long"   { LONG }
-| "float"  { FLOAT }  | "double" { DOUBLE }
-| "char"   { CHAR }   | "const"  { CONST }
-| "TRUE"   { TRUE }   | "FALSE"  { FALSE}
-| "String" { STRING } | "Block"  { BLOCK }
-| "boolean" { BOOL }
+| "int"               | "long"   
+| "float"             | "double" 
+| "char"              | "String" 
+| "boolean"
+as primtype { TYPE(primtype) }
+
+| "TRUE"  { TRUE }    | "FALSE"   { FALSE }
+| "const" { CONST }   | "Block"   { BLOCK }
 
 (* End-of-File *)
 | eof { EOF }
@@ -78,7 +78,7 @@ rule token = parse
 (* Literals *)
 | '-'?num+ as intlit { INT_LITERAL(int_of_string intlit) }
 | flt  as fltlit { FLOAT_LITERAL(float_of_string fltlit) }
-| '"' ([^'"']* as str_lit) '"' { STRING_LITERAL(str_lit) }
+| '"' ([^'"']* as str_lit) '"'    { STRING_LITERAL(str_lit) }
 | '\'' ([^'\'']* as str_lit) '\'' { STRING_LITERAL(str_lit) }
 
 (* Throw Error for Invalid Token *)

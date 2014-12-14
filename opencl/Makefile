@@ -13,6 +13,8 @@ EXE     = sample_gfunc
 
 all : $(EXE)
 
+sample_gfunc : cl-helper.o
+
 .PHONY : clean
 clean : 
 	rm -f *.o $(EXE)

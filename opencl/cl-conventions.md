@@ -17,6 +17,8 @@
 
 - the return type of a gfunc will always be the FIRST argument of the subsequent kernel string
 
+- we apparently do NOT have to make memory buffers for primitive types that we pass by value
+
 ## Build 
 
 - the names for the platform and device, as required by cl_helper

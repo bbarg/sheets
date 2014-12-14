@@ -8,33 +8,34 @@
 
 #define NKERNELS 1
 
-const char *__KERNEL_band_restrict =
+char *kernel_strings[NKERNELS] = {
   "__kernel void band_restrict(\n"
-  "__global const float *out, __global const float *wav, const float thresh_low, const float thresh_hi\n"
+  "__global float *out, __global const float *wav, const float thresh_low, const float thresh_hi\n"
   ")\n"
   "{\n"
   "const int id = get_global_id(0);\n"
   "float freq = wav[id];\n"
   "if (freq > thresh_hi) {\n"
-  "out[id] = 0\n"
+  "out[id] = 0;\n"
   "}\n"
   "else if (freq < thresh_low) {\n"
-  "out[id] = 0\n"
+  "out[id] = 0;\n"
   "}\n"
   "else {\n"
-  "out[id] = wav[id]"
+  "out[id] = wav[id];"
   "}\n"
-  "}\n";
+  "}\n"
+};
 
 /////////////////////////
 ////// SAME IN EVERY FILE
 /////////////////////////
 
-const char **kernel_strings = { __KERNEL_band_restrict };
-const char **kernel_names   = { "__KERNEL_band_restrict" };
+char *kernel_names[NKERNELS] = { "band_restrict" };
 cl_kernel compiled_kernels[NKERNELS];
 
 ////// [END]
+
 int
 main (int argv, char **argc)
 {
@@ -57,7 +58,7 @@ main (int argv, char **argc)
 
   // compile kernels
   for (_i = 0; _i < NKERNELS; _i++) {
-    compiled_kernels[_i] = kernel_from_string(&__sheets_context,
+    compiled_kernels[_i] = kernel_from_string(__sheets_context,
 					      kernel_strings[_i],
 					      kernel_names[_i],
 					      SHEETS_KERNEL_COMPILE_OPTS);
@@ -67,8 +68,8 @@ main (int argv, char **argc)
 
   size_t __SIZE_wav = 10000;
 
-  float *wav[__SIZE_wav];
-  char *file_name = "mytune.wav";
+  float wav[__SIZE_wav];
+  const char *file_name = "mytune.wav";
 
   for (_i = 0; _i < 10000; _i++) {
     wav[_i] = random() / RAND_MAX;
@@ -81,45 +82,44 @@ main (int argv, char **argc)
   /////////////////
 
   /// create variables for function arguments given as literals
-  float __band_restrict_ARG2 = 0.1112f;
-  float __band_restrict_ARG3 = 0.7888f;
+  float __PRIM_band_restrict_ARG2 = 0.1112f;
+  float __PRIM_band_restrict_ARG3 = 0.7888f;
 
   /// return array (always arg0)
-  cl_mem __CLMEM_band_restrict_ARG0 = clCreateBuffer(__sheets_queue, 
+  cl_mem __CLMEM_band_restrict_ARG0 = clCreateBuffer(__sheets_context, 
 						     CL_MEM_WRITE_ONLY, 
-						     __SIZE_wav, 
+						     sizeof(float) * __SIZE_wav, 
 						     NULL, 
 						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
+  CHECK_CL_ERROR(__cl_err, "clCreateBuffer");
 					      
   /// input arrays
-  cl_mem __CLMEM_band_restrict_ARG1 = clCreateBuffer(__sheets_queue, 
+  cl_mem __CLMEM_band_restrict_ARG1 = clCreateBuffer(__sheets_context, 
 						     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
-						     __SIZE_wav, 
-						     wav, 
+						     sizeof(float) * __SIZE_wav, 
+						     (void *) wav, 
 						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
+  CHECK_CL_ERROR(__cl_err, "clCreateBuffer");
+
+  /// write to device memory
+  CALL_CL_GUARDED(clEnqueueWriteBuffer,
+		 (__sheets_queue,
+		  __CLMEM_band_restrict_ARG1,
+		  CL_TRUE,	/* blocking write */
+		  0, 		/* no offset */
+		  sizeof(float) * __SIZE_wav,
+		  wav,
+		  0,		/* no wait list */
+		  NULL,
+		  NULL)
+		  );
   
-  cl_mem __CLMEM_band_restrict_ARG2 = clCreateBuffer(__sheets_queue, 
-						     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
-						     sizeof(__band_restrict_ARG2), 
-						     __band_restrict_ARG2, 
-						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
-
-  cl_mem __CLMEM_band_restrict_ARG3 = clCreateBuffer(__sheets_queue, 
-						     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
-						     sizeof(__band_restrict_ARG3), 
-						     __band_restrict_ARG3, 
-						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
-
   /// set up kernel arguments
   SET_4_KERNEL_ARGS(compiled_kernels[0],
 		    __CLMEM_band_restrict_ARG0,
 		    __CLMEM_band_restrict_ARG1,
-		    __CLMEM_band_restrict_ARG2,
-		    __CLMEM_band_restrict_ARG3);
+		    __PRIM_band_restrict_ARG2,
+		    __PRIM_band_restrict_ARG3);
 
   /// enqueue kernel
   cl_event __CLEVENT_band_restrict_CALL;
@@ -129,16 +129,15 @@ main (int argv, char **argc)
 		   1,		/* 1 dimension */
 		   0,		/* 0 offset */
 		   &__SIZE_wav,
-		   NULL		/* let OpenCL break things up */
+		   NULL,	/* let OpenCL break things up */
 		   0,		/* no events in wait list */
 		   NULL,	/* empty wait list */
-		   &__CLEVENT_band_restrict)
+		   &__CLEVENT_band_restrict_CALL)
 		  );
 
   /// allocate space for cpu return array
   float out[__SIZE_wav];
   
-  cl_event __CLEVENT_band_restrict_RET;
   CALL_CL_GUARDED(clEnqueueReadBuffer,
 		  (__sheets_queue,
 		   __CLMEM_band_restrict_ARG0,
@@ -148,7 +147,7 @@ main (int argv, char **argc)
 		   (void *) out, /* host pointer */
 		   1,		 /* wait for gfunc to finish */
 		   &__CLEVENT_band_restrict_CALL, /* "" */
-		   &__CLEVENT_band_restrict_RET)	 
+		   NULL)			  /* no need to wait for this call though */
 		  );
   
   ////// [END] GFUNC CALL
@@ -158,8 +157,8 @@ main (int argv, char **argc)
   ////// Validate call
 
   for (_i = 0; _i < __SIZE_wav; _i++) {
-    assert(out[_i] > __band_restrict_ARG2 &&
-	   out[_i] < __band_restrict_ARG3);
+    assert(out[_i] > __PRIM_band_restrict_ARG2 &&
+	   out[_i] < __PRIM_band_restrict_ARG3);
   }
 
   return 0;

@@ -1,0 +1,29 @@
+## Sample sheets program with a gfunc
+
+#~ cut out all samples above a certain threshold ~#
+ 
+gfunc 
+float[] band_restrict(float[] wav, float thresh_low, float thresh_hi):
+    float ofreq = wav[block.id]
+
+    if (freq > thresh_hi):
+        block.out[id] = 0
+    else if (freq < thresh_low)
+        block.out[id] = 0
+    else
+        block.out[id]
+
+func 
+int main():
+    float[] wav
+    string file_name = "mytune.wav"
+
+    wav = load_bin("float", file_name)
+
+    float[] out
+
+    printf("Beginning wav masking from file [%s]\n", file_name)
+    out = band_restrict(wav, 0.1112, 0.7888)
+    printf("Done wav masking from file [%s]\n", file_name)
+
+    write_bin("float", out, "mytune_restrict.wav")

@@ -1,0 +1,4 @@
+#~ SHOULDPASS: String Array Literal ~#
+func int main():
+     String[2] my_array
+     my_array = ["testString",'testString']

@@ -1,3 +1,5 @@
+##SHOULDFAIL: Illegal floating point literal
+
 float x 
 
 func int main():

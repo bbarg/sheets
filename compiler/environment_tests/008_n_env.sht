@@ -1,3 +1,4 @@
+##SHOULDFAIL: Parser detects illegal assignment in global scope
 int x
 float f 
 x = 7

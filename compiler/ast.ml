@@ -1,24 +1,26 @@
-type op = Lor      | Land    | Or      | Xor     | And     |
-          Neq      | Less    | Leq     | Greater | Geq     |
-          Plus     | Minus   | Times   | Divide  | Mod     |  
-          Equal    | Lshift  | Rshift
+type op = Lor     | Land     | Neq     | Less    | Leq     | Greater | 
+          Geq     | Plus     | Minus   | Times   | Divide  | Equal   
 
-type unary_op = Neg | Not
+(*  UNUSED OPERATORS: 
+ *
+ *  Or | Xor | And | Mod | Lshift  | Rshift 
+ *  type unary_op = Neg | Not
+ *)
 
 type expr = 
   | Literal_int of int
-  | Literal_char of char
   | Literal_float of float
   | Literal_string of string
-  | Literal_bool of bool
+(*| Literal_bool of bool
+  | Literal_char of char*)
   | Literal_int_a of int list
-  | Literal_char_a of char list
   | Literal_float_a of float list
   | Literal_string_a of string list
-  | Literal_bool_a of bool list
+(*| Literal_bool_a of bool list
+  | Literal_char_a of char list*)
   | Id of string
   | Binop of expr * op * expr
-  | Unop of unary_op * expr
+(*| Unop of unary_op * expr*)
   | Call of string * expr list
   | StructId of string * string 
   (* StructId: string1=name of struct var, string2=name of element to be accessed *)
@@ -47,7 +49,6 @@ type stmt =		      (* statements that can occur in funcs *)
   | ForIn of expr * expr * stmt
   | Continue
   | Break
-
 
 type fdecl = {			   (* func declaration *)
     r_type    : string;

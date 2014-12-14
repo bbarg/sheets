@@ -23,9 +23,11 @@ rule token = parse
 | '-' { MINUS }       | ":-" { G_MINUS }
 | '*' { TIMES }       | ":*" { G_TIMES }
 | '/' { DIVIDE }      | ":/" { G_DIVIDE }
+
+(* 
 | '%' { MOD }         | ":%" { G_MOD }
 
-(* Bit Operations *)
+Bit Operations 
 | '~'  { NOT }        | ":~"  { G_NOT}
 | '^'  { XOR }        | ":^"  { G_MOD }
 | '&'  { AND }        | ":%"  { G_MOD } 
@@ -36,6 +38,7 @@ rule token = parse
 (* Assignment Operators *)
 | '=' { ASSIGN }      | ":=" { G_ASSIGN }
 | '!' { NEG}          | ":!" { G_NEG }
+*)
 
 (* Equivalence Operators *)
 | "==" { EQ }         | ":==" { G_EQ }
@@ -60,12 +63,14 @@ rule token = parse
 | "struct" { STRUCT } | "return" { RETURN }
 
 (* Type Keywords*)
-| "int"    { INT }    | "long"   { LONG }
-| "float"  { FLOAT }  | "double" { DOUBLE }
-| "char"   { CHAR }   | "const"  { CONST }
-| "TRUE"   { TRUE }   | "FALSE"  { FALSE}
-| "String" { STRING } | "Block"  { BLOCK }
-| "boolean" { BOOL }
+| "int"    { INT }    | "float"  { FLOAT } 
+| "const"  { CONST }  | "String" { STRING } 
+| "Block"  { BLOCK }
+
+(* UNUSED TYPES:
+   | "char" { CHAR }  | "TRUE" { TRUE } 
+   | "FALSE" { FALSE} | "boolean" { BOOL } 
+   | "long" { LONG }  | "double" { DOUBLE } *)
 
 (* End-of-File *)
 | eof { EOF }

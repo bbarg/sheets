@@ -1,7 +1,7 @@
 const  int    a
 float  my_list
-double ballon_volume
-char   im_a_char
+int ballon_volume
+String   im_a_str
 
 func int add (int x, int y):
     int b

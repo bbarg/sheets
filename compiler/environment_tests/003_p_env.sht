@@ -1,5 +1,5 @@
 const  int a
 float  my_list
-double ballon_volume
-char   im_a_char
-long a_long
+int ballon_volume
+String   im_a_str
+int an_int

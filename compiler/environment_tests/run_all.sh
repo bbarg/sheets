@@ -7,7 +7,6 @@ rm -f *.proc.sht
 rm -f envtests.output
 environment_tests=$(find . -name "*\.sht")
 
-
 path_to_name()
 {
     local fullpath=$1
@@ -27,7 +26,7 @@ for file in $environment_tests ; do
     echo "" >> $output_file
     echo "===================================" >> $output_file
     
-    $( ./$executable $test_name >> $output_file 2>&1)
+    $( ./$executable $test_name >> $output_file 2>&1 )
 
     echo "===================================" >> $output_file
     echo "" >> $output_file

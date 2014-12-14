@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>		/* malloc */
 #include <math.h>		/* random */
-#include "platforms/aws-g2.2xlarge.h" /* sheets platform defs */
+#include "aws-g2.2xlarge.h" /* sheets platform defs */
 #include "cl-helper.h"		  
 #include <CL/cl.h>
 
@@ -178,6 +178,18 @@ main (int argv, char **argc)
   }
 
   assert(in_thrsh_cnt == c);
+
+  //////////////
+  ////// CLEANUP
+  //////////////
+
+  CALL_CL_GUARDED(clReleaseMemObject, (__CLMEM_band_restrict_ARG0));
+  CALL_CL_GUARDED(clReleaseMemObject, (__CLMEM_band_restrict_ARG1));
+  for (_i = 0; _i < NKERNELS; _i++) {
+    CALL_CL_GUARDED(clReleaseKernel, (compiled_kernels[_i]));
+  }
+  CALL_CL_GUARDED(clReleaseCommandQueue, (__sheets_queue));
+  CALL_CL_GUARDED(clReleaseContext, (__sheets_context));
 
   return 0;
 }

@@ -1,7 +1,9 @@
-type op = Lor      | Land    | Or      | Xor     | Not     | And     |
-          Equal    | Neq     | Less    | Leq     | Greater | Geq     |
-          Plus     | Minus   | Times   | Divide  | Mod     | Neg     | 
-          Lshift   | Rshift
+type op = Lor      | Land    | Or      | Xor     | And     |
+          Neq      | Less    | Leq     | Greater | Geq     |
+          Plus     | Minus   | Times   | Divide  | Mod     |  
+          Equal    | Lshift  | Rshift
+
+type unary_op = Neg| Not
 
 type datatype =
   | INT              
@@ -11,27 +13,36 @@ type datatype =
   | CHAR      
   | STRING
   | BOOL
+  | StructType of ident
   | ArrayType of datatype
 
-type expr = 
+type ident = Id of string
+
+type lvalue =
+  | Variable of ident
+  | ArrayElem of ident * expr list
+and expr = 
   | Literal_int of int
   | Literal_char of char
   | Literal_float of float
   | Literal_string of string
   | Literal_bool of bool
-  | Literal_int_a of int list
-  | Literal_char_a of char list
-  | Literal_float_a of float list
-  | Literal_string_a of string list
-  | Literal_bool_a of bool list
-  | Id of string
-  | Binop of expr * op * expr
-  | Call of string * expr list
+  | Literal_array of expr list  
+  (**)
+  | BinaryOp of expr * op * expr
+  | UnaryOp of unary_op * expr
+  | StructAccess of ident * ident
+  | FunctionCall of ident * expr list
   | StructId of string * string 
   (* StructId: string1=name of struct var, string2=name of element to be accessed *)
-  | ArrayAcc of expr * expr
+  | ArrayAccess of ident * expr
   (* ArrayAcc: expr1=expression that evaluates to an array, expr2=expression
    * that evaluates to the index in the array to be accessed *)
+
+type decl =
+  | AssigningDecl of ident * expr
+  | PrimitiveDecl of datatype * ident
+  | ArrayDecl of datatype * ident * expr list
 
 type vdecl = {
     v_type    : string;	   (* PARSER *)
@@ -45,7 +56,7 @@ type stmt =		      (* statements that can occur in funcs *)
   | Vdecl of vdecl
   | Block of stmt list
   | Expr of expr
-  | Assign of expr * expr
+  | Assign of lval * expr
   | Return of expr
   | Init of vdecl * expr
   | If of expr * stmt * stmt 
@@ -60,7 +71,7 @@ type fdecl = {			   (* func declaration *)
     r_struct  : bool;
     fname     : string;
     formals   : vdecl list;	   
-    body      : stmt  list;
+    body      : stmt list;
     isGfunc   : bool;
     blocksize : int;
 }

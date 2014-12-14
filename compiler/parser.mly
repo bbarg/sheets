@@ -81,11 +81,19 @@
 
 %%
 
-/* Grammar Rules */       
+ident:
+    | ID                              { Id($1) }
+datatype:
+    | TYPE                            { type_of_string $1 }
+    | TYPE LSQUARE RSQUARE            { ArrayType(type_of_string $1) }
+lvalue:
+    | ident                           { Variable($1) }
+    | ident LSQUARE expr RSQUARE      { ArrayAccess($1, $3) }
+    | ident PERIOD ident              { StructAccess($1, $3) }
 
 program:                        /* [vdecls], [sdef], [fdecls] */
     | /* Empty Program */       { [], [], [] } 
-    | program vdecl SEMI        { ($2 :: first $1), second $1, third $1 }
+    | program vdecl             { ($2 :: first $1), second $1, third $1 }
     | program sdef              { first $1, ($2 :: second $1), third $1 }    
     | program fdecl             { first $1, second $1, ($2 :: third $1) }
     | program gfdecl            { first $1, second $1, ($2 :: third $1) }
@@ -96,25 +104,23 @@ program:                        /* [vdecls], [sdef], [fdecls] */
 
 /* func int named_func(args):{ <statements>... }; */
 fdecl:
-    FUNC type_name ID LPAREN formals_opt RPAREN COLON 
+    FUNC datatype ident LPAREN formals_opt RPAREN COLON 
     LBRACE stmt_list_opt RBRACE
     {{
-        r_type    = first $2;
-        r_struct  = second $2;
-        fname     = $3;                  (* function name *)
-        formals   = $5;                  (* argument list *)
-        body      = $9;                 (* normal statement list *)
+        r_type    = $2;
+        fname     = $3;
+        formals   = $5;
+        body      = $9; 
         isGfunc   = false;               (* false b/c not a gfunc *)
-        blocksize = -1
+        blocksize = -1;
     }}
 
 /* gfunc int named_gfunc(args).[5]:{ <statements>... }; */
 gfdecl:
-    GFUNC type_name ID LPAREN formals_opt RPAREN blocksize COLON 
+    GFUNC datatype ident LPAREN formals_opt RPAREN blocksize COLON 
     LBRACE gfunc_stmt_list_opt RBRACE
     {{
-        r_type    = first $2;
-        r_struct  = second $2;
+        r_type    = $2;
         fname     = $3;                  (* gfunc name *)
         formals   = $5;                  (* argument list *)
         body      = $10;                 (* gfunc statement list *)
@@ -170,30 +176,50 @@ type_name:
 
 /* <const> <type> name */
 vdecl:
-    const type_name ID 
-    {{ 
-        v_type   = first $2;              (* variable type *)
-        a_size   = third $2; 
-        v_name   = $3;                  (* variable name *)
-        isConst  = $1;                  (* true or false for if const *)
-        isStruct = second $2;               (* true or false for if a struct *)
-       
-    }}
+    | const datatype ident SEMI
+        {{ 
+            isConst  = $1;                  (* true or false for if const *)            
+            v_type   = $2;                  (* variable type *)
+            v_name   = $3;                  (* variable name *)
+            a_size   = Literal_int(-1);     (* array size *)
+        }}
+    | const datatype ident LSQUARE expr RSQUARE SEMI
+        {{
+            isConst  = $1;                  (* true or false for if const *)            
+            v_type   = $2;                  (* variable type *)
+            v_name   = $3;                  (* variable name *)
+            a_size   = $5;                  (* array size *)
+        }}
+
+/* <const> <type> name */
+param:
+    | const datatype ident
+        {{ 
+            isConst  = $1;                  (* true or false for if const *)            
+            v_type   = $2;                  (* variable type *)
+            v_name   = $3;                  (* variable name *)
+        }}
+    | const datatype ident LSQUARE RSQUARE
+        {{
+            isConst  = $1;                  (* true or false for if const *)            
+            v_type   = $2;                  (* variable type *)
+            v_name   = $3;                  (* variable name *)
+        }}
 
 const:
-    | /* Nothing */                     { false }
-    | CONST                             { true }
+    | /* Nothing */                          { false }
+    | CONST                                  { true }
+
 vdecl_list:
-    | vdecl SEMI                            { [$1] }
-    | vdecl_list vdecl SEMI                  { $2 :: $1 }
+    | vdecl                                  { [$1] }
+    | vdecl_list vdecl                       { $2 :: $1 }
 
 sdef:
-    STRUCT ID COLON LBRACE vdecl_list RBRACE
+    STRUCT ident COLON LBRACE vdecl_list RBRACE
     {{
         s_name = $2;
         s_elements = List.rev $5
     }}
-
 
 /////////////////////////////////////////////////////////////////////
 //////////////////////////STATEMENTS/////////////////////////////////
@@ -313,20 +339,9 @@ bool_expr:
     | expr LAND expr                  { Binop($1, Land, $3) }
     | expr LOR expr                   { Binop($1, Lor, $3) }
 
-array_expr:
-    | ID PERIOD ID                    { StructId($1, $3) }
-    | ID                              { Id($1) }
-    | array_literal                   { $1 }
-
-assign_expr:
-    | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }   
-    | LPAREN assign_expr RPAREN       { $2 }
-    | ID PERIOD ID                    { StructId($1, $3) }
-    | ID                              { Id($1) }
-
 literal:
     | INT_LITERAL                     { Literal_int($1) }
-    | CHAR_LITERAL                    { Literal_char($1) }
+    //| CHAR_LITERAL                    { Literal_char($1) }
     | FLOAT_LITERAL                   { Literal_float($1) }
     | STRING_LITERAL                  { Literal_string($1) }
     | BOOL_LITERAL                    { Literal_bool($1) }
@@ -344,36 +359,55 @@ array_literal:
     * comparison operators */
 expr:
     | literal                         { $1 }
-    | ID LPAREN args_opt RPAREN       { Call($1, $3) }
-    | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }
-    | ID PERIOD ID                    { StructId($1, $3) }
-    | ID                              { Id($1) }
-    | expr AND expr                   { Binop($1, And, $3) }    
-    | expr OR expr                    { Binop($1, Or, $3) }
-    | expr XOR expr                   { Binop($1, Xor, $3) }
-    | expr NOT expr                   { Binop($1, Not, $3) }
-    | expr LSHIFT expr                { Binop($1, Lshift, $3) }
-    | expr RSHIFT expr                { Binop($1, Rshift, $3) }
-    | expr PLUS expr                  { Binop($1, Plus, $3) }
-    | expr MINUS expr                 { Binop($1, Minus, $3) }
-    | expr TIMES expr                 { Binop($1, Times, $3) }
-    | expr DIVIDE expr                { Binop($1, Divide, $3) }
-    | expr MOD expr                   { Binop($1, Mod, $3) }
-    | expr NEG expr                   { Binop($1, Neg, $3) }
+    | ident LPAREN args_opt RPAREN    { FunctionCall($1, $3) }
+
+    | array_expr LBRACK expr RBRACK   { ArrayAccess($1, $3) }
+    | ident PERIOD ident              { StructId($1, $3) }
+    | ident                           { Id($1) }
+
+    | expr AND expr                   { BinaryOp($1, And, $3) }    
+    | expr OR expr                    { BinaryOp($1, Or, $3) }
+    | expr XOR expr                   { BinaryOp($1, Xor, $3) }
+    | expr NOT expr                   { BinaryOp($1, Not, $3) }
+    | expr LSHIFT expr                { BinaryOp($1, Lshift, $3) }
+    | expr RSHIFT expr                { BinaryOp($1, Rshift, $3) }
+    | expr PLUS expr                  { BinaryOp($1, Plus, $3) }
+    | expr MINUS expr                 { BinaryOp($1, Minus, $3) }
+    | expr TIMES expr                 { BinaryOp($1, Times, $3) }
+    | expr DIVIDE expr                { BinaryOp($1, Divide, $3) }
+    | expr MOD expr                   { BinaryOp($1, Mod, $3) }
+    | expr NEG expr                   { BinaryOp($1, Neg, $3) }
+
     | LPAREN expr RPAREN              { $2 }
 
+    | lvalue ASSIGN expr              { Assign($1, $3) }
+    | lvalue                          { Lval($1) }    
+
+
+array_expr:
+    | ID PERIOD ID                    { StructId($1, $3) }
+    | ID                              { Id($1) }
+    | array_literal                   { $1 }
+
+assign_expr:
+    | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }   
+    | LPAREN assign_expr RPAREN       { $2 }
+    | ID PERIOD ID                    { StructId($1, $3) }
+    | ID                              { Id($1) }
+
+
 gexpr:
-    | gexpr AND gexpr                 { Binop($1, And, $3) }    
-    | gexpr G_OR gexpr                { Binop($1, Or, $3) }
-    | gexpr G_XOR gexpr               { Binop($1, Xor, $3) }
-    | gexpr G_NOT gexpr               { Binop($1, Not, $3) }
-    | gexpr G_LSHIFT gexpr            { Binop($1, Lshift, $3) }
-    | gexpr G_RSHIFT gexpr            { Binop($1, Rshift, $3) }
-    | gexpr G_PLUS gexpr              { Binop($1, Plus, $3) }
-    | gexpr G_MINUS gexpr             { Binop($1, Minus, $3) }
-    | gexpr G_TIMES gexpr             { Binop($1, Times, $3) }
-    | gexpr G_DIVIDE gexpr            { Binop($1, Divide, $3) }
-    | gexpr G_MOD gexpr               { Binop($1, Mod, $3) }
-    | gexpr G_NEG gexpr               { Binop($1, Neg, $3) }
+    | gexpr AND gexpr                 { BinaryOp($1, And, $3) }    
+    | gexpr G_OR gexpr                { BinaryOp($1, Or, $3) }
+    | gexpr G_XOR gexpr               { BinaryOp($1, Xor, $3) }
+    | gexpr G_NOT gexpr               { BinaryOp($1, Not, $3) }
+    | gexpr G_LSHIFT gexpr            { BinaryOp($1, Lshift, $3) }
+    | gexpr G_RSHIFT gexpr            { BinaryOp($1, Rshift, $3) }
+    | gexpr G_PLUS gexpr              { BinaryOp($1, Plus, $3) }
+    | gexpr G_MINUS gexpr             { BinaryOp($1, Minus, $3) }
+    | gexpr G_TIMES gexpr             { BinaryOp($1, Times, $3) }
+    | gexpr G_DIVIDE gexpr            { BinaryOp($1, Divide, $3) }
+    | gexpr G_MOD gexpr               { BinaryOp($1, Mod, $3) }
+    | gexpr G_NEG gexpr               { BinaryOp($1, Neg, $3) }
     | LPAREN gexpr RPAREN             { $2 }
 

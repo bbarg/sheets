@@ -81,6 +81,7 @@ as primtype { TYPE(primtype) }
 | '"' ([^'"']* as str_lit) '"'    { STRING_LITERAL(str_lit) }
 | '\'' ([^'\'']* as str_lit) '\'' { STRING_LITERAL(str_lit) }
 
+
 (* Throw Error for Invalid Token *)
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 

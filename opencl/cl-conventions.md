@@ -22,4 +22,10 @@
 - the names for the platform and device, as required by cl_helper
   files, are available in a header file "platform/aws-g2.2xlarge"
 
+## OpenCL api
 
+- How do we calculate OpenCL `local_work_size` (argument of `clEnqueueNDRangeKernel`)?
+
+## CPU/GPU communication
+
+- Do we have to wait for our call to finish before we read it's

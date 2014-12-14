@@ -28,4 +28,4 @@
 
 ## CPU/GPU communication
 
-- Do we have to wait for our call to finish before we read it's
+- Do we have to wait for our call to finish before we read it's result

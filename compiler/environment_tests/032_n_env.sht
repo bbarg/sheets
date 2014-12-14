@@ -1,0 +1,6 @@
+#~SHOULDFAIL: Parser should recognize that gfuncs cannot call functions ~#
+gfunc int[] name1():
+    int a
+
+gfunc int[] name2():
+    name1()

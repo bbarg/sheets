@@ -1,0 +1,4 @@
+#~SHOULDFAL: Parser should recognize that gfuncs cannot return ~#
+gfunc int[] name() :
+    int tmp
+    return tmp

@@ -1,0 +1,7 @@
+#~ SHOULDPASS ~#
+func int name():
+    int[] a[2] = [0, 1]
+    int[] b[2] = [3, 4]
+    int[] c[2]
+    c = a :% b
+

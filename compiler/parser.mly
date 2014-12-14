@@ -351,7 +351,6 @@ expr:
     | expr AND expr                   { Binop($1, And, $3) }    
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }
-    | expr NOT expr                   { Binop($1, Not, $3) }
     | expr LSHIFT expr                { Binop($1, Lshift, $3) }
     | expr RSHIFT expr                { Binop($1, Rshift, $3) }
     | expr PLUS expr                  { Binop($1, Plus, $3) }
@@ -359,14 +358,14 @@ expr:
     | expr TIMES expr                 { Binop($1, Times, $3) }
     | expr DIVIDE expr                { Binop($1, Divide, $3) }
     | expr MOD expr                   { Binop($1, Mod, $3) }
-    | expr NEG expr                   { Binop($1, Neg, $3) }
+    | NOT expr                        { Unop(Not, $2) }
+    | NEG expr                        { Unop(Neg, $2) }
     | LPAREN expr RPAREN              { $2 }
 
 gexpr:
     | gexpr AND gexpr                 { Binop($1, And, $3) }    
     | gexpr G_OR gexpr                { Binop($1, Or, $3) }
     | gexpr G_XOR gexpr               { Binop($1, Xor, $3) }
-    | gexpr G_NOT gexpr               { Binop($1, Not, $3) }
     | gexpr G_LSHIFT gexpr            { Binop($1, Lshift, $3) }
     | gexpr G_RSHIFT gexpr            { Binop($1, Rshift, $3) }
     | gexpr G_PLUS gexpr              { Binop($1, Plus, $3) }
@@ -374,6 +373,7 @@ gexpr:
     | gexpr G_TIMES gexpr             { Binop($1, Times, $3) }
     | gexpr G_DIVIDE gexpr            { Binop($1, Divide, $3) }
     | gexpr G_MOD gexpr               { Binop($1, Mod, $3) }
-    | gexpr G_NEG gexpr               { Binop($1, Neg, $3) }
+    | G_NEG gexpr                     { Unop(Neg, $2) }
+    | G_NOT gexpr                     { Unop(Not, $2) }
     | LPAREN gexpr RPAREN             { $2 }
 

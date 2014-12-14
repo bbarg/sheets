@@ -1,6 +1,4 @@
-{ 
-    open Parser;;
-}
+{ open Parser;; }
 
 let num = ['0'-'9']
 let flt = num+ '.' num* | '.' num+

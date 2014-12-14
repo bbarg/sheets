@@ -1,7 +1,9 @@
-type op = Lor      | Land    | Or      | Xor     | Not     | And     |
-          Equal    | Neq     | Less    | Leq     | Greater | Geq     |
-          Plus     | Minus   | Times   | Divide  | Mod     | Neg     | 
-          Lshift   | Rshift
+type op = Lor      | Land    | Or      | Xor     | And     |
+          Neq      | Less    | Leq     | Greater | Geq     |
+          Plus     | Minus   | Times   | Divide  | Mod     |  
+          Equal    | Lshift  | Rshift
+
+type unary_op = Neg | Not
 
 type expr = 
   | Literal_int of int
@@ -16,6 +18,7 @@ type expr =
   | Literal_bool_a of bool list
   | Id of string
   | Binop of expr * op * expr
+  | Unop of unary_op * expr
   | Call of string * expr list
   | StructId of string * string 
   (* StructId: string1=name of struct var, string2=name of element to be accessed *)

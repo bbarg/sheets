@@ -1,2 +1,4 @@
-String s
-s = 'hello world'
+
+func int main():
+     String s
+     s = 'hello world'

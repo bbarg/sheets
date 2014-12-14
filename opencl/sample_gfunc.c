@@ -1,12 +1,12 @@
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "platform/aws-g2.2xlarge"
-#include "cl-helper.h"
+#include <stdlib.h>		/* malloc */
+#include <math.h>		/* random */
+#include "platforms/aws-g2.2xlarge.h" /* sheets platform defs */
+#include "cl-helper.h"		  
 #include <CL/cl.h>
 
-#define NKERNELS
+#define NKERNELS 1
 
 const char *__KERNEL_band_restrict =
   "__kernel void band_restrict(\n"
@@ -26,17 +26,21 @@ const char *__KERNEL_band_restrict =
   "}\n"
   "}\n";
 
+/////////////////////////
 ////// SAME IN EVERY FILE
+/////////////////////////
 
-const char *kernel_strings[NKERNELS] = { __KERNEL_band_restrict };
-const char *kernel_names[NKERNELS]   = { "__KERNEL_band_restrict" };
+const char **kernel_strings = { __KERNEL_band_restrict };
+const char **kernel_names   = { "__KERNEL_band_restrict" };
 cl_kernel compiled_kernels[NKERNELS];
 
 ////// [END]
-
-main (int argv, char **argv)
+int
+main (int argv, char **argc)
 {
+  /////////////////////////
   ////// SAME IN EVERY FILE
+  /////////////////////////
 
   // create context and command queue
   cl_context       __sheets_context;
@@ -46,6 +50,7 @@ main (int argv, char **argv)
   
   create_context_on(SHEETS_PLAT_NAME,
 		    SHEETS_DEV_NAME,
+		    0,		/* choose the first (only) available device */
 		    &__sheets_context,
 		    &__sheets_queue,
 		    0);
@@ -85,7 +90,7 @@ main (int argv, char **argv)
 						     __SIZE_wav, 
 						     NULL, 
 						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, #NAME);
+  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
 					      
   /// input arrays
   cl_mem __CLMEM_band_restrict_ARG1 = clCreateBuffer(__sheets_queue, 
@@ -93,21 +98,21 @@ main (int argv, char **argv)
 						     __SIZE_wav, 
 						     wav, 
 						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, #NAME);
+  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
   
   cl_mem __CLMEM_band_restrict_ARG2 = clCreateBuffer(__sheets_queue, 
 						     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
 						     sizeof(__band_restrict_ARG2), 
 						     __band_restrict_ARG2, 
 						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, #NAME);
+  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
 
   cl_mem __CLMEM_band_restrict_ARG3 = clCreateBuffer(__sheets_queue, 
 						     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
 						     sizeof(__band_restrict_ARG3), 
 						     __band_restrict_ARG3, 
 						     &__cl_err);
-  CHECK_CL_ERROR(__cl_err, #NAME);
+  CHECK_CL_ERROR(__cl_err, clCreateBuffer);
 
   /// set up kernel arguments
   SET_4_KERNEL_ARGS(compiled_kernels[0],

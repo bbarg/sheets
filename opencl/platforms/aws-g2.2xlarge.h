@@ -6,6 +6,7 @@
 
 #ifndef _AWS_G22XLARGE_H_
 #define _AWS_G22XLARGE_H_
+#endif
 
 #define SHEETS_PLAT_NAME           "NVIDIA Corporation"
 #define SHEETS_DEV_NAME            "GRID K520"

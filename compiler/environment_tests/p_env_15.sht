@@ -1,0 +1,8 @@
+int x
+float f 
+
+
+func int main():
+     x = 7
+     f = 4.56 
+

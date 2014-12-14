@@ -1,0 +1,22 @@
+## This should pass parser, and is also
+## Semantically valid.
+
+int global_var
+
+#~ Subtracts if global_var is 0, adds if 1 ~#
+func int add_or_subtract(int x, int y):
+    int result
+    if (global_var == 1):
+        result = x + y
+    else:
+        result = x - y
+
+    return result   ## returns result
+
+func int main(): ## Main
+    int tmp
+    global_var = 0
+    tmp = add_or_subtract(1,1)
+    global_var = 1
+    tmp = add_or_subtract(global_var,tmp)
+    return tmp   

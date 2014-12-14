@@ -76,9 +76,9 @@ main (int argv, char **argc)
 
   float wav[__SIZE_wav];
   const char *file_name = "mytune.wav";
-  int in_thrsh_cnt;
+  int in_thrsh_cnt = 0;
 
-  for (_i = 0; _i < 10000; _i++) {
+  for (_i = 0; _i < __SIZE_wav; _i++) {
     wav[_i] = (float) rand() / RAND_MAX;
     printf("%f ", wav[_i]);
     if (in_thrsh(wav[_i], 0.1112, 0.7888))
@@ -166,16 +166,18 @@ main (int argv, char **argc)
   printf("Done wav masking from file [%s]\n", file_name);
 
   ////// Validate call
-  int c;
+  int c = 0;
 
   for (_i = 0; _i < __SIZE_wav; _i++) {
+    printf("%f ", out[_i]);
     if (in_thrsh(out[_i], 0.1112, 0.7888)) {
       c++;
     } else if(out[_i]) {
-      fprintf(stderr, "Value outside of band is non-zero.\n");
       exit(1);
     }
   }
+
+  printf("\n");
 
   assert(in_thrsh_cnt == c);
 

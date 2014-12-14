@@ -16,6 +16,10 @@ all : $(EXE)
 
 sample_gfunc : cl-helper.o
 
+.PHONY : test
+test :
+	sudo ./sample_gfunc
+
 .PHONY : clean
 clean : 
 	rm -f *.o $(EXE)

@@ -1,3 +1,4 @@
+#~ PASS: Tests top-level variable declaration, const assignment ~#
 const  int    a
 float  my_list
 double ballon_volume

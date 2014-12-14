@@ -1,7 +1,11 @@
 #!/bin/bash
-echo "Running test" $1
-echo "###############################"
+echo "-----------------------------------"
+echo "Running Test:" $1
+echo "-"
+head -n 1 $1.sht | sed "s/#~//" | sed "s/~#//"
+
+
+echo "-----------------------------------"
 ../preprocessor.py  `pwd`/$1.sht
 cat $1.proc.sht | ../generator
-echo "###############################"
-echo "###############################"
+

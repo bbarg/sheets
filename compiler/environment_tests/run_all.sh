@@ -1,29 +1,43 @@
 #!/bin/bash
-name=__TEST_LIST.sh
-echo "Environment Tests"
-echo "###############################"
-echo "Generates a list of script commands based on "
-echo "the .sht files in this directory and runs all" 
-echo "###############################"
-echo "###############################"
+
+executable="./test_env.sh"
+output_file="envtests.output"
+
 rm -f *.proc.sht
-rm -f  $name
-touch  $name
-chmod 777 $name
+rm -f envtests.output
+environment_tests=$(find . -name "*\.sht")
 
-echo -e "#!/bin/bash\n" >> $name
 
-ls | grep .sht | awk '{print "./test_env.sh " $0}' | sed "s/.sht//" >> $name
-echo "Generated script file"
-cat $name
-echo "###############################"
+path_to_name()
+{
+    local fullpath=$1
+    test_path="${fullpath%.*}"   # Strip Extension
+    test_name="${test_path##*/}" # Strip Preceding Path
+}
 
-echo "Running script file "
-echo "###############################"
-echo "###############################"
-./$name
-rm -f $name
+echo "Running all environment tests in current directory"
+
+echo "Environment Testing Suite" >> $output_file
+
+for file in $environment_tests ; do
+    path_to_name $file
+
+    echo "Running Test: $test_name"
+    
+    echo "" >> $output_file
+    echo "===================================" >> $output_file
+    
+    $( ./$executable $test_name >> $output_file 2>&1)
+
+    echo "===================================" >> $output_file
+    echo "" >> $output_file
+    
+done
+
+echo "done"
+
+echo "OUTPUT FILE: '$output_file'"
+
 rm -f *.proc.sht
-echo "All tests and cleanup completed" 
-echo "###############################"
-echo "###############################"
+
+exit

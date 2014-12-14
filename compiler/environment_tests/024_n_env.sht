@@ -1,3 +1,5 @@
+#~ SHOULDFAIL: Parser detects illegal identifier ~#
+
 float 9erd 
 
 func int main():

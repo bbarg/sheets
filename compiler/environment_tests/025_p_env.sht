@@ -1,3 +1,5 @@
+#~ SHOULDPASS ~#
+
 int x
 float f 
 

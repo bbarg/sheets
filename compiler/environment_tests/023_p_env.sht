@@ -1,4 +1,4 @@
 #~ SHOULDPASS: String Array Literal ~#
 func int main():
-     String[2] my_array
+     String[] my_array[2]
      my_array = ["testString",'testString']

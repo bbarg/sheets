@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: ParserError, mixed declaration of Int and  Floats Literal Arrays ~#
+func int main():
+     int[2] my_array
+     my_array = [1.0,2]

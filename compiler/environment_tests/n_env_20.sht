@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: SemanticError, declaration of Int Literal with Floats ~#
+func int main():
+     int[2] my_array
+     my_array = [1.0,2.0]

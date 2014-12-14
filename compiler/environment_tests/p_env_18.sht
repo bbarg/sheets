@@ -1,0 +1,4 @@
+#~ SHOULDPASS: Declaration of Int Literal ~#
+func int main():
+     int[2] my_array
+     my_array = [1,2]

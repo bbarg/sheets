@@ -215,13 +215,13 @@ gfunc_stmt_list:
     | gstmt                            { [$1] }
     | gfunc_stmt_list gstmt            { $2 :: $1 }
 
-args_opt:
-    | /* Nothing */                      { [] }
-    | args_list                        { List.rev $1 }
+expr_list_opt:
+    | /* Nothing */                    { [] }
+    | expr_list                        { List.rev $1 }
 
-args_list:
+expr_list:
     | expr                             { [$1] }                               
-    | args_list COMMA expr             { $3 :: $1 }
+    | expr_list COMMA expr             { $3 :: $1 }
 
 /*    Note about gstmt vs stmts:
  *  The difference between these two is that gstmts are the
@@ -316,7 +316,7 @@ bool_expr:
 array_expr:
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
-    | array_literal                   { $1 }
+//    | array_literal                   { $1 }
 
 assign_expr:
     | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }   
@@ -330,21 +330,23 @@ literal:
     | FLOAT_LITERAL                   { Literal_float($1) }
     | STRING_LITERAL                  { Literal_string($1) }
     | BOOL_LITERAL                    { Literal_bool($1) }
-    | array_literal                   { $1 }
+    | LBRACK int_literal_list RBRACK  { Literal_int_a(List.rev $2) }
+    | LBRACK flt_literal_list RBRACK  { Literal_float_a(List.rev $2) }
 
-array_literal:
-    | BOOL_ARRAY_LITERAL              { Literal_bool_a($1) }
-    | STRING_ARRAY_LITERAL            { Literal_string_a($1) }
-    | INT_ARRAY_LITERAL               { Literal_int_a($1) }
-    | CHAR_ARRAY_LITERAL              { Literal_char_a($1) }
-    | FLOAT_ARRAY_LITERAL             { Literal_float_a($1) }
+int_literal_list:
+    | INT_LITERAL                      { [$1] }
+    | int_literal_list COMMA INT_LITERAL { $3 :: $1 }
+
+flt_literal_list:
+    | FLOAT_LITERAL                    { [$1] }
+    | flt_literal_list COMMA FLOAT_LITERAL { $3 :: $1 }
 
 /* expr are all the expressions EXCEPT:
     * those with blocks
     * comparison operators */
 expr:
     | literal                         { $1 }
-    | ID LPAREN args_opt RPAREN       { Call($1, $3) }
+    | ID LPAREN expr_list_opt RPAREN  { Call($1, $3) }
     | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }

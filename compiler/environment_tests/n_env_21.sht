@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: SemanticError declaration of Int Literal too big for array ~#
+func int main():
+     int[2] my_array
+     my_array = [1,2,3]

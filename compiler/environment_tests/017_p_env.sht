@@ -3,7 +3,7 @@
 int x
 float f 
 
-func int main():
+func int main(int x, int y, int z):
      x = -7
      f = -4.56 
      int y = 6

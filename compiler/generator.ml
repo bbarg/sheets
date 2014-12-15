@@ -24,13 +24,17 @@ exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 
+let generate_checked_id check_id id env = 
+    if (check_id id env)  then id, env 
+    else raise (VariableNotFound id)
+
 let generate_exp exp env = 
     match exp with
       Literal_int(i) -> string_of_int(i), env  
       | Literal_float(f) -> string_of_float(f), env 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> s, env  
+      | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
       | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;

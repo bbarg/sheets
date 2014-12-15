@@ -1,22 +1,6 @@
 # Sheets
 *What's your thread count?*
 
-## Pressing Questions
-
-- **Translator**: When do we deal with semantic checking?
-  + Currently, we are pushing most semantic checking to `gcc`. That
-    will be really weird for users trying to debug stuff like name
-    redefinition and stuff. Is there ANY way to map this stuff back to
-    our sheets compiler.
-
-- **Parser**: How can we get the parser to compile so we can test the lexer?
-
-## TA Questions (Nov 13)
-
-- should we deal with scoping in `parser.mly` or in a separate file that builds the symbol tables
-- what level of abstraction should we get to before we start actually generating OpenCL code?
-  + a followup, how many stages of this additional process are there, and what are they typically called?
-
 ## Preprocessor Issues:
 
 - Inline comments that start in the middle of a statement and continue into a new line
@@ -24,8 +8,8 @@
 
 This is how I think we should proceed 
 
-Types
------
+### Types
+
 
 Ints
 Floats
@@ -37,13 +21,12 @@ boolean operations ( > < == >= <= )
 
 gops for (vectors and vectors) and (vectors and scalars) 
 
-Conditionals 
--------------
+### Conditionals 
+
 
 if / else 
 
-Loops
-----------
+### Loops
 
 for in 
 
@@ -51,14 +34,23 @@ for
 
 while 
 
-gfuncs 
------------
+### gfuncs 
+
 
  - Ben decides 
 
 
-funcs
-----------
+### funcs
 
  - typed with a return 
 
+
+## New Issues (Monday Morning)
+
+- everything compiles but suddenly parser seems to be failing on
+really simple cases like
+```
+int a
+int b
+```
+- we shall investigate

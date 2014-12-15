@@ -168,11 +168,10 @@ let cl_globals = "cl_context __sheets_context;\n"
   and
 let gfunc_list_to_cl_kernels gfunc_list env =
   let gfunc_to_cl_kernel gfunc env =
-    (* we have to reject all references to variables that aren't
-       immediately in scope *)
-    (* we're going to have to escape double-quotes when we write
-       these string literals *)
     Environment.append env [Text(sprintf "const char *%s_kernel_string = " gfunc.fname);
+			    (* we aren't ever changing the environment
+			    above the gfunc's scope, but we need to
+			    generate a new scope to parse the gfunc's contents *)
 			    NewScope(gfunc_to_cl_kernel_string gfunc);
 			    Text(";\n");
 			    Text(sprintf "const char *%s_kernel_name = %s;\n" gfunc.fname);
@@ -183,6 +182,13 @@ let gfunc_list_to_cl_kernels gfunc_list env =
   | gfunc :: other_gfuncs ->
      Environment.append env [Generator(gfunc_to_cl_kernel gfunc);
 			     Generator(gfunc_list_to_cl_kernels other_gfuncs)];
+  and
+let gfunc_to_cl_kernel_string gfunc env =
+  (* we have to reject all references to variables that aren't
+     immediately in scope *)
+  (* we're going to have to escape double-quotes when we write
+     these string literals *)
+  Environment.append env [Text(sprintf "__kernel void %s(" gfunc.fname
 ;;				    
 
 (* ------------------------------------------------------------------ *)

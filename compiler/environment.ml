@@ -144,9 +144,10 @@ type env = {
  * (some type, string ) 
  *) 
 type source = 
- | Text of string 
+ | Text of string
+ | Env of env 
  | Generator of ( env -> (string * env))
- | NewScopeGenerator of (env -> (string * env))
+ | NewScope of (env -> (string * env))
 
 
 (* Create initializes an empty record for environment *)
@@ -295,13 +296,14 @@ let return_typeof_func id env =
  *) 
 
 
-let combine init_env components =  
+let append init_env components =  
    let f (text, env) component =  
       match component with 
        | Text(str) -> text ^ str, env 
+       | Env (new_env) -> text, new_env 
        | Generator(gen) -> let new_str, new_env = gen env in 
            text ^ new_str, new_env 
-       | NewScopeGenerator(gen) -> 
+       | NewScope(gen) -> 
          let new_str, new_env = gen (push_scope env) in 
                text ^ new_str, pop_scope new_env in 
     List.fold_left f("", init_env) components

@@ -158,13 +158,15 @@ let rec generate_cpu_funcs fdecls env =
    We have to declare all of these variable globally (and at the top
    of our generated c program) so they will be accessible from any
    cpu function. *)
-
+  
 let gfunc_to_cl_kernel_string gf_info env =
   (* we have to reject all references to variables that aren't
        immediately in scope *)
   (* we're going to have to escape double-quotes when we write
        these string literals *)
   (* TODO; returning test string for testing *)
+  
+  
   "TODO: cl_kernel string goes here", env
 
 let gfunc_to_cl_kernel gf_info env =
@@ -192,7 +194,42 @@ let generate_cl_kernels env =
   in
   Environment.append env [Text(cl_globals);
 			  Generator(gfunc_list_to_cl_kernels env.gfunc_list)]
- 
+
+(* ------------------------------------------------------------------ *)
+(* Main: opencl context creation and frees                            *)
+(* ------------------------------------------------------------------ *)
+
+let rec generate_compile_kernels gf_info_list env =
+  let generate_compile_kernel gf_info =
+    sprintf "%s_compiled_kernel = kernel_from_string(__sheets_context, %s_kernel_string, %s_kernel_name, SHEETS_KERNEL_COMPILE_OPTS);\n" gf_info.id gf_info.id gf_info.id
+  in
+  match gf_info_list with
+    [] -> "", env
+  | gf_info :: other_gf_infos ->
+     Environment.append env [Text(generate_compile_kernel gf_info);
+			     Generator(generate_compile_kernels other_gf_infos)]
+			
+let rec generate_release_kernels gf_info_list env =
+  let generate_release_kernel gf_info =
+    sprintf "CL_CALL_GUARDED(clReleaseKernel, %s_compiled_kernel);\n" gf_info.id
+  in
+  match gf_info_list with
+  [] -> "", env
+  | gf_info :: other_gf_infos ->
+     Environment.append env [Text(generate_release_kernel gf_info);
+			     Generator(generate_release_kernels other_gf_infos)]
+
+let generate_main env =
+  Environment.append env [Text("int main()\n");
+			  Text("{\n");
+			  Text("create_context_on(SHEETS_PLAT_NAME, SHEETS_DEV_NAME, 0, &__sheets_context, &__sheets_queue, 0);\n");
+			  Generator(generate_compile_kernels env.gfunc_list);
+			  Text("snuggle();\n");
+			  Generator(generate_release_kernels env.gfunc_list);
+			  Text("CALL_CL_GUARDED(clReleaseCommandQueue, (__sheets_queue));\n");
+			  Text("CALL_CL_GUARDED(clReleaseContext, (__sheets_context));\n");
+			  Text("}\n")]
+		     
 (* ------------------------------------------------------------------ *)
 (* Parse and print                                                    *)
 (* ------------------------------------------------------------------ *)
@@ -212,7 +249,8 @@ let _ =
   (* TODO find cleaner solution for getting vdecls/fdecls in correct order *)
   let global_vdecls, env = generate_global_vdecl_list (List.rev vdecls) env in
   let cpu_funcs, env = generate_cpu_funcs (List.rev fdecls) env in
-  let cl_kernels, env = generate_cl_kernels env in 
+  let cl_kernels, env = generate_cl_kernels env in
+  let main, env = generate_main env in
   print_string ("#include <stdio.h>\n"
 		^ "#include \"aws-g2.2xlarge.h\"\n"
 		^ "#include \"cl-helper.h\"\n"
@@ -220,5 +258,6 @@ let _ =
   print_string cl_kernels;
   print_string global_vdecls;
   print_string cpu_funcs;
+  print_string main
 ;; 
 

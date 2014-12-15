@@ -28,8 +28,12 @@ let generate_exp exp env =
     match exp with
        Literal_int(i) -> Environment.combine env [Text(string_of_int(i) ) ] 
       | Literal_float(f) -> Environment.combine env [Text(string_of_float(f) )]
-      | Literal_int_a(int_a) -> print_int_list int_a env
-       Id(id) -> Environment.combine env [Text(id)]
+      | Literal_int_a(int_a) -> raise NotImplementedError
+      | Literal_float_a(float_a) -> raise NotImplementedError
+      | Id(s) -> Environment.combine env [Text(s) ] 
+      | Binop(e1, op, e2) -> raise NotImplemented 
+      | _-> raise NotImplemented 
+;;
        
 
 let rec generate_type datatype env = 

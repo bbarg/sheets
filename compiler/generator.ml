@@ -85,7 +85,7 @@ let rec generate_type datatype env =
 
 let rec generate_global_vdecl_list vdecls env =
   let generate_global_vdecl vdecl env =
-    let v_datatype = Generator_utilities.str_to_type vdecl.vtype in
+    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
     Environment.combine env [
 			  Generator(generate_type v_datatype);
 			  Text(" " ^ vdecl.v_name ^ ";");
@@ -97,7 +97,7 @@ let rec generate_global_vdecl_list vdecls env =
     Environment.combine env [
 			  Text("")
 			]
-  | vdecl ->
+  | [vdecl] ->
      Environment.combine env [
 			   Generator(generate_global_vdecl vdecl)
 			 ]
@@ -106,7 +106,16 @@ let rec generate_global_vdecl_list vdecls env =
 			   Generator(generate_global_vdecl vdecl);
 			   Generator(generate_global_vdecl_list other_vdecls)
 			 ]
-  
+;;
+
+(* TODO *)
+let generate_cpu_funcs fdecls env = "", env
+;;
+
+(* TODO *)
+let generate_cl_kernels env = "", env
+;;				    
+			 
 let _ =
   let lexbuf = Lexing.from_channel stdin in
   let vdecls, _, fdecls = try
@@ -121,9 +130,9 @@ let _ =
   let env = Environment.create in
   let global_vdecls, env = generate_global_vdecl_list vdecls env in
   let cpu_funcs, env = generate_cpu_funcs fdecls env in
-  let cl_kernels = generate_cl_kernels env in
-  print_string "#include <stdio.h>\n" ^ "#include \"aws-g2.2xlarge.h\"\n" ^
-    "#include \"cl-helper.h\"" ^ "include <CL/cl.h"
+  let cl_kernels, env = generate_cl_kernels env in
+  (* print_string "#include <stdio.h>\n" ^ "#include \"aws-g2.2xlarge.h\"\n" ^ *)
+  (*   "#include \"cl-helper.h\"" ^ "include <CL/cl.h>"; *)
   print_string cl_kernels;
   print_string global_vdecls;
   print_string cpu_funcs;

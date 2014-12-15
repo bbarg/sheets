@@ -101,12 +101,36 @@ let rec generate_global_vdecl_list vdecls env =
 (* ------------------------------------------------------------------ *)
 (* CPU functions                                                      *)
 (* ------------------------------------------------------------------ *)
-  
+let rec generate_formals_vdecl_list vdecl_list env =  
+    let generate_formals_vdecl vdecl env =
+       let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
+    Environment.append env [Env((add_var vdecl.v_name v_datatype));
+			    Generator(generate_type v_datatype);
+			    Text(" " ^ vdecl.v_name ^ ", ")]
+  in
+  match vdecl_list with
+    [] -> "", env
+  | [vdecl] -> Environment.append env [Env((add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl)));
+			    Text(vdecl.v_type ^ " " ^ vdecl.v_name)]
+
+  | vdecl :: other_vdecls ->
+     Environment.append env [Generator(generate_formals_vdecl vdecl);
+			     Generator(generate_formals_vdecl_list other_vdecls)]
+;;
+
+
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
       false -> 
            Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
+          Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
+          NewScope(generate_formals_vdecl_list fdecl.formals );
+          (* TODO Here is where we parse the body of the function??
+           *)
+          Text("){\n");
+          (* TODO: here is where we call stmt proc *) 
+          Text("}\n"); 
            ]
                                    
      | true  -> "", env (* TODO in the future handle this *) 
@@ -148,8 +172,8 @@ let _ =
   let cl_kernels, env = generate_cl_kernels env in 
   print_string ("#include <stdio.h>\n"
 		^ "#include \"aws-g2.2xlarge.h\"\n"
-		^ "#include \"cl-helper.h\""
-		^ "#include <CL/cl.h>");
+		^ "#include \"cl-helper.h\"\n"
+		^ "#include <CL/cl.h>\n\n\n\n");
   print_string cl_kernels;
   print_string global_vdecls;
   print_string cpu_funcs;

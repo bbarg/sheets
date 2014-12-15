@@ -51,7 +51,7 @@ type env = {
  *) 
 type source = 
  | Text of string
- | Env of env 
+ | Env of (env -> env) 
  | Generator of ( env -> (string * env))
  | NewScope of (env -> (string * env))
 
@@ -233,7 +233,8 @@ let append init_env components =
    let f (text, env) component =  
       match component with 
        | Text(str) -> text ^ str, env 
-       | Env (new_env) -> text, new_env 
+       | Env (env_gen) -> let new_env = env_gen env in 
+           text, new_env
        | Generator(gen) -> let new_str, new_env = gen env in 
            text ^ new_str, new_env 
        | NewScope(gen) -> 

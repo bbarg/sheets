@@ -90,7 +90,7 @@ let update_curr_func new_curr_func env =
 let update_on_gpu gpu env = 
 	update env.var_stack env.func_return_type_map env.current_function gpu env.gfunc_list
 let update_gfunc_list g_list env = 
-	update env.var_stack env.func_return_type_map env.current_function env.on_gpu env.g_list
+	update env.var_stack env.func_return_type_map env.current_function env.on_gpu g_list
 (* Checks all scopes to see if variable has been declared *)
 let is_var_in_scope id env = 
     let rec check_scopes scope_stack = 

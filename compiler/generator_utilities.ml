@@ -56,18 +56,18 @@ let rec typecheck_stmt_list stmt_list env =
 
 
 ;;
-let vdecl_list_to_type_list vdecl_list = 
+let vdecl_type vdecl = 
+    str_to_type vdecl.v_type
+;;
+let rec vdecl_list_to_type_list vdecl_list = 
     match vdecl_list with 
-        vdecl::rest_of_vdecls -> (vdecl_to_type vdecl)::(vdecl_list_to_type_list rest_of_vdecls )
+        vdecl::rest_of_vdecls -> (vdecl_type vdecl)::(vdecl_list_to_type_list rest_of_vdecls )
        | [] -> [] 
 ;;
-let vdecl_list_to_string_list vdecl_list = 
+let rec vdecl_list_to_string_list vdecl_list = 
     match vdecl_list with 
         vdecl::rest_of_vdecls -> (vdecl.v_name)::(vdecl_list_to_string_list rest_of_vdecls )
        | [] -> [] 
-;;
-let vdecl_type vdecl = 
-    str_to_type vdecl.v_type
 ;;
 let fdecl_to_func_info fdecl = 
         { 

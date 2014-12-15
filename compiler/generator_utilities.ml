@@ -33,7 +33,7 @@ let rec expr_typeof expr env =
     | Literal_int_a(i_a) -> Array( Int ) (* TODO: Check this *) 
     | Literal_float_a(i_a) -> Array(Float) 
     | Id(s) -> Environment.typeof s env  
-(*    | Binop(exp1, op, exp2) -> eval_binop expr_typeof exp1 env expr_typeof exp2 env op env *)
+    | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op env) 
     | Call(func_id, _ ) -> Environment.return_typeof_func func_id env 
     | _-> raise (NotImplementedError("Undefined type of expression"))
 ;;

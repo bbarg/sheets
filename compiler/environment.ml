@@ -226,4 +226,4 @@ let append init_env components =
        | NewScope(gen) -> 
          let new_str, new_env = gen (push_scope env) in 
                text ^ new_str, pop_scope new_env in 
-    List.fold_left f("", init_env) components
+   List.fold_left f("", init_env) components

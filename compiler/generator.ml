@@ -123,7 +123,11 @@ let rec generate_cpu_funcs fdecls env =
 (* OpenCL Kernels                                                     *)
 (* ------------------------------------------------------------------ *)
 
-let generate_cl_kernels env = "", env
+let generate_cl_kernels env =
+  match env.gfunc_list with
+    [] -> "", env
+  | gfunc :: other_gfuncs ->
+     Environment.append env [NewScope(gfunc_to_cl_kernel 
 ;;				    
 
 (* ------------------------------------------------------------------ *)

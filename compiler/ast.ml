@@ -66,7 +66,7 @@ type sdef = {			     (* struct definition *)
 type program = vdecl list * sdef list * fdecl list
 (* program = global variables, global structs, functions *)
 
-(*type datatype = 
- | Int of string 
- | Float of string 
- | Array of datatype *)
+type datatype = 
+  | Int
+  | Float
+  | Array of datatype

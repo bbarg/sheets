@@ -157,9 +157,7 @@ let create =
        func_return_type_map = FunctionMap.empty; 
        current_function = ""; (* TODO maybe this needs a better convention *)
        on_gpu = false; 
-
-   
-  }
+   }
 
 (* Update gives a new env record with updated values 
  * TODO maybe we can make something to just update a part 
@@ -230,14 +228,14 @@ let update_scope_add_var id datatype env =
  * and returns a (text, updated_env) tuple 
  *)
   
-let add_var id datatype (text, env) = 
+let add_var id datatype env = 
     match env.var_stack with 
       | [] -> raise EmptyEnvironmentError 
       | scope_level :: scope_tail -> 
 		if VariableMap.mem id scope_level then 
 			raise VariableAlreadyDeclared
 		else 
-		(text, update_scope_add_var id datatype env)
+		("", update_scope_add_var id datatype env)
      
 
 (* adds a new empty variableMap to the top of var stack 

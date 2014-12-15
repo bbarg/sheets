@@ -1,7 +1,9 @@
 (* Utilities to parse expressions for generate.ml *)
 open Ast;;
 open Environment;;
+
 exception TypeError of string;;
+exception NotImplementedError of string;;  
 
 let eval_basic_binop type1 type2 = 
     if (type1 = type2) then 
@@ -33,7 +35,7 @@ let rec expr_typeof expr env =
     | Id(s) -> Environment.typeof s env  
 (*    | Binop(exp1, op, exp2) -> eval_binop expr_typeof exp1 env expr_typeof exp2 env op env *)
     | Call(func_id, _ ) -> Environment.return_typeof_func func_id env 
-    | _-> raise (Generator.NotImplementedError("Undefined type of expression"))
+    | _-> raise (NotImplementedError("Undefined type of expression"))
 ;;
 
 
@@ -43,7 +45,7 @@ let str_to_type str =
        | "float" -> Float
        | "int[]" -> Array(Int) (* TODO Enumerate other types *)  
        | "float[]" -> Array(Float) 
-       |  _-> Generator.NotImplementedError("Unrecognized type " ^ str)
+       |  _-> raise (NotImplementedError("Unrecognized type " ^ str))
 
 let rec typecheck_stmt stmt env = true;; (* TODO *)
 let rec typecheck_stmt_list stmt_list env = 

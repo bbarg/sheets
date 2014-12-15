@@ -1,4 +1,4 @@
-##SHOULDFAIL: Illegal floating point literal
+#~ SHOULDFAIL: Illegal floating point literal ~#
 
 float x 
 

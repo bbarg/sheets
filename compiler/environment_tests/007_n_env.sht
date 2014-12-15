@@ -1,3 +1,4 @@
+#~ SHOULDFAIL: "for x in y" syntax, y not an array type ~#
 const  int    a
 float  my_list
 int ballon_volume

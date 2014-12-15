@@ -1,4 +1,4 @@
-## SHOULDFAIL: Parser detects illegal assignment
+#~ SHOULDFAIL: Parser detects illegal assignment ~#
 int x
 float f 
 x = -7

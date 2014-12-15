@@ -1,3 +1,4 @@
+#~ SHOULDPASS: global variable declaration ~#
 const  int a
 float  my_list
 int ballon_volume

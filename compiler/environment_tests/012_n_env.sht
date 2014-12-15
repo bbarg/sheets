@@ -1,3 +1,4 @@
+#~ SHOULDFAIL: SemanticError, Float literal into INT ~#
 int x
 func int main():
     x = 4.7

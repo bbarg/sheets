@@ -1,3 +1,4 @@
+#~ SHOUDLFAIL: Invalid ID type ~#
 float 9erd 
 
 func int main():

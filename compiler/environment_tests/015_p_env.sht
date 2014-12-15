@@ -1,3 +1,4 @@
+#~ SHOULDPASS: Int and Float literal assignment ~#
 int x
 float f 
 

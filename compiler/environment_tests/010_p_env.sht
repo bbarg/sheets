@@ -1,3 +1,4 @@
+#~ SHOULDPASS: String literal, double quote ~#
 String s
 
 func int main():

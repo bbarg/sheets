@@ -1,3 +1,4 @@
+#~ SHOULDPASS: Negative float and int literals ~#
 int x
 float f 
 

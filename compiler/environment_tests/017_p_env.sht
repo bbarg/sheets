@@ -1,3 +1,5 @@
+#~ SHOULDPASS: Inline declaration and assignment ~#
+
 int x
 float f 
 

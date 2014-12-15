@@ -1,4 +1,4 @@
-#~ SHOULDPASS ~#
+#~ SHOULDPASS: Int Array Literal  ~#
 
 int x
 float f 

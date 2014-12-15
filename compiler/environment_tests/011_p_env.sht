@@ -1,4 +1,4 @@
-
+#~ SHOULDPASS: String literal, single quote ~#
 func int main():
      String s
      s = 'hello world'

@@ -1,3 +1,4 @@
+#~ SHOULDFAIL: double declaration of int type ~#
 const  int    a
 float  my_list
 int ballon_volume

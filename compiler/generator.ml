@@ -80,41 +80,42 @@ let rec generate_type datatype env =
 (* ------------------------------------------------------------------ *)
 
 (* ------------------------------------------------------------------ *)
-(* NEW GENERATOR CODE                                                 *)
+(* Global Variable Declarations                                       *)
 (* ------------------------------------------------------------------ *)
 
 let rec generate_global_vdecl_list vdecls env =
   let generate_global_vdecl vdecl env =
     let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
-    Environment.combine env [
-			  Generator(generate_type v_datatype);
-			  Text(" " ^ vdecl.v_name ^ ";");
-			  Generator(add_var vdecl.v_name v_datatype)
-			]
+    Environment.combine env [Generator(generate_type v_datatype);
+			     Text(" " ^ vdecl.v_name ^ ";\n");
+			     Generator(add_var vdecl.v_name v_datatype)]
   in
   match vdecls with
-    [] ->
-    Environment.combine env [
-			  Text("")
-			]
+    [] -> "", ()
   | [vdecl] ->
-     Environment.combine env [
-			   Generator(generate_global_vdecl vdecl)
-			 ]
+     Environment.combine env [Generator(generate_global_vdecl vdecl)]
   | vdecl :: other_vdecls ->
-     Environment.combine env [
-			   Generator(generate_global_vdecl vdecl);
-			   Generator(generate_global_vdecl_list other_vdecls)
-			 ]
+     Environment.combine env [Generator(generate_global_vdecl vdecl);
+			      Generator(generate_global_vdecl_list other_vdecls)]
 ;;
 
-(* TODO *)
+(* ------------------------------------------------------------------ *)
+(* CPU functions                                                      *)
+(* ------------------------------------------------------------------ *)
+  
 let generate_cpu_funcs fdecls env = "", env
 ;;
 
-(* TODO *)
+(* ------------------------------------------------------------------ *)
+(* OpenCL Kernels                                                     *)
+(* ------------------------------------------------------------------ *)
+
 let generate_cl_kernels env = "", env
 ;;				    
+
+(* ------------------------------------------------------------------ *)
+(* Parse and print                                                    *)
+(* ------------------------------------------------------------------ *)
 			 
 let _ =
   let lexbuf = Lexing.from_channel stdin in
@@ -130,9 +131,11 @@ let _ =
   let env = Environment.create in
   let global_vdecls, env = generate_global_vdecl_list vdecls env in
   let cpu_funcs, env = generate_cpu_funcs fdecls env in
-  let cl_kernels, env = generate_cl_kernels env in
-  (* print_string "#include <stdio.h>\n" ^ "#include \"aws-g2.2xlarge.h\"\n" ^ *)
-  (*   "#include \"cl-helper.h\"" ^ "include <CL/cl.h>"; *)
+  let cl_kernels, env = generate_cl_kernels env in 
+  print_string ("#include <stdio.h>\n"
+		^ "#include \"aws-g2.2xlarge.h\"\n"
+		^ "#include \"cl-helper.h\""
+		^ "#include <CL/cl.h>");
   print_string cl_kernels;
   print_string global_vdecls;
   print_string cpu_funcs;

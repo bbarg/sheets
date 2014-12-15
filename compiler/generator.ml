@@ -26,20 +26,20 @@ exception UndefinedTypeError;;
 
 let generate_exp exp env = 
     match exp with
-      Literal_int(i) -> Environment.combine env [Text(string_of_int(i) ) ] 
-      | Literal_float(f) -> Environment.combine env [Text(string_of_float(f) )]
+      Literal_int(i) -> Environment.append env [Text(string_of_int(i) ) ] 
+      | Literal_float(f) -> Environment.append env [Text(string_of_float(f) )]
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.combine env [Text(s) ] 
+      | Id(s) -> Environment.append env [Text(s) ] 
       | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
        
 let rec generate_type datatype env = 
    match datatype with 
-	| Int -> Environment.combine env [Text("int")] 
-	| Float -> Environment.combine env [Text("float")] 
-	| Array(t) -> Environment.combine env [ 
+	| Int -> Environment.append env [Text("int")] 
+	| Float -> Environment.append env [Text("float")] 
+	| Array(t) -> Environment.append env [ 
 		Generator(generate_type t); 
 		Text("[]")
 	]
@@ -57,7 +57,7 @@ let rec generate_type datatype env =
 (* 			     other_stmts *)
 (* and process_stmt stmt env = *)
 (*   match stmt with *)
-(*     Vdecl(vdecl) -> Environment.combine env [ Generator(process_vdecl vdecl) ] *)
+(*     Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] *)
 (*   | Block(stmt_list) -> process_stmt_list  stmt_list *)
 (*   | Expr(expr) -> raise (NotImplementedError("expr")) *)
 (*   | Assign(name, expr) -> raise (NotImplementedError("assign")) *)
@@ -71,7 +71,7 @@ let rec generate_type datatype env =
 (*   | _ -> raise (NotImplementedError("Undefined type of expression")) *)
 (* and process_vdecl vdecl env = *)
 (*   let v_datatype = Generator_utilities.str_to_type vdecl.vtype in *)
-(*   Environment.combine env [ *)
+(*   Environment.append env [ *)
 (* 			Generator(generate_type v_datatype); *)
 (* 			Text(" " ^ vdecl.v_name ^ ";"); *)
 (* 			Generator(add_var vdecl.v_name v_datatype) *)
@@ -86,24 +86,34 @@ let rec generate_type datatype env =
 let rec generate_global_vdecl_list vdecls env =
   let generate_global_vdecl vdecl env =
     let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
-    Environment.combine env [Generator(generate_type v_datatype);
-			     Text(" " ^ vdecl.v_name ^ ";\n");
-			     Generator(add_var vdecl.v_name v_datatype)]
+    Environment.append env [Env(add_var vdecl.v_name v_datatype);
+			    Generator(generate_type v_datatype);
+			    Text(" " ^ vdecl.v_name ^ ";\n")]
   in
   match vdecls with
-    [] -> "", ()
-  | [vdecl] ->
-     Environment.combine env [Generator(generate_global_vdecl vdecl)]
+    [] -> "", env
+  | [vdecl] -> generate_global_vdecl vdecl env
   | vdecl :: other_vdecls ->
-     Environment.combine env [Generator(generate_global_vdecl vdecl);
-			      Generator(generate_global_vdecl_list other_vdecls)]
+     Environment.append env [Generator(generate_global_vdecl vdecl);
+			     Generator(generate_global_vdecl_list other_vdecls)]
 ;;
 
 (* ------------------------------------------------------------------ *)
 (* CPU functions                                                      *)
 (* ------------------------------------------------------------------ *)
   
-let generate_cpu_funcs fdecls env = "", env
+let rec generate_cpu_funcs fdecls env =
+  let generate_cpu_func fdecl env =
+    match fdecl.isGfunc with
+      true ->
+      false -> "", 
+  in
+  match fdecls with
+    [] -> "", env
+  | [fdecl] -> generate_cpu_func fdecl env
+  | fdecl :: other_fdecls ->
+     Environment.append env [Generator(generate_cpu_func fdecl);
+			     Generator(generate_cpu_funcs other_fdecls);]
 ;;
 
 (* ------------------------------------------------------------------ *)
@@ -122,15 +132,16 @@ let _ =
   let vdecls, _, fdecls = try
       Parser.program Scanner.token lexbuf
     with except ->
-        let curr = lexbuf.Lexing.lex_curr_p in
-        let line = curr.Lexing.pos_lnum in
-        let col = curr.Lexing.pos_cnum in
-        let tok = Lexing.lexeme lexbuf in
-        raise (SyntaxError (line, col, tok))
+      let curr = lexbuf.Lexing.lex_curr_p in
+      let line = curr.Lexing.pos_lnum in
+      let col = curr.Lexing.pos_cnum in
+      let tok = Lexing.lexeme lexbuf in
+      raise (SyntaxError (line, col, tok))
   in
   let env = Environment.create in
-  let global_vdecls, env = generate_global_vdecl_list vdecls env in
-  let cpu_funcs, env = generate_cpu_funcs fdecls env in
+  (* TODO find cleaner solution for getting vdecls/fdecls in correct order *)
+  let global_vdecls, env = generate_global_vdecl_list (List.rev vdecls) env in
+  let cpu_funcs, env = generate_cpu_funcs (List.rev fdecls) env in
   let cl_kernels, env = generate_cl_kernels env in 
   print_string ("#include <stdio.h>\n"
 		^ "#include \"aws-g2.2xlarge.h\"\n"

@@ -136,7 +136,7 @@ type env = {
    func_return_type_map: func_info FunctionMap.t; 
    current_function: string; 
    on_gpu: bool; 
-
+   
 } 
 (* TODO understand this next part better - 
  * Seems like a polymorphic function/functor 
@@ -295,7 +295,7 @@ let return_typeof_func id env =
  *) 
 
 
-let combine init_env components =  
+let append init_env components =  
    let f (text, env) component =  
       match component with 
        | Text(str) -> text ^ str, env 

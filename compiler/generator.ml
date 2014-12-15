@@ -158,39 +158,41 @@ let rec generate_cpu_funcs fdecls env =
    We have to declare all of these variable globally (and at the top
    of our generated c program) so they will be accessible from any
    cpu function. *)
+
+let gfunc_to_cl_kernel_string gf_info env =
+  (* we have to reject all references to variables that aren't
+       immediately in scope *)
+  (* we're going to have to escape double-quotes when we write
+       these string literals *)
+  (* TODO; returning test string for testing *)
+  "TODO: cl_kernel string goes here", env
+
+let gfunc_to_cl_kernel gf_info env =
+  Environment.append env [Text(sprintf "const char *%s_kernel_string = \"" gf_info.id);
+			  (* we aren't ever changing the environment
+			      above the gfunc's scope, but we need to
+			      generate a new scope to parse the gfunc's contents *)
+			  NewScope(gfunc_to_cl_kernel_string gf_info);
+			  Text("\";\n");
+			  Text(sprintf "const char *%s_kernel_name = \"%s\";\n"
+				       gf_info.id gf_info.id);
+			  Text(sprintf "cl_kernel %s_compiled_kernel;\n" gf_info.id)]
+
+let rec gfunc_list_to_cl_kernels gf_info_list env =
+  match gf_info_list with
+    [] -> "", env
+  | gf_info :: other_gf_infos ->
+     Environment.append env [Generator(gfunc_to_cl_kernel gf_info);
+			     Generator(gfunc_list_to_cl_kernels other_gf_infos)]
+
 let generate_cl_kernels env =
+  let cl_globals = "cl_context __sheets_context;\n" 
+		   ^ "cl_command_queue __sheets_queue;\n"
+		   ^ "cl_int __cl_err;\n"
+  in
   Environment.append env [Text(cl_globals);
 			  Generator(gfunc_list_to_cl_kernels env.gfunc_list)]
-  and
-let cl_globals = "cl_context __sheets_context;\n" 
-		 ^ "cl_command_queue __sheets_queue;\n"
-		 ^ "cl_int __cl_err;\n"
-  and
-let gfunc_list_to_cl_kernels gfunc_list env =
-  let gfunc_to_cl_kernel gfunc env =
-    Environment.append env [Text(sprintf "const char *%s_kernel_string = " gfunc.fname);
-			    (* we aren't ever changing the environment
-			    above the gfunc's scope, but we need to
-			    generate a new scope to parse the gfunc's contents *)
-			    NewScope(gfunc_to_cl_kernel_string gfunc);
-			    Text(";\n");
-			    Text(sprintf "const char *%s_kernel_name = %s;\n" gfunc.fname);
-			    Text(sprintf "cl_kernel %s_compiled_kernel;\n" gfunc.fname)]
-  in
-  match env.gfunc_list with
-    [] -> "", env
-  | gfunc :: other_gfuncs ->
-     Environment.append env [Generator(gfunc_to_cl_kernel gfunc);
-			     Generator(gfunc_list_to_cl_kernels other_gfuncs)];
-  and
-let gfunc_to_cl_kernel_string gfunc env =
-  (* we have to reject all references to variables that aren't
-     immediately in scope *)
-  (* we're going to have to escape double-quotes when we write
-     these string literals *)
-  Environment.append env [Text(sprintf "__kernel void %s(" gfunc.fname
-;;				    
-
+ 
 (* ------------------------------------------------------------------ *)
 (* Parse and print                                                    *)
 (* ------------------------------------------------------------------ *)

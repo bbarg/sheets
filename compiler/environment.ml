@@ -39,7 +39,7 @@ type env = {
    func_return_type_map: func_info FunctionMap.t; 
    current_function: string; 
    on_gpu: bool; 
-
+   
 } 
 (* Types that can be returned by the generator as it modifies 
  * either the text of the generated code 

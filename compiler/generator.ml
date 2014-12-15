@@ -50,16 +50,14 @@ let rec generate_type datatype env =
 					  
 let rec process_stmt_list stmt_list env = 
    match stmt_list with 
-     []     -> "", env 
-   | [stmt] -> process_stmt (env, text) stmt 
-   | stmt :: other_stmts -> process_stmt_list 
-			     (process_stmt (env, text) stmt) 
- 			     other_stmts 
+     []     -> "\n", env (* TODO this is a sanity check *) 
+   | stmt :: other_stmts -> process_stmt stmt env; 
+                            process_stmt_list other_stmts env; 
  and process_stmt stmt env = 
    match stmt with 
      Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] 
-   | Block(stmt_list) -> process_stmt_list  stmt_list 
-   | Expr(expr) -> raise (NotImplementedError("expr")) 
+   | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list stmt_list) ] (* TODO check if we need braces/NewScope *) 
+   | Expr(expr) -> Environment.append env [ Generator(generate_exp expr env) ]  
    | Assign(name, expr) -> raise (NotImplementedError("assign")) 
    | Return(expr) -> raise (NotImplementedError("expr")) 
    | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
@@ -71,11 +69,10 @@ let rec process_stmt_list stmt_list env =
    | _ -> raise (NotImplementedError("Undefined type of expression")) 
  and process_vdecl vdecl env = 
    let v_datatype = Generator_utilities.str_to_type vdecl.vtype in 
-   Environment.append env [ 
- 			Generator(generate_type v_datatype); 
- 			Text(" " ^ vdecl.v_name ^ ";"); 
- 			Generator(add_var vdecl.v_name v_datatype) 
- 		      ] 
+   Environment.append env [
+                        Env(add_var vdecl.v_name v_datatype);
+ 	                Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n "); 
+ 		          ] 
  ;; 
 (* ------------------------------------------------------------------ *)
 

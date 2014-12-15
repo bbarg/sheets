@@ -54,4 +54,20 @@ let rec typecheck_stmt_list stmt_list env =
     | stmt :: rest_of_stmts -> typecheck_stmt stmt env; 
                                typecheck_stmt_list rest_of_stmts env
 
+
+;;
+let convert_vdecl_list_to_type_list vdecl_list = 
+    match vdecl_list with 
+        vdecl::rest_of_vdecls -> vdecl_to_type vdecl::convert_vdecl_list_to_type_list rest_of_vdecls 
+       | [] -> [] 
+;;
+let vdecl_type vdecl = 
+    str_to_type vdecl.v_type
+;;
+let fdecl_to_func_info fdecl = 
+        { 
+            id = fdecl.name;
+            on_gpu = fdecl.isGfunc; 
+            return = str_to_type fdecl.r_type; 
+            args = convert_vdecl_list_to_type_list fdecl.formals;       }
 ;;

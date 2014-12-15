@@ -124,17 +124,17 @@ let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
       false -> 
-           Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
-          Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
-          NewScope(generate_formals_vdecl_list fdecl.formals );
-          (* TODO Here is where we parse the body of the function??
-           *)
-          Text("){\n");
-          (* TODO: here is where we call stmt proc *) 
-          Text("}\n"); 
-           ]
-                                   
-     | true  -> "", env (* TODO in the future handle this *) 
+      Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
+			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
+			      NewScope(generate_formals_vdecl_list fdecl.formals );
+			      (* TODO Here is where we parse the body of the function??
+			       *)
+			      Text("){\n");
+			      (* TODO: here is where we call stmt proc *) 
+			      Text("}\n"); 
+			     ]
+                         
+    | true -> "", add_gfunc (Generator_utilities.fdecl_to_func_info fdecl) env
   in
   match fdecls with
     [] -> "", env

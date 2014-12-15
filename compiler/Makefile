@@ -4,10 +4,6 @@ OBJS =  ast.cmo three_tuple.cmo parser.cmo scanner.cmo environment.cmo \
 generator : $(OBJS)
 	ocamlc -o generator $(OBJS)
 
-.PHONY : test
-test : microc testall.sh
-	./testall.sh
-
 scanner.ml : scanner.mll
 	ocamllex scanner.mll
 
@@ -22,6 +18,10 @@ parser.ml parser.mli : parser.mly
 
 %.cmi : %.mlix
 	ocamlc -w A -c $<
+
+.PHONY : test
+test :
+	cd ./environment_tests && ./run_all.sh
 
 .PHONY : clean
 clean :

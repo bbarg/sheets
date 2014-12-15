@@ -1,50 +1,55 @@
 (* Utilities to parse expressions for generate.ml *)
-
-(* Utilities for type checking *) 
-
-(* Takes an environment and text tuple and an id of a variable, and returns its type as a string. If the variable does not exist it raises an error *)
-
-let lookup_id_type (env, text) id = "TODO" ;;
-
-
-(* Takes an environment and text tuple and name of a function, and returns its return type as a string. If the function does not exist it raises an error *)
-
-let lookup_func_type (env, text) f = "TODO";;
-(* Takes an expression and the corresponding environment and current text and evaluates the type of the expression, returning a string corresponding to the type of the expression *)
+open Ast;;
+open Environment;;
 exception TypeError of string;;
 
-let rec typeof (env, text) expr = 
+let eval_basic_binop type1 type2 = 
+    if (type1 = type2) then 
+        type1
+    else 
+        raise (TypeError("Incompatible types"))
+;;
+let eval_binop type1 type2 op = 
+    match op with 
+    | Plus -> eval_basic_binop type1 type2
+    | Minus -> eval_basic_binop type1 type2
+    | Times -> eval_basic_binop type1 type2
+    | Divide -> eval_basic_binop type1 type2
+    | Equal -> eval_basic_binop type1 type2
+    | Greater -> eval_basic_binop type1 type2
+    | Less -> eval_basic_binop type1 type2
+    | Geq  -> eval_basic_binop type1 type2
+    | Leq  -> eval_basic_binop type1 type2
+    | Neq    -> eval_basic_binop type1 type2 
+    | _->      raise (TypeError("Incompatible types"))
+
+
+let rec expr_typeof expr env = 
     match expr with 
-     Literal_int(i) -> "int"
-    | Literal_char(c) -> "char"
-    | Literal_float(f) -> "float" 
-    | Literal_string(s) -> "string"
-    | Literal_bool(b) -> "bool"
-    | Literal_int_a(i_a) -> "int[]" 
-    | Literal_char_a(i_a) -> "char[]" 
-    | Literal_float_a(i_a) -> "float[]" 
-    | Literal_string_a(i_a) -> "string[]"
-    | Literal_bool_a (s_a) ->  "bool[]"
-    | Id(s) -> lookup_id_type (env, text) s 
-    | Binop(exp1, op, exp2) -> eval_binop (env, text) (typeof(env, text) exp1) (typeof (env, text) exp2) op 
-    | Call(fname, exp_list) -> lookup_func_type (env, text) fname
-    | StructId(s, elem) -> lookup_struct_mem_type (env, text) s elem 
+     Literal_int(i) -> Int
+    | Literal_float(f) -> Float 
+    | Literal_int_a(i_a) -> Array( Int ) (* TODO: Check this *) 
+    | Literal_float_a(i_a) -> Array(Float) 
+    | Id(s) -> Environment.typeof s env  
+(*    | Binop(exp1, op, exp2) -> eval_binop expr_typeof exp1 env expr_typeof exp2 env op env *)
+    | Call(func_id, _ ) -> Environment.return_typeof_func func_id env 
     | _-> raise (Generator.NotImplementedError("Undefined type of expression"))
 ;;
 
 
-let process_expr (env, tex) expr = (env, tex);;
+let str_to_type str = 
+        match str with 
+        "int" -> Int 
+       | "float" -> Float
+       | "int[]" -> Array(Int) (* TODO Enumerate other types *)  
+       | "float[]" -> Array(Float) 
+       |  _-> Generator.NotImplementedError("Unrecognized type " ^ str)
 
-(* take in the current environment and text and return the updated
-   environment and text with the c code for the assignment
-   raises TypeError if the type of the variable and expression do not
-   match
- *)
-let process_assign (env, text) name expr =
-  raise Generator.NotImplementedError("utilities: process_assign")
-(* TODO *)
-;;
+let rec typecheck_stmt stmt env = true;; (* TODO *)
+let rec typecheck_stmt_list stmt_list env = 
+    match stmt_list with 
+    [] -> true 
+    | stmt :: rest_of_stmts -> typecheck_stmt stmt env; 
+                               typecheck_stmt_list rest_of_stmts env
 
-let process_return (env, text) expr =
-  
 ;;

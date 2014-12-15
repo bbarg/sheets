@@ -4,18 +4,12 @@
    tables:
    - variable names to vdecl objs
    - function names to fdecl objs
-   - struct names to sdef objs
 
    Scoping will be implemented by a linked list to which we add when
    we go down in scope.
 
    Notes:
 
-   - When a new scope is created, the creator level does not get a
-     modified symbol table back when the scope returns (a kind of
-     funny way to implement a stack; we don't actually explicitly say
-     to pop things off, we just don't save anything that is added when
-     we go down in scope) 
    - There should only ever be one entry per name in the symbol table *)
 
 open Ast;;
@@ -29,96 +23,6 @@ exception NameAlreadyBoundError of string;;
 exception VariableNotFound of string;;
 exception VariableAlreadyDeclared;; 
 exception FunctionNotDefinedError;; 
-(* Get variable, function, and struct maps from a level *)
-(* let vars level = first level;;   *)
-(* let funcs level = second level;; *)
-(* let structs level = third level;; *) 
-  
-(* START OF NEW DEFINITION for ENV *)
-(* let create = *)
-(*    { *)
-(*      var_map_stack = VariableMap.empty :: []; *)
-(*      func_map = FunctionMap.empty; *)
-(*      struct_map = StructMap.empty; *)
-(*      containing_func = "";	(\* initialize as null fdecl *\) *)
-(*    }  *)
-(* ;; *)
-
-(* return a list containing one element: a tuple of three empty maps *)
-(* let empty () =
-  [ (VariableMap.empty, FunctionMap.empty, StructMap.empty) ] 
-;; *)
-
-(* takes in the table list from the current scope level and
-   returns a new table list with an empty_table appended.
-
-   when descending a level in the generator, pass in `new_scope
-   current_table` as the table argument *)
-(* let new_scope env =
-  empty() @ env
-;; *)		       
-
-(* Membership Functions: each of these returns true if the name is
-   unbound in all levels of the symbol table, and false if there is a
-   binding *)
-(* let unbound_var v_name env =
-  let name_not_in_level (vars, _, _) =
-    not (VariableMap.mem v_name vars)
-  in
-  List.for_all name_not_in_level env
-;;
-let unbound_func f_name env =
-  let name_not_in_level (_, funcs, _) =
-    not (FunctionMap.mem f_name funcs)
-  in
-  List.for_all name_not_in_level env
-;;
-let unbound_struct s_name env = 
-  let name_not_in_level (_, _, structs) =
-    not (StructMap.mem s_name structs)
-  in
-  List.for_all name_not_in_level env
-;;
-*)
-(* if the var, func, or struct id doesn't already exist, add it to the
-map, otherwise throw an exception *)
-(* let add_var var env =
-  let _add = function
-      [] -> raise EmptyEnvironmentError
-    | current_level :: upper_levels
-      -> (VariableMap.add var.v_name var (vars current_level),
-	  funcs current_level,
-	  structs current_level) :: upper_levels
-  in      
-  match (unbound_var var.v_name env) with
-    true -> _add env
-  | false -> raise (NameAlreadyBoundError(var.v_name))
-;;
-let add_func func env =
-  let _add = function
-      [] -> raise EmptyEnvironmentError
-    | current_level :: upper_levels
-      -> (vars current_level,
-	  FunctionMap.add func.fname func (funcs current_level),
-	  structs current_level) :: upper_levels
-  in      
-  match (unbound_func func.fname env) with
-    true -> _add env
-  | false -> raise (NameAlreadyBoundError(func.fname))
-;;
-let add_struct struc env =
-  let _add = function
-      [] -> raise EmptyEnvironmentError
-    | current_level :: upper_levels
-      -> (vars current_level,
-	  funcs current_level,
-	  FunctionMap.add struc.s_name struc (structs current_level)) :: upper_levels
-  in      
-  match (unbound_struct struc.s_name env) with
-    true -> _add env
-  | false -> raise (NameAlreadyBoundError(struc.s_name))
-;;
-*)
 type func_info  = {
 	id : string; 
 	on_gpu : bool;
@@ -127,7 +31,6 @@ type func_info  = {
 
 }
 (* Create a record type for env 
- * TODO why do I need to make it a parameterized record
  *)
 
 (* Record indicating what the current environment keeps track of *)
@@ -138,10 +41,11 @@ type env = {
    on_gpu: bool; 
 
 } 
-(* TODO understand this next part better - 
- * Seems like a polymorphic function/functor 
- * mapping to either Text string or a tuple of 
- * (some type, string ) 
+(* Types that can be returned by the generator as it modifies 
+ * either the text of the generated code 
+ * changes the environment as it is parsing the file 
+ * or passes fuunctions to edit both code and environment 
+ * either in the existing scope or in a new scope 
  *) 
 type source = 
  | Text of string
@@ -160,7 +64,6 @@ let create =
    }
 
 (* Update gives a new env record with updated values 
- * TODO maybe we can make something to just update a part 
  * of the record 
  *) 
 
@@ -171,7 +74,9 @@ let update v_stack f_map curr_f gpu =
         current_function = curr_f; 
         on_gpu = gpu; 
    }
-
+(* Functions that let us modify only one 
+ * variable in environment at a time 
+ *)
 let update_only_scope new_scope env = 
 	update new_scope env.func_return_type_map env.current_function env.on_gpu 
 let update_only_func new_func env = 
@@ -216,9 +121,7 @@ let update_scope_add_var id datatype env =
             | [] -> raise EmptyEnvironmentError ) in 
     let new_scope = VariableMap.add id datatype old_scope in
        update_only_scope (new_scope::scope_tail) env    
-    (* update (new_scope:: scope_tail) env.func_return_type_map env.current_function env.on_gpu *) 
     
-
 (* Handles adding a variable to the current environment 
  * Takes an id : string , a datatype , and a 
  * (text: string, env : env) tuple and either raises an 
@@ -242,7 +145,6 @@ let add_var id datatype env =
  * used to enter a subscope 
  * takes an env, returns an updated env 
  *)
-(* update (VariableMap.empty:: env.var_stack) env.func_return_type_map env.current_function env.on_gpu *) 
     
 let push_scope env =  
     update_only_scope (VariableMap.empty::env.var_stack) env
@@ -251,7 +153,6 @@ let push_scope env =
  * used to enter a subscope 
  * takes an env, returns an updated env 
  *)
-(*update other_scopes env.func_return_type_map env.current_function env.on_gpu *)
     
 let pop_scope env = 
    match env.var_stack with 
@@ -291,8 +192,25 @@ let return_typeof_func id env =
 	get_func_info id env in 
     f_info.return     
 
-(* The combine function - this is the heart of the 
- * environment class 
+(* The append function - this is the 
+ * running loop of the codegen step 
+ * First, f is a function that takes a 
+ * (text, environment) tuple and matches it 
+ * with a component which is either 
+ * some new text - gets appended to existing text
+ * some modified environment - replaces existing 
+ * environment 
+ * some function named gen applied to 
+ * the same scope - in which case gen is applied to 
+ * the existing environment and gen returns a tuple 
+ * of (string, env) and the text gets appended to the 
+ * existing text, and the new env replaces the old env 
+ * note that gen can be a function also with arguments 
+ * given to it
+ * then this function f is applied to component in the 
+ * list of components always returning an updated 
+ * (text, env) tuple that is passed to the next 
+ * component in the list 
  *) 
 
 

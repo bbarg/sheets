@@ -19,6 +19,7 @@
 
 open Ast;;
 open Environment;;
+open Printf;;
 
 exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
@@ -124,10 +125,19 @@ let rec generate_cpu_funcs fdecls env =
 (* ------------------------------------------------------------------ *)
 
 let generate_cl_kernels env =
-  match env.gfunc_list with
-    [] -> "", env
-  | gfunc :: other_gfuncs ->
-     Environment.append env [NewScope(gfunc_to_cl_kernel 
+  let n_kernels = List.length env.gfunc_list in
+  Environment.append [		(* nkernels and kernel strings text *)
+      Generator(gfunc_list_to_cl_kernels env.gfunc_list)
+      (* kernel_names and compiled_kernels *)]
+		     
+and let gfunc_list_to_cl_kernels gfunc_list env =
+    let gfunc_to_cl_kernel gfunc env = "", env
+    in
+    match env.gfunc_list with
+      [] -> "", env
+    | gfunc :: other_gfuncs ->
+       Environment.append env
+			  
 ;;				    
 
 (* ------------------------------------------------------------------ *)

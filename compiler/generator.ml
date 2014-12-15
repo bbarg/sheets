@@ -157,7 +157,11 @@ let rec generate_cpu_funcs fdecls env =
 
    We have to declare all of these variable globally (and at the top
    of our generated c program) so they will be accessible from any
-   cpu function. *)
+   cpu function. 
+
+   ASSUMPTIONS:
+   - the incoming func_info list will not include any invalid names
+     (i.e. there won't be a gfunc called main) *)
   
 let gfunc_to_cl_kernel_string gf_info env =
   (* we have to reject all references to variables that aren't
@@ -199,6 +203,11 @@ let generate_cl_kernels env =
 (* Main: opencl context creation and frees                            *)
 (* ------------------------------------------------------------------ *)
 
+(* ASSUMPTIONS: 
+   - the incoming func_info list will not include any invalid names
+     (i.e. there won't be a gfunc called main) *)
+
+
 let rec generate_compile_kernels gf_info_list env =
   let generate_compile_kernel gf_info =
     sprintf "%s_compiled_kernel = kernel_from_string(__sheets_context, %s_kernel_string, %s_kernel_name, SHEETS_KERNEL_COMPILE_OPTS);\n" gf_info.id gf_info.id gf_info.id
@@ -211,7 +220,7 @@ let rec generate_compile_kernels gf_info_list env =
 			
 let rec generate_release_kernels gf_info_list env =
   let generate_release_kernel gf_info =
-    sprintf "CL_CALL_GUARDED(clReleaseKernel, %s_compiled_kernel);\n" gf_info.id
+    sprintf "CL_CALL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
   in
   match gf_info_list with
   [] -> "", env

@@ -26,19 +26,19 @@ exception UndefinedTypeError;;
 
 let generate_exp exp env = 
     match exp with
-      Literal_int(i) -> Environment.append env [Text(string_of_int(i) ) ] 
-      | Literal_float(f) -> Environment.append env [Text(string_of_float(f) )]
+      Literal_int(i) -> string_of_int(i), env  
+      | Literal_float(f) -> string_of_float(f), env 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.append env [Text(s) ] 
+      | Id(s) -> s, env  
       | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
        
 let rec generate_type datatype env = 
    match datatype with 
-	| Int -> Environment.append env [Text("int")] 
-	| Float -> Environment.append env [Text("float")] 
+	| Int -> "int", env 
+	| Float -> "float", env 
 	| Array(t) -> Environment.append env [ 
 		Generator(generate_type t); 
 		Text("[]")
@@ -48,35 +48,35 @@ let rec generate_type datatype env =
 (* ------------------------------------------------------------------ *)		  
 (* TODO combine-ify all of these functions *)
 					  
-(* let rec process_stmt_list stmt_list env = *)
-(*   match stmt_list with *)
-(*     []     -> "", env *)
-(*   | [stmt] -> process_stmt (env, text) stmt *)
-(*   | stmt :: other_stmts -> process_stmt_list *)
-(* 			     (process_stmt (env, text) stmt) *)
-(* 			     other_stmts *)
-(* and process_stmt stmt env = *)
-(*   match stmt with *)
-(*     Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] *)
-(*   | Block(stmt_list) -> process_stmt_list  stmt_list *)
-(*   | Expr(expr) -> raise (NotImplementedError("expr")) *)
-(*   | Assign(name, expr) -> raise (NotImplementedError("assign")) *)
-(*   | Return(expr) -> raise (NotImplementedError("expr")) *)
-(*   | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) *)
-(*   | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) *)
-(*   | While(expr, stmt) -> raise (NotImplementedError("while")) *)
-(*   | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) *)
-(*   | Continue -> (env, text ^ "continue;\n") *)
-(*   | Break -> (env, text ^ "break:\n") *)
-(*   | _ -> raise (NotImplementedError("Undefined type of expression")) *)
-(* and process_vdecl vdecl env = *)
-(*   let v_datatype = Generator_utilities.str_to_type vdecl.vtype in *)
-(*   Environment.append env [ *)
-(* 			Generator(generate_type v_datatype); *)
-(* 			Text(" " ^ vdecl.v_name ^ ";"); *)
-(* 			Generator(add_var vdecl.v_name v_datatype) *)
-(* 		      ] *)
-(* ;; *)
+let rec process_stmt_list stmt_list env = 
+   match stmt_list with 
+     []     -> "", env 
+   | [stmt] -> process_stmt (env, text) stmt 
+   | stmt :: other_stmts -> process_stmt_list 
+			     (process_stmt (env, text) stmt) 
+ 			     other_stmts 
+ and process_stmt stmt env = 
+   match stmt with 
+     Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] 
+   | Block(stmt_list) -> process_stmt_list  stmt_list 
+   | Expr(expr) -> raise (NotImplementedError("expr")) 
+   | Assign(name, expr) -> raise (NotImplementedError("assign")) 
+   | Return(expr) -> raise (NotImplementedError("expr")) 
+   | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
+   | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) 
+   | While(expr, stmt) -> raise (NotImplementedError("while")) 
+   | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 
+   | Continue -> (env, text ^ "continue;\n") 
+   | Break -> (env, text ^ "break:\n") 
+   | _ -> raise (NotImplementedError("Undefined type of expression")) 
+ and process_vdecl vdecl env = 
+   let v_datatype = Generator_utilities.str_to_type vdecl.vtype in 
+   Environment.append env [ 
+ 			Generator(generate_type v_datatype); 
+ 			Text(" " ^ vdecl.v_name ^ ";"); 
+ 			Generator(add_var vdecl.v_name v_datatype) 
+ 		      ] 
+ ;; 
 (* ------------------------------------------------------------------ *)
 
 (* ------------------------------------------------------------------ *)

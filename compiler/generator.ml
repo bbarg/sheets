@@ -86,7 +86,7 @@ let rec generate_type datatype env =
 let rec generate_global_vdecl_list vdecls env =
   let generate_global_vdecl vdecl env =
     let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
-    Environment.append env [Env(add_var vdecl.v_name v_datatype);
+    Environment.append env [Env((add_var vdecl.v_name v_datatype));
 			    Generator(generate_type v_datatype);
 			    Text(" " ^ vdecl.v_name ^ ";\n")]
   in
@@ -106,10 +106,10 @@ let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
       false -> 
-           Environment.append env [Env(add_func fdecl.fname (fdecl_to_func_info fdecl) );
+           Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
            ]
                                    
-      true  -> "", env (* TODO in the future handle this *) 
+     | true  -> "", env (* TODO in the future handle this *) 
   in
   match fdecls with
     [] -> "", env

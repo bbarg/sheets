@@ -66,7 +66,7 @@ let vdecl_type vdecl =
 ;;
 let fdecl_to_func_info fdecl = 
         { 
-            id = fdecl.name;
+            id = fdecl.fname;
             on_gpu = fdecl.isGfunc; 
             return = str_to_type fdecl.r_type; 
             args = convert_vdecl_list_to_type_list fdecl.formals;       }

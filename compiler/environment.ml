@@ -128,7 +128,7 @@ let update_scope_add_var id datatype env =
  * Empty error, a AlreadyDeclared error 
  * or it adds the variable to the current top scope 
  * with update_scope_add_var 
- * and returns a (text, updated_env) tuple 
+ * and returns a updated env 
  *)
   
 let add_var id datatype env = 
@@ -138,7 +138,7 @@ let add_var id datatype env =
 		if VariableMap.mem id scope_level then 
 			raise VariableAlreadyDeclared
 		else 
-		("", update_scope_add_var id datatype env)
+		update_scope_add_var id datatype env
      
 
 (* adds a new empty variableMap to the top of var stack 
@@ -184,6 +184,7 @@ let add_func id finfo env =
 	raise VariableAlreadyDeclared
    else 
        update_only_func (FunctionMap.add id finfo env.func_return_type_map ) env 
+       
 (* Returns the datatype of a function or 
  * raises a undefined error if the function is not defined 
  *) 

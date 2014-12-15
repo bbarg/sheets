@@ -105,8 +105,11 @@ let rec generate_global_vdecl_list vdecls env =
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
-      true ->
-      false -> "", 
+      false -> 
+           Environment.append env [Env(add_func fdecl.fname (fdecl_to_func_info fdecl) );
+           ]
+                                   
+      true  -> "", env (* TODO in the future handle this *) 
   in
   match fdecls with
     [] -> "", env

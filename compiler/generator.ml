@@ -22,9 +22,28 @@ open Environment;;
 
 exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
-  
+exception UndefinedTypeError;;
+
+let generate_exp exp env = 
+    match exp with
+       Literal_int(i) -> Environment.combine env [Text(string_of_int(i) ) ] 
+      | Literal_float(f) -> Environment.combine env [Text(string_of_float(f) )]
+      | Literal_int_a(int_a) -> print_int_list int_a env
+       Id(id) -> Environment.combine env [Text(id)]
+       
+
+let rec generate_type datatype env = 
+   match datatype with 
+	| Int(_) -> Environment.combine env [Text("int")] 
+	| Float(_) -> Environment.combine env [Text("float")] 
+	| Array(t) -> Environment.combine env [ 
+		Generator(generate_type t); 
+		Text("[]")
+	]
+	| _-> raise UndefinedTypeError (* TODO this should never happen *)
+(*  
 (* generate the C representation of an individual vdecl *)
-let c_vdecl_no_semi vdecl =
+ let c_vdecl_no_semi vdecl =
   let prefix vdecl = match (vdecl.isConst, vdecl.isStruct) with
     (true, true)  -> "const struct "
   | (true, false) -> "const "
@@ -38,12 +57,12 @@ let process_vdecl (env, text) vdecl =
     (* will throw NameAlreadyBoundError *)
   (add_var vdecl env, text ^ (c_vdecl_no_semi vdecl) ^ ";\n")
 ;;    
-  
+ *) 
 (* return updated table and a generated C string of the var-decs *)
-let gen_global_vdecls (vdecls, _, _) env =
+(* let gen_global_vdecls (vdecls, _, _) env =
   List.fold_left process_vdecl (env, "") (List.rev vdecls)
 ;;
-
+*)
 (* take in the existing environment and generated c code (text)
    and a list of statements and processes each statement in order
 
@@ -57,7 +76,7 @@ let rec process_stmt_list (env, text) stmt_list =
 			     other_stmts
 and process_stmt (env, text) stmt =
   match stmt with
-    Vdecl(vdecl) -> process_vdecl (env, text) vdecl
+    Vdecl(vdecl) -> Environment.combine env [ Generator(process_vdecl vdecl); ]
   | Block(stmt_list) -> process_stmt_list (env, text) stmt_list
   | Expr(expr) -> raise (NotImplementedError("expr"))
   | Assign(name, expr) -> raise (NotImplementedError("assign"))
@@ -71,7 +90,7 @@ and process_stmt (env, text) stmt =
   | _ -> raise (NotImplementedError("Undefined type of expression"))
 ;;
 
-
+(*
 (* take in a list of formals and return a c string representation
    e.g. "int a, int b, int c" *)
 let rec c_formals = function
@@ -94,7 +113,7 @@ let gen_fdecls (_, _, fdecls) env =
   in
   List.fold_left process_fdecl (env, "") (List.rev fdecls)
 ;;  
-
+*)
 let _ =
   let lexbuf = Lexing.from_channel stdin in
   let program = try
@@ -111,4 +130,6 @@ let _ =
   let env, c_fdecls_text = gen_fdecls program env in
   print_string c_vdecls_text;
   print_string c_fdecls_text
-;;
+;; 
+
+

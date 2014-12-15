@@ -123,21 +123,42 @@ let rec generate_cpu_funcs fdecls env =
 (* ------------------------------------------------------------------ *)
 (* OpenCL Kernels                                                     *)
 (* ------------------------------------------------------------------ *)
+(* Each gfunc has a requires a set of variables to access its
+   associated OpenCL kernel representation. For a gfunc called
+   "mygfunc", these variables are:
+   - `mygfunc_kernel_string'  : a string of the opencl kernel code
+   - `mygfunc_kernel_name'    : a string of the function name;
+                                circuitously, this will be "mygfunc"
+   - `mygfunc_compiled_kernel : the compiled cl_kernel object
 
+   We have to declare all of these variable globally (and at the top
+   of our generated c program) so they will be accessible from any
+   cpu function. *)
 let generate_cl_kernels env =
-  let n_kernels = List.length env.gfunc_list in
-  Environment.append [		(* nkernels and kernel strings text *)
-      Generator(gfunc_list_to_cl_kernels env.gfunc_list)
-      (* kernel_names and compiled_kernels *)]
-		     
-and let gfunc_list_to_cl_kernels gfunc_list env =
-    let gfunc_to_cl_kernel gfunc env = "", env
-    in
-    match env.gfunc_list with
-      [] -> "", env
-    | gfunc :: other_gfuncs ->
-       Environment.append env
-			  
+  Environment.append env [Text(cl_globals);
+			  Generator(gfunc_list_to_cl_kernels env.gfunc_list)]
+  and
+let cl_globals = "cl_context __sheets_context;\n" 
+		 ^ "cl_command_queue __sheets_queue;\n"
+		 ^ "cl_int __cl_err;\n"
+  and
+let gfunc_list_to_cl_kernels gfunc_list env =
+  let gfunc_to_cl_kernel gfunc env =
+    (* we have to reject all references to variables that aren't
+       immediately in scope *)
+    (* we're going to have to escape double-quotes when we write
+       these string literals *)
+    Environment.append env [Text(sprintf "const char *%s_kernel_string = " gfunc.fname);
+			    NewScope(gfunc_to_cl_kernel_string gfunc);
+			    Text(";\n");
+			    Text(sprintf "const char *%s_kernel_name = %s;\n" gfunc.fname);
+			    Text(sprintf "cl_kernel %s_compiled_kernel;\n" gfunc.fname)]
+  in
+  match env.gfunc_list with
+    [] -> "", env
+  | gfunc :: other_gfuncs ->
+     Environment.append env [Generator(gfunc_to_cl_kernel gfunc);
+			     Generator(gfunc_list_to_cl_kernels other_gfuncs)];
 ;;				    
 
 (* ------------------------------------------------------------------ *)

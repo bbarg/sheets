@@ -47,10 +47,5 @@ while
 
 ## New Issues (Monday Morning)
 
-- everything compiles but suddenly parser seems to be failing on
-really simple cases like
-```
-int a
-int b
-```
-- we shall investigate
+There isn't actually a problem. We just were running the generator
+directly on stuff that needed to go through the preprocessor first.

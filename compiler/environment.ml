@@ -18,7 +18,6 @@
      we go down in scope) 
    - There should only ever be one entry per name in the symbol table *)
 
-open Three_tuple;;
 open Ast;;
 
 module VariableMap = Map.Make(String);;

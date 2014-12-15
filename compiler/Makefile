@@ -1,5 +1,5 @@
 OBJS =  ast.cmo three_tuple.cmo parser.cmo scanner.cmo environment.cmo \
-	generator.cmo 
+	generator_utilties.cmo generator.cmo 
 
 # print_ast.cmo
 
@@ -35,12 +35,11 @@ ast.cmo :
 ast.cmx :
 environment.cmo : three_tuple.cmo ast.cmo
 environment.cmx : three_tuple.cmx ast.cmx
-generator.cmo : parser.cmi environment.cmo ast.cmo
-generator.cmx : parser.cmx environment.cmx ast.cmx
-parser.cmo : three_tuple.cmo ast.cmo parser.cmi
-parser.cmx : three_tuple.cmx ast.cmx parser.cmi
-print_ast.cmo : parser.cmi ast.cmo
-print_ast.cmx : parser.cmx ast.cmx
+generator.cmo : generator_utilities.cmo environment.cmo ast.cmo
+generator.cmx : generator_utilities.cmx environment.cmx ast.cmx
+generator_utilities.cmo : generator.cmo environment.cmo ast.cmo
+generator_utilities.cmx : generator.cmx environment.cmx ast.cmx
+print_ast.cmo : ast.cmo
+print_ast.cmx : ast.cmx
 three_tuple.cmo :
 three_tuple.cmx :
-parser.cmi : ast.cmo

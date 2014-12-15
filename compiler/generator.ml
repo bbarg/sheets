@@ -70,7 +70,7 @@ let rec generate_type datatype env =
 (*   | Break -> (env, text ^ "break:\n") *)
 (*   | _ -> raise (NotImplementedError("Undefined type of expression")) *)
 (* and process_vdecl vdecl env = *)
-(*   let v_datatype = str_to_type vdecl.vtype in *)
+(*   let v_datatype = Generator_utilities.str_to_type vdecl.vtype in *)
 (*   Environment.combine env [ *)
 (* 			Generator(generate_type v_datatype); *)
 (* 			Text(" " ^ vdecl.v_name ^ ";"); *)
@@ -85,7 +85,7 @@ let rec generate_type datatype env =
 
 let rec generate_global_vdecl_list vdecls env =
   let generate_global_vdecl vdecl env =
-    let v_datatype = str_to_type vdecl.vtype in
+    let v_datatype = Generator_utilities.str_to_type vdecl.vtype in
     Environment.combine env [
 			  Generator(generate_type v_datatype);
 			  Text(" " ^ vdecl.v_name ^ ";");

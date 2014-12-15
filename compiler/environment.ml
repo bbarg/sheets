@@ -219,6 +219,14 @@ let return_typeof_func id env =
  * (text, env) tuple that is passed to the next 
  * component in the list 
  *) 
+(* Appends a new func_info for a gfunc to env's 
+ * gdunc list and updates environment 
+ * also makes sure it is a gfunc 
+ *)
+
+let add_gfunc gfunc_info env = 
+    (* TODO decide whether I want to check gfunc *)
+    update_gfunc_list (gfunc_info::env.gfunc_list) env 
 
 
 let append init_env components =  

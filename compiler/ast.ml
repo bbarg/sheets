@@ -20,7 +20,7 @@ type expr =
   | Binop of expr * op * expr
  (* | Unop of unary_op * expr *)
   | Call of string * expr list
-  | StructId of string * string 
+  | StructId of string * string
   (* StructId: string1=name of struct var, string2=name of element to be accessed *)
   | ArrayAcc of expr * expr
   (* ArrayAcc: expr1=expression that evaluates to an array, expr2=expression
@@ -42,7 +42,7 @@ type stmt =		      (* statements that can occur in funcs *)
   | Return of expr
   | Init of vdecl * expr
   | If of expr * stmt * stmt 
-  | For of expr * expr * expr * stmt
+  | For of stmt * expr * stmt * stmt
   | While of expr * stmt
   | ForIn of expr * expr * stmt
   | Continue

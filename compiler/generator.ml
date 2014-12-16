@@ -43,7 +43,6 @@ let print_sdefs sdefs =
   in List.iter f sdefs
 ;;
 
-
 let print_ops = function
       Plus -> printf "+"
     | Minus -> printf "-"
@@ -118,7 +117,6 @@ let print_funcs fdecls =
     in List.iter f fdecls 
 ;;
 
-
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
  * call gen_checked_<EXPRESSION_NAME> that can meaningfully be 
@@ -141,7 +139,7 @@ let print_funcs fdecls =
  *)
 
 let generate_checked_id check_id id env = 
-    if (check_id id env)  then id, env 
+    if (check_id id env) then id, env 
     else raise (VariableNotFound id)
 
 
@@ -583,7 +581,7 @@ let gfunc_to_cl_kernel_string gf_info env =
        immediately in scope *)
   (* we're going to have to escape double-quotes when we write
        these string literals *)
-  (* TODO; returning test string for testing *)
+  Environment.
   "TODO: cl_kernel string goes here", env
 
 let gfunc_to_cl_kernel gf_info env =

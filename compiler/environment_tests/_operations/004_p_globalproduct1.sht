@@ -2,4 +2,4 @@
 int a
 int b
 func int sum_global():
-    a + b
+    a * b

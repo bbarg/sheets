@@ -22,7 +22,6 @@ let print_sdefs sdefs =
   in List.iter f sdefs
 ;;
 
-
 let print_ops = function
       Plus -> printf "+"
     | Minus -> printf "-"
@@ -231,8 +230,10 @@ let arr_type_str_to_base_type = function
   | "int[][]" -> "int"
   | _ -> raise UnsupportedArrayTypeError
 ;;
-let c_type_from_arr_type = function
-    "float[]" -> "float *"
+let c_type_from_str = function
+    "int" -> "int"
+  | "float" -> "float"
+  | "float[]" -> "float *"
   | "int[]" -> "int *"
   | "float[][]" -> "float **"
   | "int[][]" -> "int **"

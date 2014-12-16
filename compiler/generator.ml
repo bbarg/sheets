@@ -58,11 +58,10 @@ let generate_checked_expr check_func expr env =
 
 let exp_to_txt exp = 
     match exp with 
-        Literal_int(i) -> string_of_int(i), env  
+        Literal_int(i) -> string_of_int(i)  
       | Literal_float(f) -> string_of_float(f)
       | Id(s) -> s 
-      | _-> raise (NotImplementedError )
-
+      | _-> ""
 let op_to_txt op = 
     match op with 
     | Plus -> "+"
@@ -75,13 +74,13 @@ let op_to_txt op =
     | Geq -> ">="
     | Leq -> "<="
     | Neq -> "!="
-    | _-> raise (NotImplementedError )
+    | _-> ""
 
 let generate_checked_binop check_binop binop env =
-    if (check_binop binop env) then 
+        check_binop binop env; 
         match binop with 
-        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " (op_to_txt) ^" " (exp_to_txt) ^ ";\n" , env 
-    else raise (BadExpressionError binop)
+        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n" , env 
+        | _->  raise (BadExpressionError("binop"))
 
 
 (*
@@ -103,7 +102,7 @@ let generate_exp exp env =
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
       | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
+      | Binop(_,_,_) -> Environment.append env [Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
 

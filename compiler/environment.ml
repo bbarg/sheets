@@ -22,6 +22,7 @@ exception EmptyEnvironmentError;;
 exception NameAlreadyBoundError of string;;
 exception VariableNotFound of string;;
 exception VariableAlreadyDeclared;; 
+exception AlreadyDeclaredError;; 
 exception FunctionNotDefinedError;; 
 type func_info  = {
 	id : string; 
@@ -229,9 +230,25 @@ let return_typeof_func id env =
  * also makes sure it is a gfunc 
  *)
 
+let rec check_gfunc_name_in_list glist gfunc = 
+    match glist with 
+    [] -> false 
+   |gfunc_info :: rest_of_gfuncs -> if gfunc.id = gfunc_info.id then true
+                                    else (check_gfunc_name_in_list rest_of_gfuncs gfunc) 
+let is_gfunc_declared gfunc_info env = 
+    if check_gfunc_name_in_list env.gfunc_list gfunc_info then 
+        raise (AlreadyDeclaredError) 
+    else if is_func_declared gfunc_info.id env then 
+        raise (AlreadyDeclaredError) 
+    else false   
+     
+
 let add_gfunc gfunc_info env = 
     (* TODO decide whether I want to check gfunc *)
-    update_gfunc_list (gfunc_info::env.gfunc_list) env 
+    if (is_gfunc_declared gfunc_info env) then 
+       raise (AlreadyDeclaredError) 
+    else 
+       update_gfunc_list (gfunc_info::env.gfunc_list) env 
 
 
 let append init_env components =  

@@ -25,7 +25,7 @@ exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 exception BadExpressionError of string;;
-exception CrazyError;;
+
 
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
@@ -50,7 +50,7 @@ exception CrazyError;;
 
 let generate_checked_id check_id id env = 
     if (check_id id env)  then id, env 
-    else raise (CrazyError)
+    else raise (VariableNotFound id)
 
 
 let generate_checked_expr check_func expr env =
@@ -103,9 +103,7 @@ let generate_exp exp env =
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
       | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(_,_,_) -> Environment.append env [
-              Text ("/* DEBUG: Printing Binop */\n");
-              Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
+      | Binop(_,_,_) -> Environment.append env [ Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
 
@@ -124,17 +122,14 @@ let rec generate_type datatype env =
 					  
 let rec process_stmt_list stmt_list env = 
    match stmt_list with 
-     stmt :: other_stmts -> Environment.append env [Text("/* DEBUG: found a statement */\n")]; 
-                            process_stmt stmt env; 
-                            process_stmt_list other_stmts env; 
-   | []     -> "//DEBUG: Done printing statements \n", env (* TODO this is a sanity check *) 
+   stmt :: other_stmts -> Environment.append env [Generator(process_stmt
+   stmt); Generator(process_stmt_list other_stmts)] 
+   | []     -> "\n", env (* TODO this is a sanity check *) 
  and process_stmt stmt env =
-   Environment.append env [Text("/*DEBUG : Before matching any statements */\n")];
    match stmt with 
      Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] 
    | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list stmt_list) ] (* TODO check if we need braces/NewScope *) 
-   | Expr(expr) -> Environment.append env [ Text("/* DEBUG: Printing Expr */\n");
-                                            Generator(generate_exp expr ) ]  
+   | Expr(expr) -> Environment.append env [ Generator(generate_exp expr ) ]  
    | Assign(name, expr) -> raise (NotImplementedError("assign")) 
    | Return(expr) -> raise (NotImplementedError("expr")) 
    | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
@@ -315,20 +310,20 @@ let generate_kernel_invocation_function fdecl env =
 
 (* end kernel invocations -------------------------------------------- *)
 (* ------------------------------------------------------------------- *)
-let generate_func_formals_and_body vdecl_list stmt_list env = 
-        Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
+let generate_func_formals_and_body stmt_list vdecl_list env = 
+    Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
                             Text("){\n");
-                            Text("/* DEBUG: About to print function body statement list */\n"); 
                             Generator(process_stmt_list stmt_list);
-                            Text("}\n");
-                        ] 
+                            Text("}\n"); ]
+
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
       false -> 
-      Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
+          Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
 			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
-			      NewScope(generate_func_formals_and_body fdecl.formals fdecl.body);
+			      NewScope(generate_func_formals_and_body fdecl.body
+                  fdecl.formals);
 			     ]
                          
     | true ->

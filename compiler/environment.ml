@@ -33,7 +33,7 @@ type func_info  = {
 	args : datatype list;
 	arg_names: string list;
 	_blocksize : int;
-
+	
 }
 (* Create a record type for env 
  *)
@@ -47,6 +47,7 @@ type env = {
     gfunc_list: fdecl list;	(* we need to save the body of the
                                    gfunc so we can do kernel string
                                    generation *)
+    num_array_returns : int;
   } 
 (* Types that can be returned by the generator as it modifies 
  * either the text of the generated code 
@@ -68,34 +69,38 @@ let create =
        func_return_type_map = FunctionMap.empty; 
        current_function = ""; (* TODO maybe this needs a better convention *)
        on_gpu = false;
-       gfunc_list = []; 
+       gfunc_list = [];
+       num_array_returns = 0;
    }
 
 (* Update gives a new env record with updated values 
  * of the record 
  *) 
 
-let update v_stack f_map curr_f gpu g_list = 
-    { 
-        var_stack = v_stack; 
-        func_return_type_map = f_map;
-        current_function = curr_f; 
-        on_gpu = gpu; 
-        gfunc_list = g_list;
-   }
+let update v_stack f_map curr_f gpu g_list num_arr_ret = 
+  { 
+    var_stack = v_stack; 
+    func_return_type_map = f_map;
+    current_function = curr_f; 
+    on_gpu = gpu; 
+    gfunc_list = g_list;
+    num_array_returns = num_arr_ret;
+  }
 (* Functions that let us modify only one 
  * variable in environment at a time 
  *)
 let update_only_scope new_scope env = 
-	update new_scope env.func_return_type_map env.current_function env.on_gpu env.gfunc_list 
+	update new_scope env.func_return_type_map env.current_function env.on_gpu env.gfunc_list env.num_array_returns
 let update_only_func new_func env = 
-	update env.var_stack new_func env.current_function env.on_gpu env.gfunc_list 
+	update env.var_stack new_func env.current_function env.on_gpu env.gfunc_list env.num_array_returns
 let update_curr_func new_curr_func env = 
-	update env.var_stack env.func_return_type_map new_curr_func env.on_gpu env.gfunc_list
+	update env.var_stack env.func_return_type_map new_curr_func env.on_gpu env.gfunc_list env.num_array_returns
 let update_on_gpu gpu env = 
-	update env.var_stack env.func_return_type_map env.current_function gpu env.gfunc_list
+	update env.var_stack env.func_return_type_map env.current_function gpu env.gfunc_list env.num_array_returns
 let update_gfunc_list g_list env = 
-	update env.var_stack env.func_return_type_map env.current_function env.on_gpu g_list
+  update env.var_stack env.func_return_type_map env.current_function env.on_gpu g_list env.num_array_returns
+let increment_num_array_rets env =
+  update env.var_stack env.func_return_type_map env.current_function env.on_gpu env.gfunc_list (env.num_array_returns + 1)
 
 (* Checks all scopes to see if variable has been declared *)
 let is_var_in_scope id env = 

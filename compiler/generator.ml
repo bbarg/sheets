@@ -628,7 +628,6 @@ let rec generate_cpu_funcs fdecls env =
 
 let rec generate_cl_kernel_body stmt_list env =
   (* TODO *) "\"TODO: kernel_text_body\"\n", env
-  
 (* return a comma separated list of kernel formal declarations and
    adds the variables to the current scope *)
 let rec generate_cl_kernel_vdecl_list vdecl_list env =

@@ -61,8 +61,7 @@ let exp_to_txt exp =
         Literal_int(i) -> string_of_int(i)
       | Literal_float(f) -> string_of_float(f)
       | Id(s) -> s 
-      | _-> raise (NotImplementedError )
-
+      | _-> ""
 let op_to_txt op = 
     match op with 
     | Plus -> "+"
@@ -75,13 +74,13 @@ let op_to_txt op =
     | Geq -> ">="
     | Leq -> "<="
     | Neq -> "!="
-    | _-> raise (NotImplementedError )
+    | _-> ""
 
 let generate_checked_binop check_binop binop env =
-    if (check_binop binop env) then 
+        check_binop binop env; 
         match binop with 
-        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " (op_to_txt) ^" " (exp_to_txt) ^ ";\n" , env 
-    else raise (BadExpressionError binop)
+        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n" , env 
+        | _->  raise (BadExpressionError("binop"))
 
 
 (*
@@ -103,7 +102,7 @@ let generate_exp exp env =
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
       | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
+      | Binop(_,_,_) -> Environment.append env [Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
 
@@ -225,19 +224,20 @@ let rec generate_formals_vdecl_list vdecl_list env =
    - the output array and input arrays of an individual gfunc MUST be
    the same size *)
 let generate_kernel_invocation_function fdecl env =
-  let generate_cl_mem_buffers fdecl = "TODO [barg]: gen cl_mem", env in
-  let generate_cl_enqueue_write_buffers	fdecl = "TODO [barg]: gen write buffers", env in
-  let generate_cl_set_kernel_args fdecl = "TODO [barg]: gen set kernel args", env in
-  let generate_cl_enqueue_nd_range_kernel fdecl = "TODO [barg]: gen enqueue ndrange", env in
-  let generate_cl_enqueue_read_buffer fdecl = "TODO [barg]: gen read buffers", env in
+  let generate_cl_mem_buffers fdecl env = "TODO [barg]: gen cl_mem\n", env in
+  let generate_cl_enqueue_write_buffers	fdecl env = "TODO [barg]: gen write buffers\n", env in
+  let generate_cl_set_kernel_args fdecl env = "TODO [barg]: gen set kernel args\n", env in
+  let generate_cl_enqueue_nd_range_kernel fdecl env = "TODO [barg]: gen enqueue ndrange\n", env in
+  let generate_cl_enqueue_read_buffer fdecl env = "TODO [barg]: gen read buffers\n", env in
   Environment.append env [Text(sprintf "%s (" fdecl.r_type);
+			  (* generate type as point rather than array? *)
 		          Generator(generate_formals_vdecl_list fdecl.formals);
 			  Text(")\n{\n");
 			  Generator(generate_cl_mem_buffers fdecl);
 			  Generator(generate_cl_enqueue_write_buffers fdecl);
 			  Generator(generate_cl_set_kernel_args fdecl);
 			  Generator(generate_cl_enqueue_nd_range_kernel fdecl);
-			  Generator(generate_cl_enqueue_read_buffer);
+			  Generator(generate_cl_enqueue_read_buffer fdecl);
 			  Text("return kernel_invocation_out;\n");
 			  Text("}\n")]
 (* ------------------------------------------------------------------- *)
@@ -258,7 +258,7 @@ let rec generate_cpu_funcs fdecls env =
                          
     | true ->
        Environment.append env [Env(add_gfunc (Generator_utilities.fdecl_to_func_info fdecl));
-			       NewScope(generate_checked_kernel_invocation_function check_gfdecl fdecl)]
+			       NewScope(generate_kernel_invocation_function fdecl)]
   in
   match fdecls with
     [] -> "", env

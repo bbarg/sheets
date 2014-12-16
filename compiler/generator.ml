@@ -56,11 +56,33 @@ let generate_checked_expr check_func expr env =
     if (check_func expr env) then expr, env
     else raise (BadExpressionError expr)
 
-(*
+let exp_to_txt exp = 
+    match exp with 
+        Literal_int(i) -> string_of_int(i), env  
+      | Literal_float(f) -> string_of_float(f)
+      | Id(s) -> s 
+      | _-> raise (NotImplementedError )
+
+let op_to_txt op = 
+    match op with 
+    | Plus -> "+"
+    | Minus -> "-"
+    | Times -> "*"
+    | Divide -> "/"
+    | Equal -> "=="
+    | Greater -> ">"
+    | Less -> "<"
+    | Geq -> ">="
+    | Leq -> "<="
+    | Neq -> "!="
+    | _-> raise (NotImplementedError )
+
 let generate_checked_binop check_binop binop env =
-    if (check_binop binop env) then binop, env
+    if (check_binop binop env) then 
+        match binop with 
+        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " (op_to_txt) ^" " (exp_to_txt) ^ ";\n" , env 
     else raise (BadExpressionError binop)
-*)
+
 
 (*
 let generate_checked_array_access check_array_access access env =

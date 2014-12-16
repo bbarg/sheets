@@ -241,19 +241,19 @@ let generate_kernel_invocation_function fdecl env =
 			  Text("return kernel_invocation_out;\n");
 			  Text("}\n")]
 (* ------------------------------------------------------------------- *)
-			      
+let generate_func_formals_and_body vdecl_list stmt_list  env = 
+        Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
+                            Text("){\n");
+                            Generator(process_stmt_list stmt_list);
+                            Text("}\n");
+                        ] 
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
       false -> 
       Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
 			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
-			      NewScope(generate_formals_vdecl_list fdecl.formals );
-			      (* TODO Here is where we parse the body of the function??
-			       *)
-			      Text("){\n");
-			      (* TODO: here is where we call stmt proc *) 
-			      Text("}\n"); 
+			      NewScope(generate_func_formals_and_body fdecl.formals fdecl.body);
 			     ]
                          
     | true ->

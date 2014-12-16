@@ -1,8 +1,0 @@
-#~ SHOULDPASS: declare a gfunc and call it from main ~#
-
-gfunc float[] my_gfunc(int c):
-    int x
-
-func int main():
-    int result
-

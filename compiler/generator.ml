@@ -248,7 +248,6 @@ let generate_return exp env =
     else
         raise(BadExpressionError("Bad return type"))
 ;;
-
 let generate_assign id exp env =
     match id with
     | Id(a) -> if (is_var_in_scope a env) then
@@ -284,8 +283,10 @@ let rec process_stmt_list stmt_list env =
    Generator(generate_return expr); Text(";\n")] 
    | Init(vdecl, expr) -> Environment.append env [ Text("/*Initialization*/\n");
    Generator(generate_init vdecl expr); Text(";\n")]
-   | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) 
-   | While(expr, stmt) -> raise (NotImplementedError("while")) 
+   | If(boolexpr, ifstmt, elsestmt) -> Environment.append env [
+       Text("/*If*/\n"); Generator(generate_if boolexpr ifstmt elsestmt);] 
+   | While(expr, body) -> raise (NotImplementedError("while")) 
+   | For(e1, e2, e3, body) -> raise(NotImplementedError("for"))
    | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 
    | Continue -> raise (NotImplementedError("continue")) 
    | Break ->    raise (NotImplementedError("break"))
@@ -295,8 +296,24 @@ let rec process_stmt_list stmt_list env =
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
  	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name)] 
 
+  and generate_if bool_expr ifbody elsebody env =
+      match bool_expr with
+      | Binop(e1, o, e2) -> 
+              match o with
+                  | Equal -> append_if_else bool_expr ifbody elsebody env
+                  | Neq -> append_if_else bool_expr ifbody elsebody env
+                  | Greater -> append_if_else bool_expr ifbody elsebody env 
+                  | Less -> append_if_else bool_expr ifbody elsebody env 
+                  | Geq -> append_if_else bool_expr ifbody elsebody env 
+                  | Leq -> append_if_else bool_expr ifbody elsebody env 
+                  | _-> raise (BadExpressionError ("Binop is not boolean"))
+      | _-> raise(BadExpressionError ("Conditional expression is not binop")) 
+and append_if_else bool_exp ifbody elsebody env =
+    Generator_utilities.expr_typeof bool_exp env;
+    Environment.append env [Text("if("); Generator(generate_exp bool_exp);
+    Text("){\n"); Generator(process_stmt ifbody); Text("\n} else {\n");
+    Generator(process_stmt elsebody); Text("}\n")]; 
 ;;
-
 
 (* ------------------------------------------------------------------ *)
 

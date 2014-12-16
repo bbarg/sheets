@@ -146,17 +146,17 @@ let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
       false -> 
-           Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
-          Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
-          NewScope(generate_formals_vdecl_list fdecl.formals );
-          (* TODO Here is where we parse the body of the function??
-           *)
-          Text("){\n");
-          (* TODO: here is where we call stmt proc *) 
-          Text("}\n"); 
-           ]
-                                   
-     | true  -> "", env (* TODO in the future handle this *) 
+      Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
+			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
+			      NewScope(generate_formals_vdecl_list fdecl.formals );
+			      (* TODO Here is where we parse the body of the function??
+			       *)
+			      Text("){\n");
+			      (* TODO: here is where we call stmt proc *) 
+			      Text("}\n"); 
+			     ]
+                         
+    | true -> "", add_gfunc (Generator_utilities.fdecl_to_func_info fdecl) env
   in
   match fdecls with
     [] -> "", env
@@ -179,40 +179,88 @@ let rec generate_cpu_funcs fdecls env =
 
    We have to declare all of these variable globally (and at the top
    of our generated c program) so they will be accessible from any
-   cpu function. *)
+   cpu function. 
+
+   ASSUMPTIONS:
+   - the incoming func_info list will not include any invalid names
+     (i.e. there won't be a gfunc called main) *)
+  
+let gfunc_to_cl_kernel_string gf_info env =
+  (* we have to reject all references to variables that aren't
+       immediately in scope *)
+  (* we're going to have to escape double-quotes when we write
+       these string literals *)
+  (* TODO; returning test string for testing *)
+  
+  
+  "TODO: cl_kernel string goes here", env
+
+let gfunc_to_cl_kernel gf_info env =
+  Environment.append env [Text(sprintf "const char *%s_kernel_string = \"" gf_info.id);
+			  (* we aren't ever changing the environment
+			      above the gfunc's scope, but we need to
+			      generate a new scope to parse the gfunc's contents *)
+			  NewScope(gfunc_to_cl_kernel_string gf_info);
+			  Text("\";\n");
+			  Text(sprintf "const char *%s_kernel_name = \"%s\";\n"
+				       gf_info.id gf_info.id);
+			  Text(sprintf "cl_kernel %s_compiled_kernel;\n" gf_info.id)]
+
+let rec gfunc_list_to_cl_kernels gf_info_list env =
+  match gf_info_list with
+    [] -> "", env
+  | gf_info :: other_gf_infos ->
+     Environment.append env [Generator(gfunc_to_cl_kernel gf_info);
+			     Generator(gfunc_list_to_cl_kernels other_gf_infos)]
+
 let generate_cl_kernels env =
+  let cl_globals = "cl_context __sheets_context;\n" 
+		   ^ "cl_command_queue __sheets_queue;\n"
+		   ^ "cl_int __cl_err;\n"
+  in
   Environment.append env [Text(cl_globals);
 			  Generator(gfunc_list_to_cl_kernels env.gfunc_list)]
-  and
-let cl_globals = "cl_context __sheets_context;\n" 
-		 ^ "cl_command_queue __sheets_queue;\n"
-		 ^ "cl_int __cl_err;\n"
-  and
-let gfunc_list_to_cl_kernels gfunc_list env =
-  let gfunc_to_cl_kernel gfunc env =
-    Environment.append env [Text(sprintf "const char *%s_kernel_string = " gfunc.fname);
-			    (* we aren't ever changing the environment
-			    above the gfunc's scope, but we need to
-			    generate a new scope to parse the gfunc's contents *)
-			    NewScope(gfunc_to_cl_kernel_string gfunc);
-			    Text(";\n");
-			    Text(sprintf "const char *%s_kernel_name = %s;\n" gfunc.fname);
-			    Text(sprintf "cl_kernel %s_compiled_kernel;\n" gfunc.fname)]
-  in
-  match env.gfunc_list with
-    [] -> "", env
-  | gfunc :: other_gfuncs ->
-     Environment.append env [Generator(gfunc_to_cl_kernel gfunc);
-			     Generator(gfunc_list_to_cl_kernels other_gfuncs)];
-  and
-let gfunc_to_cl_kernel_string gfunc env =
-  (* we have to reject all references to variables that aren't
-     immediately in scope *)
-  (* we're going to have to escape double-quotes when we write
-     these string literals *)
-  Environment.append env [Text(sprintf "__kernel void %s(" gfunc.fname
-;;				    
 
+(* ------------------------------------------------------------------ *)
+(* Main: opencl context creation and frees                            *)
+(* ------------------------------------------------------------------ *)
+
+(* ASSUMPTIONS: 
+   - the incoming func_info list will not include any invalid names
+     (i.e. there won't be a gfunc called main) *)
+
+
+let rec generate_compile_kernels gf_info_list env =
+  let generate_compile_kernel gf_info =
+    sprintf "%s_compiled_kernel = kernel_from_string(__sheets_context, %s_kernel_string, %s_kernel_name, SHEETS_KERNEL_COMPILE_OPTS);\n" gf_info.id gf_info.id gf_info.id
+  in
+  match gf_info_list with
+    [] -> "", env
+  | gf_info :: other_gf_infos ->
+     Environment.append env [Text(generate_compile_kernel gf_info);
+			     Generator(generate_compile_kernels other_gf_infos)]
+			
+let rec generate_release_kernels gf_info_list env =
+  let generate_release_kernel gf_info =
+    sprintf "CL_CALL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
+  in
+  match gf_info_list with
+  [] -> "", env
+  | gf_info :: other_gf_infos ->
+     Environment.append env [Text(generate_release_kernel gf_info);
+			     Generator(generate_release_kernels other_gf_infos)]
+
+let generate_main env =
+  Environment.append env [Text("int main()\n");
+			  Text("{\n");
+			  Text("create_context_on(SHEETS_PLAT_NAME, SHEETS_DEV_NAME, 0, &__sheets_context, &__sheets_queue, 0);\n");
+			  Generator(generate_compile_kernels env.gfunc_list);
+			  Text("snuggle();\n");
+			  Generator(generate_release_kernels env.gfunc_list);
+			  Text("CALL_CL_GUARDED(clReleaseCommandQueue, (__sheets_queue));\n");
+			  Text("CALL_CL_GUARDED(clReleaseContext, (__sheets_context));\n");
+			  Text("}\n")]
+		     
 (* ------------------------------------------------------------------ *)
 (* Parse and print                                                    *)
 (* ------------------------------------------------------------------ *)
@@ -232,7 +280,8 @@ let _ =
   (* TODO find cleaner solution for getting vdecls/fdecls in correct order *)
   let global_vdecls, env = generate_global_vdecl_list (List.rev vdecls) env in
   let cpu_funcs, env = generate_cpu_funcs (List.rev fdecls) env in
-  let cl_kernels, env = generate_cl_kernels env in 
+  let cl_kernels, env = generate_cl_kernels env in
+  let main, env = generate_main env in
   print_string ("#include <stdio.h>\n"
 		^ "#include \"aws-g2.2xlarge.h\"\n"
 		^ "#include \"cl-helper.h\"\n"
@@ -240,5 +289,6 @@ let _ =
   print_string cl_kernels;
   print_string global_vdecls;
   print_string cpu_funcs;
+  print_string main
 ;; 
 

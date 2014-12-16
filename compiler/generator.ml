@@ -79,7 +79,7 @@ let op_to_txt op =
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 
         match binop with 
-        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n" , env 
+        Binop(e1, op , e2) -> Environment.append env [Text((exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n")]
         | _->  raise (BadExpressionError("binop"))
 
 
@@ -241,7 +241,7 @@ let generate_kernel_invocation_function fdecl env =
 			  Text("return kernel_invocation_out;\n");
 			  Text("}\n")]
 (* ------------------------------------------------------------------- *)
-let generate_func_formals_and_body vdecl_list stmt_list  env = 
+let generate_func_formals_and_body vdecl_list stmt_list env = 
         Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
                             Text("){\n");
                             Generator(process_stmt_list stmt_list);

@@ -58,7 +58,7 @@ let generate_checked_expr check_func expr env =
 
 let exp_to_txt exp = 
     match exp with 
-        Literal_int(i) -> string_of_int(i), env  
+        Literal_int(i) -> string_of_int(i)
       | Literal_float(f) -> string_of_float(f)
       | Id(s) -> s 
       | _-> raise (NotImplementedError )
@@ -141,10 +141,8 @@ let rec process_stmt_list stmt_list env =
    | _ -> raise (NotImplementedError("Undefined type of expression")) 
  and process_vdecl vdecl env = 
    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in 
-   Environment.append env [
-                        Env(add_var vdecl.v_name v_datatype);
- 	                Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n "); 
- 		          ] 
+   Environment.append env [Env(add_var vdecl.v_name v_datatype);
+ 	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n ")] 
  ;; 
 (* ------------------------------------------------------------------ *)
 
@@ -223,11 +221,25 @@ let rec generate_formals_vdecl_list vdecl_list env =
 ;;
 
 (* kernel invocation ------------------------------------------------- *)
+(* INVARIANTS:
+   - the output array and input arrays of an individual gfunc MUST be
+   the same size *)
 let generate_kernel_invocation_function fdecl env =
-  Environment.append env [Generator(generate_formals_vdecl_list fdecl.formals);
-			  (* now we have the arguments, time to do the setup *)
-			  (* return array *)
-			 ]
+  let generate_cl_mem_buffers fdecl = "TODO [barg]: gen cl_mem", env in
+  let generate_cl_enqueue_write_buffers	fdecl = "TODO [barg]: gen write buffers", env in
+  let generate_cl_set_kernel_args fdecl = "TODO [barg]: gen set kernel args", env in
+  let generate_cl_enqueue_nd_range_kernel fdecl = "TODO [barg]: gen enqueue ndrange", env in
+  let generate_cl_enqueue_read_buffer fdecl = "TODO [barg]: gen read buffers", env in
+  Environment.append env [Text(sprintf "%s (" fdecl.r_type);
+		          Generator(generate_formals_vdecl_list fdecl.formals);
+			  Text(")\n{\n");
+			  Generator(generate_cl_mem_buffers fdecl);
+			  Generator(generate_cl_enqueue_write_buffers fdecl);
+			  Generator(generate_cl_set_kernel_args fdecl);
+			  Generator(generate_cl_enqueue_nd_range_kernel fdecl);
+			  Generator(generate_cl_enqueue_read_buffer);
+			  Text("return kernel_invocation_out;\n");
+			  Text("}\n")]
 (* ------------------------------------------------------------------- *)
 			      
 let rec generate_cpu_funcs fdecls env =

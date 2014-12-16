@@ -19,7 +19,7 @@ module FunctionMap = Map.Make(String);;
 (* module StructMap   = Map.Make(String);; *) 
 
 exception EmptyEnvironmentError;;
-exception NameAlreadyBoundError of string;;
+exception NamrtbeAlreadyBoundError of string;;
 exception VariableNotFound of string;;
 exception VariableAlreadyDeclared;; 
 exception FunctionNotDefinedError;; 

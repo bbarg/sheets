@@ -1,0 +1,34 @@
+#~ SHOULDPASS: Parser Mega Test ~#
+
+## Comments
+## Nested ## Inline
+#~ Single Line Block Comments ~#
+#~ 
+Multiline Comments 
+~#
+#~ Multiline ~# #~ Comments ~#
+#~ Nested #~ Single Line ~# Comments ~#
+#~ Mixed Block and ~# ## Inline Comments
+
+const int a
+int b
+const float c
+float d
+const int[] e
+int[] f
+const float[] g
+float[] h
+
+func int add (int x, int y):
+    const int i
+    int j
+    const float k
+    float l
+    const int[] m
+    int[] n
+    const float[] o
+    float[] p
+
+
+
+

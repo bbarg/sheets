@@ -180,7 +180,12 @@ let get_func_info id env =
     if is_func_declared id env then 
         FunctionMap.find id env.func_return_type_map
     else 
-        raise FunctionNotDefinedError 
+        raise FunctionNotDefinedError
+
+let get_func_args id env =
+    (get_func_info id env).args
+
+
 (* Inserts a new function to the function map 
  * and updates environment 
  * or raises a AlreadyDeclared error 

@@ -29,7 +29,8 @@ type func_info  = {
 	on_gpu : bool;
 	return : datatype; 
 	args : datatype list;
-        arg_names: string list; 
+    arg_names: string list;
+    blocksize : int;
 
 }
 (* Create a record type for env 

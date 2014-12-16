@@ -26,96 +26,6 @@ exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 exception BadExpressionError of string;;
-  
-let print_vdecls vdecls = 
-  let f v =
-    printf "DEBUG printing vdecl: v_type: %s, v_name: %s, isConst: %B, isStruct %B\n"
-	   v.v_type v.v_name v.isConst v.isStruct
-  in List.iter f vdecls
-;;
-
-let print_sdefs sdefs =
-  let f s =
-    printf "DEBUG printing sdefs: s_name=%s: s_elements=<"
-	   s.s_name;
-    print_vdecls s.s_elements;
-    printf ">\n";
-  in List.iter f sdefs
-;;
-
-let print_ops = function
-      Plus -> printf "+"
-    | Minus -> printf "-"
-    | Times -> printf "*"
-    | Divide -> printf "/"
-    | Mod ->printf "%c" '%'
-    | Neg ->printf "-"
-    | Equal ->printf "=="
-    | Neq -> printf"!="
-    | Less ->printf "<"
-    | Leq ->printf "<="
-    | Greater ->printf ">"
-    | Geq ->printf ">="
-    | Or ->printf "|"
-    | And ->printf "&"
-    | Xor ->printf "^"
-    | Not ->printf "~"
-    | Lshift ->printf "<<"
-    | Rshift -> printf">>"
-    | Land -> printf"&&"
-    | Lor -> printf"||" 
-;;
-
-let rec print_expr expr =
-    match expr with
-      Id(s) -> printf "ID=%s" s
-    | Binop(e1, o, e2) -> printf "Binop="; print_expr e1 ; print_ops o;
-    print_expr(e2)
-    | Call(fname, args) -> printf "Call to function %s" fname; List.iter
-    print_expr args
-    | StructId(struct_type, var_name) -> printf "StructId: struct_type=%s, var_name=%s" struct_type var_name
-    | Literal_int(i) -> printf "Int literal=%d" i
-    | Literal_char(c) -> printf "Char literal=%c" c
-    | Literal_float(f) -> printf "Float literal=%f" f
-    | Literal_string(s) -> printf "String literal=%s" s
-    | Literal_bool(b) -> printf "Bool literal=%B" b
-    | Literal_int_a(i) -> List.iter (printf "%d, ") i
-    | Literal_char_a(c) -> List.iter (printf "%c, ") c
-    | Literal_float_a(f) -> List.iter (printf "%f, ") f
-    | Literal_string_a(s) -> List.iter (printf "%s, ") s
-    | Literal_bool_a(b) -> List.iter (printf "%B, ") b
-    | _->printf "invalid expr"
-;;
-
-let rec print_stmt = function
-      Block(s) -> List.iter print_stmt s 
-    | Expr(e) -> print_expr e; printf "\n"
-    | Assign(e1, e2) -> print_expr e1; print_expr e2; printf "\n" 
-    | Return(e) -> printf "return "; print_expr e; printf "\n"
-    | If(e1, ifbody, elsebody) -> printf "if("; print_expr e1; printf "){";
-    print_stmt ifbody; printf "} else {"; print_stmt elsebody; printf "\n"
-    | For(e1, e2, e3, body) -> printf "For("; print_expr e1; printf "; ";
-    print_expr e2; printf "; "; print_expr e3; printf "){"; print_stmt body;
-    printf "}\n"
-    | While(e1, body) -> printf "While("; print_expr e1; printf "){"; print_stmt
-    body; printf "}\n"
-    | ForIn(e1, e2, body) -> printf "For("; print_expr e1; printf " in ";
-    print_expr e2; printf "){"; print_stmt body; printf "}\n"
-    | Continue -> printf "continue\n"
-    | Break -> printf "break\n"
-    | _-> printf "Statement error\n"
-;;
-let print_funcs fdecls = 
-    let f func =
-        printf "DEBUG: printing fdecl, fname=%s, gfunc=%B, blocksize=%d\n"
-        func.fname func.isGfunc func.blocksize;
-        printf "formals=<";
-        print_vdecls func.formals;
-        printf ">\n body=<";
-        List.iter print_stmt func.body;
-        printf ">\n";
-    in List.iter f fdecls 
-;;
 
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
@@ -271,22 +181,31 @@ let rec process_stmt_list stmt_list env =
    | []     -> "\n", env (* TODO this is a sanity check *) 
  and process_stmt stmt env =
    match stmt with 
-   Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl);
-   Text(";\n") ] 
-   | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list
-   stmt_list); Text(";\n") ] (* TODO check if we need braces/NewScope *) 
-   | Expr(expr) -> Environment.append env [ Generator(generate_exp expr );
-   Text(";\n") ]  
-   | Assign(name, expr) -> Environment.append env [ Text("/* Assignment */\n");
-   Generator(generate_assign name expr); Text(";\n")]
-   | Return(expr) -> Environment.append env [ Text("/*Return */\n");
-   Generator(generate_return expr); Text(";\n")] 
-   | Init(vdecl, expr) -> Environment.append env [ Text("/*Initialization*/\n");
-   Generator(generate_init vdecl expr); Text(";\n")]
-   | If(boolexpr, ifstmt, elsestmt) -> Environment.append env [
-       Text("/*If*/\n"); Generator(generate_if boolexpr ifstmt elsestmt);] 
+   Vdecl(vdecl) ->          Environment.append env [ 
+                            Generator(process_vdecl vdecl);
+                            Text(";\n") ] 
+   | Block(stmt_list) ->    Environment.append env [ 
+                            Generator(process_stmt_list
+                            stmt_list); Text(";\n") ]
+   | Expr(expr) ->          Environment.append env [ 
+                            Generator(generate_exp expr );
+                            Text(";\n") ]  
+   | Assign(name, expr) ->  Environment.append env [ 
+                            Generator(generate_assign name expr); 
+                            Text(";\n")]
+   | Return(expr) ->        Environment.append env [ 
+                            Generator(generate_return expr); 
+                            Text(";\n")] 
+   | Init(vdecl, expr) ->   Environment.append env [ 
+                            Generator(generate_init vdecl expr); 
+                            Text(";\n")]
+   | If(boolexpr, ifstmt, elsestmt) -> 
+                            Environment.append env [ 
+                            Generator(generate_if boolexpr ifstmt elsestmt)] 
    | While(expr, body) -> raise (NotImplementedError("while")) 
-   | For(e1, e2, e3, body) -> raise(NotImplementedError("for"))
+   | For(s1, e2, s3, body) -> 
+                            Environment.append env [ 
+                            Generator(generate_for s1 e2 s3 body)]
    | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 
    | Continue -> raise (NotImplementedError("continue")) 
    | Break ->    raise (NotImplementedError("break"))
@@ -296,6 +215,18 @@ let rec process_stmt_list stmt_list env =
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
  	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name)] 
 
+  and generate_for stmt1 bool_expr stmt2 body env =
+      match bool_expr with
+      | Binop(e1, o, e2) -> 
+              match o with
+                  | Equal -> append_for stmt1 bool_expr stmt2 body env
+                  | Neq -> append_for stmt1 bool_expr stmt2 body env
+                  | Greater -> append_for stmt1 bool_expr stmt2 body env 
+                  | Less -> append_for stmt1 bool_expr stmt2 body env 
+                  | Geq -> append_for stmt1 bool_expr stmt2 body env 
+                  | Leq -> append_for stmt1 bool_expr stmt2 body env 
+                  | _-> raise (BadExpressionError ("Binop is not boolean"))
+      | _-> raise(BadExpressionError ("Conditional expression is not binop")) 
   and generate_if bool_expr ifbody elsebody env =
       match bool_expr with
       | Binop(e1, o, e2) -> 
@@ -312,7 +243,13 @@ and append_if_else bool_exp ifbody elsebody env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("if("); Generator(generate_exp bool_exp);
     Text("){\n"); NewScope(process_stmt ifbody); Text("\n} else {\n");
-    NewScope(process_stmt elsebody); Text("}\n")]; 
+    NewScope(process_stmt elsebody); Text("}\n")] 
+and append_for stmt1 bool_exp stmt2 body env =
+    Generator_utilities.expr_typeof bool_exp env;
+    Environment.append env [Text("for("); Generator(process_stmt stmt1);
+    Text("; "); Generator(generate_exp bool_exp); Text("; "); 
+    Generator(process_stmt stmt2); Text("){\n"); NewScope(process_stmt body);
+    Text("}\n")]
 ;;
 
 (* ------------------------------------------------------------------ *)

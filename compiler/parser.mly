@@ -265,10 +265,10 @@ bool_block: LPAREN bool_expr RPAREN                     { $2 }
 block_body:  LBRACE loop_stmt_list RBRACE               { Block(List.rev $2) }
 gblock_body: LBRACE gloop_stmt_list RBRACE              { Block(List.rev $2) }
 
-for_pt1: LPAREN expr SEMI                               { $2 }
+for_pt1: LPAREN stmt                                    { $2 }
 for_pt2: bool_expr SEMI                                 { $1 }
-for_pt3: expr RPAREN                                    { $1 }
-    
+for_pt3: stmt RPAREN                                    { $1 }
+ 
 /* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
     | /* Nothing */                                     { [] }
@@ -300,6 +300,17 @@ bool_expr:
     | expr GEQ expr                   { Binop($1, Geq, $3) }
     | expr LAND expr                  { Binop($1, Land, $3) }
     | expr LOR expr                   { Binop($1, Lor, $3) }
+
+gbool_expr:
+    | gexpr EQ gexpr                    { Binop($1, Equal, $3) }
+    | gexpr NEQ gexpr                   { Binop($1, Neq, $3) }
+    | gexpr LT gexpr                    { Binop($1, Less, $3) }
+    | gexpr LEQ gexpr                   { Binop($1, Leq, $3) }
+    | gexpr GT gexpr                    { Binop($1, Greater, $3) }
+    | gexpr GEQ gexpr                   { Binop($1, Geq, $3) }
+    | gexpr LAND gexpr                  { Binop($1, Land, $3) }
+    | gexpr LOR gexpr                   { Binop($1, Lor, $3) }
+
 
 array_expr:
     | ID PERIOD ID                    { StructId($1, $3) }
@@ -365,6 +376,7 @@ expr:
     | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
+    | bool_expr                        { $1 }
     | expr AND expr                   { Binop($1, And, $3) }    
     | expr OR expr                    { Binop($1, Or, $3) }
     | expr XOR expr                   { Binop($1, Xor, $3) }
@@ -385,6 +397,7 @@ gexpr:
     | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }
     | ID PERIOD ID                    { StructId($1, $3) }
     | ID                              { Id($1) }
+    | gbool_expr                      { $1 }
     | gexpr G_AND gexpr               { Binop($1, G_And, $3) }    
     | gexpr G_OR gexpr                { Binop($1, G_Or, $3) }
     | gexpr G_XOR gexpr               { Binop($1, G_Xor, $3) }

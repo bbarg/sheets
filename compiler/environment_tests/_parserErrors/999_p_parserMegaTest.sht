@@ -20,6 +20,9 @@ const float[] g
 float[] h
 
 func int add (int x, int y):
+
+    #~ ----------- Declarations ----------- ~#
+
     const int i
     int j
     const float k
@@ -29,6 +32,104 @@ func int add (int x, int y):
     const float[] o
     float[] p
 
+    #~ ----------- All Operations for Ints ----------- ~#
 
+    int l_int
+    int r_int
+    int result_int
+
+    result_int = l_int + r_int
+    result_int = l_int - r_int
+    result_int = l_int * r_int
+    result_int = l_int / r_int
+
+    result_int = l_int :+ r_int
+    result_int = l_int :- r_int
+    result_int = l_int :* r_int
+    result_int = l_int :/ r_int      
+
+    result_int = l_int / r_int * r_int + r_int - r_int
+    result_int = (l_int / r_int) * (r_int + r_int) - r_int
+    result_int = ((l_int / r_int * r_int + r_int)) - r_int
+    result_int = ((l_int / r_int * r_int + r_int)) - r_int
+    result_int = ((((((((((((((r_int))))))))))))))
+    result_int = ((((((((((((((r_int)))))))))))))-l_int)
+
+    result_int = l_int :/ r_int :* r_int :+ r_int :- r_int
+    result_int = (l_int :/ r_int) :* (r_int :+ r_int) :- r_int
+    result_int = ((l_int :/ r_int :* r_int :+ r_int)) :- r_int
+    result_int = ((l_int :/ r_int :* r_int :+ r_int)) :- r_int
+    result_int = ((((((((((((((r_int))))))))))))))
+    result_int = ((((((((((((((r_int))))))))))))):-l_int)  
+
+    result_int = l_int / r_int :* r_int + r_int :- r_int
+    result_int = (l_int :/ r_int) * (r_int :+ r_int) - r_int
+    result_int = ((l_int / r_int :* r_int + r_int)) :- r_int
+    result_int = ((l_int :/ r_int * r_int :+ r_int)) - r_int
+    result_int = ((((((((((((((r_int))))))))))))))
+
+    #~ ----------- All Operations for Floats ----------- ~#
+
+    float l_flt
+    float r_flt
+    float result_flt
+
+    result_flt = l_flt + r_flt
+    result_flt = l_flt - r_flt
+    result_flt = l_flt * r_flt
+    result_flt = l_flt / r_flt
+
+    result_flt = l_flt :+ r_flt
+    result_flt = l_flt :- r_flt
+    result_flt = l_flt :* r_flt
+    result_flt = l_flt :/ r_flt
+
+    result_flt = l_flt / r_flt * r_flt + r_flt - r_flt
+    result_flt = (l_flt / r_flt) * (r_flt + r_flt) - r_flt
+    result_flt = ((l_flt / r_flt * r_flt + r_flt)) - r_flt
+    result_flt = ((l_flt / r_flt * r_flt + r_flt)) - r_flt
+    result_flt = ((((((((((((((r_flt))))))))))))))
+    result_flt = ((((((((((((((r_flt)))))))))))))-l_flt)  
+
+    result_flt = l_flt :/ r_flt :* r_flt :+ r_flt :- r_flt
+    result_flt = (l_flt :/ r_flt) :* (r_flt :+ r_flt) :- r_flt
+    result_flt = ((l_flt :/ r_flt :* r_flt :+ r_flt)) :- r_flt
+    result_flt = ((l_flt :/ r_flt :* r_flt :+ r_flt)) :- r_flt
+    result_flt = ((((((((((((((r_flt))))))))))))))
+    result_flt = ((((((((((((((r_flt))))))))))))):-l_flt)
+
+    result_flt = l_flt / r_flt :* r_flt + r_flt :- r_flt
+    result_flt = (l_flt :/ r_flt) * (r_flt :+ r_flt) - r_flt
+    result_flt = ((l_flt / r_flt :* r_flt + r_flt)) :- r_flt
+    result_flt = ((l_flt :/ r_flt * r_flt :+ r_flt)) - r_flt
+    result_flt = ((((((((((((((r_flt))))))))))))))
+
+    #~ ----------- Boolean Operations ----------- ~#
+
+    if (l_int >  r_int):
+        l_int
+    if (l_int <  r_int):
+        l_int
+    if (l_int >= r_int):
+        l_int
+    if (l_int <= r_int):
+        l_int
+    if (l_int == r_int):
+        l_int
+    if (l_int != r_int):
+        l_int
+
+    if (l_flt >  r_flt):
+        l_flt
+    if (l_flt <  r_flt):
+        l_flt
+    if (l_flt >= r_flt):
+        l_flt
+    if (l_flt <= r_flt):
+        l_flt
+    if (l_flt == r_flt):
+        l_flt
+    if (l_flt != r_flt):
+        l_flt              
 
 

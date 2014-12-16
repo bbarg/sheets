@@ -103,9 +103,9 @@ fdecl:
         r_struct  = snd $2;
         fname     = $3;                  (* function name *)
         formals   = $5;                  (* argument list *)
-        body      = $9;                 (* normal statement list *)
+        body      = $9;                  (* normal statement list *)
         isGfunc   = false;               (* false b/c not a gfunc *)
-        blocksize = -1
+        blocksize = -1                   (* block size unused *)
     }}
 
 /* gfunc int named_gfunc(args).[5]:{ <statements>... }; */
@@ -121,9 +121,6 @@ gfdecl:
         isGfunc   = true;                (* true b/c a gfunc *)
         blocksize = $7                   (* block size *)
     }}
-
-/* TODO: Calling functions from inside other functions? */
-/* TODO: mixed variable/statements */
 
 /* we give the option of having no arguments with this switch */
 formals_opt:
@@ -158,8 +155,6 @@ type_name:
     | STRING                            { ("string",   false ) }
     | CHAR                              { ("char",     false ) }
     | BOOL                              { ("bool",     false ) }
-    /* TODO: find out why this line produces Shift/Reduce conflict */
-    //| STRUCT ID                         { ($2,       true) }
 
 array_opt:
     | /*Nothing*/                         { -1 }
@@ -173,7 +168,7 @@ vdecl:
         a_size   = $4; 
         v_name   = $3;                  (* variable name *)
         isConst  = $1;                  (* true or false for if const *)
-        isStruct = snd $2;               (* true or false for if a struct *)
+        isStruct = snd $2;              (* true or false for if a struct *)
        
     }}
 
@@ -181,8 +176,8 @@ const:
     | /* Nothing */                     { false }
     | CONST                             { true }
 vdecl_list:
-    | vdecl SEMI                            { [$1] }
-    | vdecl_list vdecl SEMI                  { $2 :: $1 }
+    | vdecl SEMI                        { [$1] }
+    | vdecl_list vdecl SEMI             { $2 :: $1 }
 
 sdef:
     STRUCT ID COLON LBRACE vdecl_list RBRACE
@@ -213,7 +208,7 @@ gfunc_stmt_list:
     | gfunc_stmt_list gstmt            { $2 :: $1 }
 
 args_opt:
-    | /* Nothing */                      { [] }
+    | /* Nothing */                    { [] }
     | args_list                        { List.rev $1 }
 
 args_list:
@@ -254,8 +249,8 @@ gstmt:
     | vdecl SEMI                                        { Vdecl($1) }
     | expr SEMI                                         { Expr($1) }
     | blockexpr SEMI                                    { Expr($1) }
-    | g_assign_expr ASSIGN expr SEMI                      { Assign($1, $3) }
-    | g_assign_expr ASSIGN blockexpr SEMI                 { Assign($1, $3) }    
+    | g_assign_expr ASSIGN expr SEMI                    { Assign($1, $3) }
+    | g_assign_expr ASSIGN blockexpr SEMI               { Assign($1, $3) }    
     | vdecl ASSIGN expr SEMI                            { Init($1, $3) }
     | vdecl ASSIGN blockexpr SEMI                       { Init($1, $3) }
     | IF bool_block COLON gblock_body %prec NOELSE      { If($2, $4, Block([])) }   
@@ -329,12 +324,11 @@ literal:
     | array_literal                   { $1 }
 
 array_literal:
-/*    | BOOL_ARRAY_LITERAL              { Literal_bool_a($1) }
-    | STRING_ARRAY_LITERAL            { Literal_string_a($1) }
-    | INT_ARRAY_LITERAL               { Literal_int_a($1) }
-    | CHAR_ARRAY_LITERAL              { Literal_char_a($1) }
-    | FLOAT_ARRAY_LITERAL             { Literal_float_a($1) }
-*/
+/*  | BOOL_ARRAY_LITERAL                    { Literal_bool_a($1) }
+    | STRING_ARRAY_LITERAL                  { Literal_string_a($1) }
+    | INT_ARRAY_LITERAL                     { Literal_int_a($1) }
+    | CHAR_ARRAY_LITERAL                    { Literal_char_a($1) }
+    | FLOAT_ARRAY_LITERAL                   { Literal_float_a($1) } */
     | LBRACK int_literal_list RBRACK        { Literal_int_a(List.rev $2) }
     | LBRACK char_literal_list RBRACK       { Literal_char_a(List.rev $2) }
     | LBRACK float_literal_list RBRACK      { Literal_float_a(List.rev $2) }
@@ -362,8 +356,6 @@ bool_literal_list:
     | bool_literal_list COMMA BOOL_LITERAL      { $3 :: $1 }
 
 
-
-
 /* expr are all the expressions EXCEPT:
     * those with blocks
     * comparison operators */
@@ -388,7 +380,11 @@ expr:
     | LPAREN expr RPAREN              { $2 }
 
 gexpr:
-    | expr                            { $1 }
+    | literal                         { $1 }
+    | ID LPAREN args_opt RPAREN       { Call($1, $3) }
+    | array_expr LBRACK expr RBRACK   { ArrayAcc($1, $3) }
+    | ID PERIOD ID                    { StructId($1, $3) }
+    | ID                              { Id($1) }
     | gexpr G_AND gexpr               { Binop($1, G_And, $3) }    
     | gexpr G_OR gexpr                { Binop($1, G_Or, $3) }
     | gexpr G_XOR gexpr               { Binop($1, G_Xor, $3) }
@@ -401,4 +397,17 @@ gexpr:
     | gexpr G_DIVIDE gexpr            { Binop($1, G_Divide, $3) }
     | gexpr G_MOD gexpr               { Binop($1, G_Mod, $3) }
     | gexpr G_NEG gexpr               { Binop($1, G_Neg, $3) }
+    | gexpr AND gexpr                 { Binop($1, And, $3) }    
+    | gexpr OR gexpr                  { Binop($1, Or, $3) }
+    | gexpr XOR gexpr                 { Binop($1, Xor, $3) }
+    | gexpr NOT gexpr                 { Binop($1, Not, $3) }
+    | gexpr LSHIFT gexpr              { Binop($1, Lshift, $3) }
+    | gexpr RSHIFT gexpr              { Binop($1, Rshift, $3) }
+    | gexpr PLUS gexpr                { Binop($1, Plus, $3) }
+    | gexpr MINUS gexpr               { Binop($1, Minus, $3) }
+    | gexpr TIMES gexpr               { Binop($1, Times, $3) }
+    | gexpr DIVIDE gexpr              { Binop($1, Divide, $3) }
+    | gexpr MOD gexpr                 { Binop($1, Mod, $3) }
+    | gexpr NEG gexpr                 { Binop($1, Neg, $3) }
+    | LPAREN gexpr RPAREN             { $2 }        
 

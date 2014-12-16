@@ -20,7 +20,7 @@ parser.ml parser.mli : parser.mly
 	ocamlc -w A -c $<
 
 .PHONY : test
-test :
+test : generator
 	cd ./environment_tests && ./run_all.sh
 
 .PHONY : clean

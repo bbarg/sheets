@@ -234,7 +234,7 @@ let generate_assign id exp env =
     | Id(a) -> if (is_var_in_scope a env) then
                     Environment.append env [Generator(generate_exp exp)]
                else
-                    raise (BadExpressionError("BadExpression"))
+                    raise (BadExpressionError("assignment to undefined id"))
     | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 (* ------------------------------------------------------------------ *)		  
@@ -534,12 +534,17 @@ let generate_func_formals_and_body stmt_list vdecl_list env =
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
-      false -> 
-          Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
-			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
-			      NewScope(generate_func_formals_and_body fdecl.body
-                   fdecl.formals);
-			     ]
+      false ->
+      let main_checked_name = function
+	  "main" -> "snuggle"
+	| other_name -> other_name
+      in
+      Environment.append env [Env(add_func
+				    fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl));
+			      Text(sprintf "%s %s("
+					   fdecl.r_type (main_checked_name fdecl.fname));
+			      NewScope(generate_func_formals_and_body
+					 fdecl.body fdecl.formals)]
                          
     | true ->
        Environment.append env [Env(add_gfunc (Generator_utilities.fdecl_to_func_info fdecl));
@@ -626,7 +631,7 @@ let rec generate_compile_kernels gf_info_list env =
 			
 let rec generate_release_kernels gf_info_list env =
   let generate_release_kernel gf_info =
-    sprintf "CL_CALL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
+    sprintf "CALL_CL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
   in
   match gf_info_list with
   [] -> "", env

@@ -19,11 +19,13 @@ module FunctionMap = Map.Make(String);;
 (* module StructMap   = Map.Make(String);; *) 
 
 exception EmptyEnvironmentError;;
-exception NamrtbeAlreadyBoundError of string;;
+exception NameAlreadyBoundError of string;;
 exception VariableNotFound of string;;
 exception VariableAlreadyDeclared;; 
 exception AlreadyDeclaredError;; 
-exception FunctionNotDefinedError;; 
+exception FunctionNotDefinedError;;
+exception ReservedWordError of string;;
+  
 type func_info  = {
 	id : string; 
 	on_gpu : bool;
@@ -195,8 +197,15 @@ let get_func_args id env =
 let add_func id finfo env = 
    if is_func_declared id env then 
 	raise VariableAlreadyDeclared
-   else 
-       update_only_func (FunctionMap.add id finfo env.func_return_type_map ) env 
+   else
+     (* XXX hack to convert sheets main to snuggle *)
+     match id with
+       "main" ->
+       let env_with_snuggle =
+	 update_only_func (FunctionMap.add "snuggle" finfo env.func_return_type_map) env
+       in update_only_func (FunctionMap.add "main" finfo env.func_return_type_map) env
+     | _ ->
+	update_only_func (FunctionMap.add id finfo env.func_return_type_map) env	   
        
 (* Returns the datatype of a function or 
  * raises a undefined error if the function is not defined 
@@ -247,7 +256,9 @@ let is_gfunc_declared gfunc_info env =
 let add_gfunc gfunc_info env = 
     (* TODO decide whether I want to check gfunc *)
     if (is_gfunc_declared gfunc_info env) then 
-       raise (AlreadyDeclaredError) 
+      raise (AlreadyDeclaredError)
+    else if (gfunc_info.id = "main") then
+      raise (ReservedWordError("a gfunc cannot be the main method"))
     else 
        update_gfunc_list (gfunc_info::env.gfunc_list) env 
 

@@ -1,0 +1,13 @@
+#~ SHOULDPASS: Valid function declarations, correct return ~#
+
+func int f1 (int x, int y):
+    return x
+
+func float f2 (float x, float y):
+    return x
+
+func int[] f3 (int[] x, int[] y):
+    return x
+
+func float[] f4 (float[] x, float[] y):
+    return x

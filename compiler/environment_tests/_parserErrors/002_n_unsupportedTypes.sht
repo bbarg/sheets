@@ -1,0 +1,17 @@
+#~ SHOULDFAIL: Unsupported Types ~#
+const double a
+double b
+const double[] a2
+double[] b2
+const short c
+short d
+const short[] c2
+short[] d2
+const bool e
+bool f
+const bool[] e2
+bool[] f2
+const String g
+String h
+const String[] g2
+String[] h2

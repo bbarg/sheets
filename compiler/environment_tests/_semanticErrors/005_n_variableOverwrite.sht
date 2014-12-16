@@ -1,0 +1,8 @@
+#~ SHOULDFAIL: Overwritting int with a float ~#
+
+func int f1 (int x, int y):
+    int tmp
+    tmp = 3
+    float tmp
+    tmp = 4.0
+    return tmp

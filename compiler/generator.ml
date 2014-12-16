@@ -239,11 +239,12 @@ let generate_init vdecl exp env =
 let generate_assign id exp env =
     match id with
     | Id(a) -> if (is_var_in_scope a env) then
-                    if(Generator_utilities.expr_typeof id = Generator_utilities.expr_typeof
-                    exp) then
+                  if(Generator_utilities.expr_typeof id env =
+                      Generator_utilities.expr_typeof exp env) then
                         Environment.append env [Text(a ^ " =" ); Generator(generate_exp exp)]
-                    else
-                        raise(BadExpressionError("Assignment of incompatible types"))
+                  else
+                        raise(BadExpressionError("Assignment of incompatible
+                        types"))
                else
                     raise (BadExpressionError("assignment to undefined id"))
     | _-> raise (BadExpressionError("Invalid Assignment")) 

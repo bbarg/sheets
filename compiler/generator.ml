@@ -627,7 +627,7 @@ let rec generate_cpu_funcs fdecls env =
    - the second argument of the __kernel is the output array *)
 
 let rec generate_cl_kernel_body stmt_list env =
-  (* TODO *) "TODO: kernel_text_body", env
+  (* TODO *) "\"TODO: kernel_text_body\"\n", env
   
 (* return a comma separated list of kernel formal declarations and
    adds the variables to the current scope *)
@@ -664,14 +664,15 @@ let gfunc_to_cl_kernel_string gfdecl env =
 		       Env(update_on_gpu true);
 		       Env(update_scope_add_var "__arr_len" Int);
 		       Env(update_scope_add_var "__out" sheets_r_type);
-		       KernelText("__kernel");
-		       KernelText(sprintf "void %s(__global const int __arr_len, __global %s__out,"
+		       Text("__kernel");
+		       Text(sprintf "void %s(__global const int __arr_len, __global %s__out,"
 				    gfdecl.fname base_r_type);
-		       KernelGen(generate_cl_kernel_vdecl_list gfdecl.formals);
-		       KernelText(")");
-		       KernelText("{");
-		       KernelGen(generate_cl_kernel_body gfdecl.body);
-		       KernelText("}");
+		       Generator(generate_cl_kernel_vdecl_list gfdecl.formals);
+		       Text(")");
+		       Text("{");
+		       Generator(generate_cl_kernel_body gfdecl.body);
+		       Text("}");
+		       Env(update_on_gpu false);
 		     ]
 
 let gfunc_to_cl_kernel gfdecl env =

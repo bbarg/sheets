@@ -56,10 +56,8 @@ type env = {
  *) 
 type source = 
   | Text of string
-  | KernelText of string
   | Env of (env -> env) 
   | Generator of (env -> (string * env))
-  | KernelGen of (env -> (string * env))
   | NewScope of (env -> (string * env))
 
 
@@ -98,16 +96,23 @@ let update_on_gpu gpu env =
 	update env.var_stack env.func_return_type_map env.current_function gpu env.gfunc_list
 let update_gfunc_list g_list env = 
 	update env.var_stack env.func_return_type_map env.current_function env.on_gpu g_list
+
 (* Checks all scopes to see if variable has been declared *)
 let is_var_in_scope id env = 
-    let rec check_scopes scope_stack = 
-        match scope_stack with 
-            | [] -> false 
-            | scope_level :: other_scope_levels ->
-                  if VariableMap.mem id scope_level then 
-                       true 
-                  else check_scopes other_scope_levels 
-    in check_scopes env.var_stack 
+  let rec check_scopes scope_stack =
+    let check_level scope_level =
+      VariableMap.mem id scope_level
+    in
+    match scope_stack with 
+    | [] -> false
+    | [scope_level] ->
+       if env.on_gpu then false
+       else check_level scope_level
+    | scope_level :: other_scope_levels ->
+       if check_level scope_level then true
+       else check_scopes other_scope_levels 
+  in check_scopes env.var_stack 
+
 (* Checks all scopes to find variable and returns type if found
  * Raises exception if not found
  *)
@@ -266,18 +271,23 @@ let add_gfunc gfunc_fdecl env =
        update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env 
 
 
-let append init_env components =  
-  let f (text, env) component =  
+let append init_env components =
+  (* add quotes around gpu statements so they print as c multi-line
+     strings *)
+  let quotes str on_gpu =	
+    match on_gpu with
+      true -> (match str with
+		 "" -> str
+	       | _  -> "\"" ^ str ^ "\"\n")
+    | false -> str
+  in
+  let f (text, env) component =
     match component with 
-    | Text(str) -> text ^ str, env
-    | KernelText(str) -> text ^ "\"" ^ str ^ "\"\n", env
+    | Text(str) -> text ^ (quotes str env.on_gpu), env
     | Env (env_gen) -> let new_env = env_gen env in 
 		       text, new_env
     | Generator(gen) -> let new_str, new_env = gen env in 
 			text ^ new_str, new_env
-    | KernelGen(gen) -> let new_str, new_env = gen env in 
-			text ^ "\"" ^ new_str ^ "\"\n", new_env
-    | NewScope(gen) -> 
-       let new_str, new_env = gen (push_scope env) in 
-       text ^ new_str, pop_scope new_env in 
+    | NewScope(gen) -> let new_str, new_env = gen (push_scope env) in 
+		       text ^ new_str, pop_scope new_env in
   List.fold_left f("", init_env) components

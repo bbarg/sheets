@@ -350,96 +350,167 @@ let rec generate_formals_vdecl_list vdecl_list env =
      the same size 
    - if there are non-array arguments, we rename them to __argn
    - the actual args list starts at arg2 (first 2 are reserved for
-     size and output arra*)
-(* ------------------------------------------------------------------- *)
+     size and output array*)
 let generate_kernel_invocation_function fdecl env =
   let base_r_type = Generator_utilities.arr_type_str_to_base_type fdecl.r_type in
-  let get_array_formals formals =
-    let rec f arg_number array_formals formals = 
-      match formals with
-	[] -> []
-      | formal :: other_formals ->
-	 match formal.v_type with (* XXX hack to find non-array types *)
-	   "int" | "float" -> f (arg_number + 1) array_formals other_formals
-	   | _ -> f (arg_number + 1) (array_formals @ [(arg_number, formal)]) other_formals
-    in
-    f 2 [] formals 		(* start with the 2nd argument *)
-  in
-  (* ------------------------------------------------------------------- *)
-  let generate_cl_mem_buffers fdecl env =
+  let generate_cl_arg_list fdecl env =
     (* we need buffers for the output array and the input arrays 
 
        the size argument (arg0) will be __arr_len, and will always be
-       called as such in the formals for this generated invokation
-       function *)
-    let rec generate_input_cl_mem_buffers array_formals env =
-      let generate_input_cl_mem_buffer arg_number env =
-	Environment.append env [Text(sprintf "cl_mem __arg%d = clCreateBuffer(__sheets_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(%s) * __arr_len, &__cl_err);\n" arg_number base_r_type);
-				Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n")]
+       called as such in the formals for this generated invocation
+       function
+
+       our job here is to assign __argn to either a cl_mem object for
+       an array or simply the formal for primitives *)
+    let rec generate_cl_args arg_n formals env =
+      let generate_cl_arg arg_n formal env =
+	if Generator_utilities.is_array_type formal.v_type then
+	  (* create a cl memory buffer for array args *)
+	  Environment.append env [Text(sprintf "cl_mem __arg%d = clCreateBuffer(" arg_n);
+				  Text("__sheets_context,\n");
+				  Text("CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,\n");
+				  Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);
+				  Text(sprintf "(void *) %s," formal.v_name);
+				  Text("&__cl_err);\n");
+				  Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n")]
+	else
+	  (* pass primitives directly *)
+	  Environment.append env [Text(sprintf "%s __arg%d = %s;\n"
+					       base_r_type arg_n formal.v_name)]
       in
-      match array_formals with
+      match formals with
 	[] -> "", env
-      | (arg_n, arg_vdecl) :: other_array_formals ->
-	 Environment.append env [Generator(generate_input_cl_mem_buffer arg_n);
-				 Generator(generate_input_cl_mem_buffers other_array_formals)]
+      | formal :: other_formals ->
+	 Environment.append env [Generator(generate_cl_arg arg_n formal);
+				 Generator(generate_cl_args (arg_n + 1) other_formals)]
     in
-    Environment.append env [Text(sprintf "cl_mem __arg1 = clCreateBuffer(__sheets_context, CL_MEM_WRITE_ONLY, sizeof(%s) * __arr_len, &__cl_err);\n" base_r_type);
+    (* we make a cl_mem buffer for the return array first *)
+    Environment.append env [Text("cl_mem __arg1 = clCreateBuffer(");
+			    Text("__sheets_context,\n");
+			    Text("CL_MEM_WRITE_ONLY,\n");
+			    Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);
+			    Text("&__cl_err);\n");
 			    Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n");
-			    Generator(generate_input_cl_mem_buffers (get_array_formals fdecl.formals))] 
+			    (* user-defined args start at 2 *)
+			    Generator(generate_cl_args 2 fdecl.formals)] 
   in
-  (* ------------------------------------------------------------------- *)
-  let generate_cl_enqueue_write_buffers	fdecl env =
-    (* these are ONLY the function arguments; we need to know which
-    arg numbers were used *)
-    "TODO [barg]: gen write buffers\n", env in
-  (* ------------------------------------------------------------------- *)
+  let generate_cl_enqueue_write_buffer_list fdecl env =
+    let rec generate_cl_enqueue_write_buffers arg_n formals env =
+      let generate_cl_enqueue_write_buffer arg_n formal env =
+	if Generator_utilities.is_array_type formal.v_type then
+	  Environment.append env [Text("CALL_CL_GUARDED(clEnqueueWriteBuffer,\n");
+				  Text("(__sheets_queue,\n");
+				  Text(sprintf "__arg%d,\n" arg_n);
+				  Text("CL_TRUE,\n"); (* ensure blocking write *)
+				  Text("0,\n");	      (* no offset *)
+				  Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);
+				  Text(sprintf "(void *) %s,\n" formal.v_name);
+				  Text("0,\n");
+				  Text("NULL,\n");    (* no wait list *)
+				  Text("NULL)");
+				  Text(");\n")]
+	else "", env (* no need to alloc buffer for primitives *)
+      in
+      match formals with
+	[] -> "", env
+      | formal :: other_formals ->
+	 Environment.append env [Generator(generate_cl_enqueue_write_buffer arg_n formal);
+				 Generator(generate_cl_enqueue_write_buffers
+					     (arg_n + 1) other_formals)]
+    in
+    (* user-defined args start at 2 *)
+    Environment.append env [Generator(generate_cl_enqueue_write_buffers 2 fdecl.formals)]
+  in
   let generate_cl_set_kernel_args fdecl env =
-    let generate_kernel_invocation_args todo1 todo2 env = "", env (* TODO *)
+    (* list of __argn vars *)
+    let generate_arg_ns num_user_args env =
+      let rec _helper num_arg_ns_left arg_n env =
+	match num_arg_ns_left with
+	  0 -> "", env
+	| _ -> Environment.append env [Text(sprintf "__arg%d,\n" arg_n);
+				       Generator(_helper (num_arg_ns_left - 1) (arg_n + 1))]
+				  
+      in
+      Environment.append env [Generator(_helper num_user_args 2)]
     in
     Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 2));
 			    Text(sprintf "%s_compiled_kernel," fdecl.fname);
-			    Text("__cl_size, __arg1,");
-			    Generator(generate_kernel_invocation_args fdecl.formals (get_array_formals fdecl.formals));
+			    Text("__arr_len,\n");
+			    Text("__arg1,\n");
+			    Generator(generate_arg_ns (List.length fdecl.formals));
 			    Text(");\n")]
   in
+  let global_work_items = function
+      (* provide a buffer for when block_size doesn't divide array
+         size*)
+      1 -> "__arr_len"
+    | n -> "__arr_len /" ^ string_of_int n ^ " + 1"
+  in
   let generate_cl_enqueue_nd_range_kernel fdecl env =
-    Environment.append env [Text(sprintf "size_t *gdims = { __cl_size / %d + 1 };\n" fdecl.blocksize);
+    Environment.append env [Text(sprintf "size_t *gdims = { %s };\n"
+					 (global_work_items fdecl.blocksize));
 			    Text("CALL_CL_GUARDED(clEnqueueNDRangeKernel,");
-			    Text("(__sheets_queue,");
+			    Text("(__sheets_queue,\n");
 			    (* ocaml thinks this is type func_info *)
-			    Text(sprintf "%s_compiled_kernel," fdecl.fname); 
-			    Text("1,"); (* only 1 dimensional array support *)
-			    Text("0,"); (* 0 offset *)
-			    Text("gdims,");
-			    Text("NULL,");
-			    Text("0,");
-			    Text("NULL,");
+			    Text(sprintf "%s_compiled_kernel,\n" fdecl.fname); 
+			    Text("1,\n"); (* only 1 dimensional array support *)
+			    Text("0,\n"); (* 0 offset *)
+			    Text("gdims,\n");
+			    Text("NULL,\n");
+			    Text("0,\n");
+			    Text("NULL,\n");
 			    Text("NULL)");
 			    Text(");\n")]
   in		       
   let generate_cl_enqueue_read_buffer fdecl env =
     (* only one buffer to read, since there's only one output arg *)
-    Environment.append env [Text(sprintf "%s *__out[__cl_size];\n" base_r_type);
+    Environment.append env [Text(sprintf "%s *__out[__arr_len];\n" base_r_type);
 			    Text("CALL_CL_GUARDED(clEnqueueReadBuffer,\n");
 			    Text("(__sheets_queue,\n");
 			    Text("CL_TRUE,\n"); (* blocking read *)
 			    Text("0,\n");	(* 0 offset *)
-			    Text(sprintf "sizeof(%s) * __cl_size,\n" base_r_type);
+			    Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);
 			    Text("(void *) __out,\n");
 			    Text("0,\n"); (* empty wait queue *)
 			    Text("NULL,\n");
 			    Text("NULL)");
 			    Text(");\n")]
   in
-  Environment.append env [Text(sprintf "%s %s(" base_r_type fdecl.fname);
-			  (* generate type as point rather than array? *)
+  let generate_cl_release_list fdecl env =
+    let rec generate_cl_releases arg_n formals env =
+      let generate_cl_release arg_n formal env =
+	(* only release array args (those alloc-ed with
+           clCreateBuffer) *)
+	if Generator_utilities.is_array_type formal.v_type then
+	  Environment.append env [Text("CALL_CL_GUARDED(");
+				  Text("clReleaseMemObject, ");
+				  Text(sprintf "(__arg%d)" arg_n);
+				  Text(");\n")]
+	else "", env
+      in
+      match formals with
+	[] -> "", env
+      | formal :: other_formals ->
+	 Environment.append env [Text("CALL_CL_GUARDED("); (* always free output arr *)
+				 Text("clReleaseMemObject, ");
+				 Text("(__arg1)");
+				 Text(");\n");
+			         Generator(generate_cl_release arg_n formal);
+				 Generator(generate_cl_releases (arg_n + 1) other_formals)]
+    in				(* user args start at 2 *)
+    Environment.append env [Generator(generate_cl_releases 2 fdecl.formals)]
+  in				    
+  Environment.append env [Text(sprintf "%s %s("
+				       (Generator_utilities.c_type_from_arr_type fdecl.r_type)
+				       fdecl.fname);
 		          Generator(generate_formals_vdecl_list fdecl.formals);
 			  Text(")\n{\n");
-			  Generator(generate_cl_mem_buffers fdecl);
-			  Generator(generate_cl_enqueue_write_buffers fdecl);
+			  Generator(generate_cl_arg_list fdecl);
+			  Generator(generate_cl_enqueue_write_buffer_list fdecl);
 			  Generator(generate_cl_set_kernel_args fdecl);
 			  Generator(generate_cl_enqueue_nd_range_kernel fdecl);
 			  Generator(generate_cl_enqueue_read_buffer fdecl);
+			  Generator(generate_cl_release_list fdecl);
 			  Text("return __out;\n");
 			  Text("}\n")]
 

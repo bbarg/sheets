@@ -224,10 +224,21 @@ let fdecl_to_func_info fdecl =
             _blocksize = fdecl.blocksize;
         }
 ;;
-let rec arr_type_str_to_base_type = function
+let arr_type_str_to_base_type = function
     "float[]" -> "float"
   | "int[]" -> "int"
   | "float[][]" -> "float"
   | "int[][]" -> "int"
   | _ -> raise UnsupportedArrayTypeError
 ;;
+let c_type_from_arr_type = function
+    "float[]" -> "float *"
+  | "int[]" -> "int *"
+  | "float[][]" -> "float **"
+  | "int[][]" -> "int **"
+  | _ -> raise UnsupportedArrayTypeError
+;;
+let is_array_type = function
+    "int" | "float" -> false
+    | _ -> true
+;;	     

@@ -40,13 +40,14 @@ type func_info  = {
 
 (* Record indicating what the current environment keeps track of *)
 type env = {
-   var_stack: datatype VariableMap.t list; 
-   func_return_type_map: func_info FunctionMap.t; 
-   current_function: string; 
-   on_gpu: bool;
-   gfunc_list: func_info list;
-   
-} 
+    var_stack: datatype VariableMap.t list; 
+    func_return_type_map: func_info FunctionMap.t; 
+    current_function: string; 
+    on_gpu: bool;
+    gfunc_list: fdecl list;	(* we need to save the body of the
+                                   gfunc so we can do kernel string
+                                   generation *)
+  } 
 (* Types that can be returned by the generator as it modifies 
  * either the text of the generated code 
  * changes the environment as it is parsing the file 
@@ -240,27 +241,27 @@ let return_typeof_func id env =
  * also makes sure it is a gfunc 
  *)
 
-let rec check_gfunc_name_in_list glist gfunc = 
+let rec check_gfunc_name_in_list glist gfunc_fdecl = 
     match glist with 
     [] -> false 
-   |gfunc_info :: rest_of_gfuncs -> if gfunc.id = gfunc_info.id then true
-                                    else (check_gfunc_name_in_list rest_of_gfuncs gfunc) 
-let is_gfunc_declared gfunc_info env = 
-    if check_gfunc_name_in_list env.gfunc_list gfunc_info then 
+   | gfunc_fdecl :: rest_of_gfuncs -> if gfunc_fdecl.fname = gfunc_fdecl.fname then true
+                                      else (check_gfunc_name_in_list rest_of_gfuncs gfunc_fdecl) 
+let is_gfunc_declared gfunc_fdecl env = 
+    if check_gfunc_name_in_list env.gfunc_list gfunc_fdecl then 
         raise (AlreadyDeclaredError) 
-    else if is_func_declared gfunc_info.id env then 
+    else if is_func_declared gfunc_fdecl.fname env then 
         raise (AlreadyDeclaredError) 
     else false   
      
 
-let add_gfunc gfunc_info env = 
+let add_gfunc gfunc_fdecl env = 
     (* TODO decide whether I want to check gfunc *)
-    if (is_gfunc_declared gfunc_info env) then 
+    if (is_gfunc_declared gfunc_fdecl env) then 
       raise (AlreadyDeclaredError)
-    else if (gfunc_info.id = "main") then
+    else if (gfunc_fdecl.fname = "main") then
       raise (ReservedWordError("a gfunc cannot be the main method"))
     else 
-       update_gfunc_list (gfunc_info::env.gfunc_list) env 
+       update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env 
 
 
 let append init_env components =  

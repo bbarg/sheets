@@ -43,7 +43,6 @@ let print_sdefs sdefs =
   in List.iter f sdefs
 ;;
 
-
 let print_ops = function
       Plus -> printf "+"
     | Minus -> printf "-"
@@ -118,7 +117,6 @@ let print_funcs fdecls =
     in List.iter f fdecls 
 ;;
 
-
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
  * call gen_checked_<EXPRESSION_NAME> that can meaningfully be 
@@ -141,7 +139,7 @@ let print_funcs fdecls =
  *)
 
 let generate_checked_id check_id id env = 
-    if (check_id id env)  then id, env 
+    if (check_id id env) then id, env 
     else raise (VariableNotFound id)
 
 
@@ -580,7 +578,7 @@ let rec generate_cpu_funcs fdecls env =
 					 fdecl.body fdecl.formals)]
                          
     | true ->
-       Environment.append env [Env(add_gfunc (Generator_utilities.fdecl_to_func_info fdecl));
+       Environment.append env [Env(add_gfunc fdecl);
 			       NewScope(generate_kernel_invocation_function fdecl)]
   in
   match fdecls with
@@ -616,26 +614,25 @@ let gfunc_to_cl_kernel_string gf_info env =
        immediately in scope *)
   (* we're going to have to escape double-quotes when we write
        these string literals *)
-  (* TODO; returning test string for testing *)
   "TODO: cl_kernel string goes here", env
 
-let gfunc_to_cl_kernel gf_info env =
-  Environment.append env [Text(sprintf "const char *%s_kernel_string = \"" gf_info.id);
+let gfunc_to_cl_kernel gfdecl env =
+  Environment.append env [Text(sprintf "const char *%s_kernel_string = \"" gfdecl.fname);
 			  (* we aren't ever changing the environment
 			      above the gfunc's scope, but we need to
 			      generate a new scope to parse the gfunc's contents *)
-			  NewScope(gfunc_to_cl_kernel_string gf_info);
+			  NewScope(gfunc_to_cl_kernel_string gfdecl);
 			  Text("\";\n");
 			  Text(sprintf "const char *%s_kernel_name = \"%s\";\n"
-				       gf_info.id gf_info.id);
-			  Text(sprintf "cl_kernel %s_compiled_kernel;\n" gf_info.id)]
+				       gfdecl.fname gfdecl.fname);
+			  Text(sprintf "cl_kernel %s_compiled_kernel;\n" gfdecl.fname)]
 
-let rec gfunc_list_to_cl_kernels gf_info_list env =
-  match gf_info_list with
+let rec gfunc_list_to_cl_kernels gfdecl_list env =
+  match gfdecl_list with
     [] -> "", env
-  | gf_info :: other_gf_infos ->
-     Environment.append env [Generator(gfunc_to_cl_kernel gf_info);
-			     Generator(gfunc_list_to_cl_kernels other_gf_infos)]
+  | gfdecl :: other_gfdecls ->
+     Environment.append env [Generator(gfunc_to_cl_kernel gfdecl);
+			     Generator(gfunc_list_to_cl_kernels other_gfdecls)]
 
 let generate_cl_kernels env =
   let cl_globals = "cl_context __sheets_context;\n" 
@@ -652,25 +649,25 @@ let generate_cl_kernels env =
    - the incoming func_info list will not include any invalid names
      (i.e. there won't be a gfunc called main)                        *)
 
-let rec generate_compile_kernels gf_info_list env =
-  let generate_compile_kernel gf_info =
-    sprintf "%s_compiled_kernel = kernel_from_string(__sheets_context, %s_kernel_string, %s_kernel_name, SHEETS_KERNEL_COMPILE_OPTS);\n" gf_info.id gf_info.id gf_info.id
+let rec generate_compile_kernels gfdecl_list env =
+  let generate_compile_kernel gfdecl =
+    sprintf "%s_compiled_kernel = kernel_from_string(__sheets_context, %s_kernel_string, %s_kernel_name, SHEETS_KERNEL_COMPILE_OPTS);\n" gfdecl.fname gfdecl.fname gfdecl.fname
   in
-  match gf_info_list with
+  match gfdecl_list with
     [] -> "", env
-  | gf_info :: other_gf_infos ->
-     Environment.append env [Text(generate_compile_kernel gf_info);
-			     Generator(generate_compile_kernels other_gf_infos)]
+  | gfdecl :: other_gfdecls ->
+     Environment.append env [Text(generate_compile_kernel gfdecl);
+			     Generator(generate_compile_kernels other_gfdecls)]
 			
-let rec generate_release_kernels gf_info_list env =
-  let generate_release_kernel gf_info =
-    sprintf "CALL_CL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
+let rec generate_release_kernels gfdecl_list env =
+  let generate_release_kernel gfdecl =
+    sprintf "CALL_CL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gfdecl.fname
   in
-  match gf_info_list with
+  match gfdecl_list with
   [] -> "", env
-  | gf_info :: other_gf_infos ->
-     Environment.append env [Text(generate_release_kernel gf_info);
-			     Generator(generate_release_kernels other_gf_infos)]
+  | gfdecl :: other_gfdecls ->
+     Environment.append env [Text(generate_release_kernel gfdecl);
+			     Generator(generate_release_kernels other_gfdecls)]
 
 let generate_main env =
   Environment.append env [Text("int main()\n");

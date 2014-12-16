@@ -33,7 +33,6 @@ type func_info  = {
 	args : datatype list;
 	arg_names: string list;
 	_blocksize : int;
-	
 }
 (* Create a record type for env 
  *)

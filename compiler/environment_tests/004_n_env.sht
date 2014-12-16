@@ -2,5 +2,4 @@
 const  int    a
 float  my_list
 int ballon_volume
-String   im_a_char
 int ballon_volume

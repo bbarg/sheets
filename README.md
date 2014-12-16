@@ -49,3 +49,12 @@ while
 
 There isn't actually a problem. We just were running the generator
 directly on stuff that needed to go through the preprocessor first.
+
+* We are not supporting nested multiline block comments:
+```
+#~ 
+Multiline Block comments with
+#~ Nested Block Comments~#
+Will Fail
+~#
+```

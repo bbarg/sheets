@@ -247,7 +247,7 @@ let generate_assign id exp env =
                     else
                         raise(BadExpressionError("Assignment of incompatible types"))
                else
-                    raise (BadExpressionError("BadExpression"))
+                    raise (BadExpressionError("assignment to undefined id"))
     | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 (* ------------------------------------------------------------------ *)		  
@@ -345,16 +345,17 @@ let rec generate_global_vdecl_list vdecls env =
 (* CPU functions                                                      *)
 (* ------------------------------------------------------------------ *)
 let rec generate_formals_vdecl_list vdecl_list env =  
-    let generate_formals_vdecl vdecl env =
-       let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
+  let generate_formals_vdecl vdecl env =
+    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
     Environment.append env [Env((add_var vdecl.v_name v_datatype));
 			    Generator(generate_type v_datatype);
 			    Text(" " ^ vdecl.v_name ^ ", ")]
   in
   match vdecl_list with
     [] -> "", env
-  | [vdecl] -> Environment.append env [Env((add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl)));
-			    Text(vdecl.v_type ^ " " ^ vdecl.v_name)]
+  | [vdecl] -> Environment.append env [Env((add_var vdecl.v_name
+						    (Generator_utilities.vdecl_type vdecl)));
+				       Text(vdecl.v_type ^ " " ^ vdecl.v_name)]
 
   | vdecl :: other_vdecls ->
      Environment.append env [Generator(generate_formals_vdecl vdecl);
@@ -516,11 +517,19 @@ let generate_kernel_invocation_function fdecl env =
 				 Generator(generate_cl_releases (arg_n + 1) other_formals)]
     in				(* user args start at 2 *)
     Environment.append env [Generator(generate_cl_releases 2 fdecl.formals)]
-  in				    
+  in
+  let __arr_len = {
+      v_type = "int";		(* TODO should we implement size_t *)
+      v_name = "__arr_len";
+      isConst = true;
+      isStruct = false;
+      a_size = -1;
+    }
+  in
   Environment.append env [Text(sprintf "%s %s("
 				       (Generator_utilities.c_type_from_arr_type fdecl.r_type)
 				       fdecl.fname);
-		          Generator(generate_formals_vdecl_list fdecl.formals);
+		          Generator(generate_formals_vdecl_list (__arr_len :: fdecl.formals));
 			  Text(")\n{\n");
 			  Generator(generate_cl_arg_list fdecl);
 			  Generator(generate_cl_enqueue_write_buffer_list fdecl);
@@ -542,12 +551,17 @@ let generate_func_formals_and_body stmt_list vdecl_list env =
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
-      false -> 
-          Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
-			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
-			      NewScope(generate_func_formals_and_body fdecl.body
-                   fdecl.formals);
-			     ]
+      false ->
+      let main_checked_name = function
+	  "main" -> "snuggle"
+	| other_name -> other_name
+      in
+      Environment.append env [Env(add_func
+				    fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl));
+			      Text(sprintf "%s %s("
+					   fdecl.r_type (main_checked_name fdecl.fname));
+			      NewScope(generate_func_formals_and_body
+					 fdecl.body fdecl.formals)]
                          
     | true ->
        Environment.append env [Env(add_gfunc (Generator_utilities.fdecl_to_func_info fdecl));
@@ -634,7 +648,7 @@ let rec generate_compile_kernels gf_info_list env =
 			
 let rec generate_release_kernels gf_info_list env =
   let generate_release_kernel gf_info =
-    sprintf "CL_CALL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
+    sprintf "CALL_CL_GUARDED(clReleaseKernel, (%s_compiled_kernel));\n" gf_info.id
   in
   match gf_info_list with
   [] -> "", env
@@ -683,4 +697,3 @@ let _ =
   print_string cpu_funcs;
   print_string main
 ;; 
-

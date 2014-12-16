@@ -1,7 +1,6 @@
 #~ SHOULDPASS: Top-level variable declaration, const assignment ~#
 const  int    a
 float  my_list
-String message
 
 func int add (int x, int y):
     int b

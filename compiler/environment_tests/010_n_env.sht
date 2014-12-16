@@ -1,4 +1,4 @@
-#~ SHOULDPASS: String literal, double quote ~#
+#~ SHOULDFAIL: String literals not supported ~#
 String s
 
 func int main():

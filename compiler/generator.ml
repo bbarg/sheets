@@ -25,6 +25,7 @@ exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 exception BadExpressionError of string;;
+exception CrazyError;;
 
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
@@ -49,7 +50,7 @@ exception BadExpressionError of string;;
 
 let generate_checked_id check_id id env = 
     if (check_id id env)  then id, env 
-    else raise (VariableNotFound id)
+    else raise (CrazyError)
 
 
 let generate_checked_expr check_func expr env =

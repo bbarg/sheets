@@ -61,37 +61,28 @@ let rec expr_typeof expr env =
     | Literal_int_a(i_a) -> Array( Int ) (* TODO: Check this *) 
     | Literal_float_a(i_a) -> Array(Float) 
     | Id(s) -> Environment.typeof s env  
-    | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env)
-    (expr_typeof exp2 env) op) 
-    | ArrayAcc(exp1, exp2) -> (eval_array_acc (expr_typeof exp1 env)
-    (expr_typeof exp2 env) )
-    (*    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list env) *)
+    | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op) 
+    | ArrayAcc(exp1, exp2) -> (eval_array_acc (expr_typeof exp1 env) (expr_typeof exp2 env) )
+    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list (Environment.get_func_args func_id env) env)
     | _-> raise (NotImplementedError("Undefined type of expression"))
-(* TODO : What do we need  
- *)
-(*
-and typeof_func_call func_id expr_list env = 
+
+and typeof_func_call func_id expr_list arg_list env = 
     (* First make sure that all of the arguments are valid 
      * check all ids 
      * then return the type of the function 
      *)
-   let check_expr_list expr_list = 
-      match expr_list with 
-       [] -> Environment.return_typeof_func func_id env 
-       | expr:: other_exprs -> let check_expr exp = 
-             match exp with 
-              Id(s) -> if Environment.is_var_in_scope expr env then 
-                         check_expr_list other_exprs 
-             | _-> check_expr_list other_exprs in 
-    check_expr expr in 
-  check_expr_list expr_list; 
+   let rec check_expr_list expr_list arg_list = 
+      match expr_list, arg_list with 
+       | [],[] -> Environment.return_typeof_func func_id env 
+       | expr1::other_exprs, arg1::other_args -> 
+            if((expr_typeof expr1 env) != arg1 ) then
+                raise (TypeError("Function arguments of incorrect type"))
+            else
+                check_expr_list other_exprs other_args
+       | _-> raise (TypeError("Incorrect number of function arguments"))
+    in
+    check_expr_list expr_list arg_list 
 ;;
-*)
-
-                 
-                        
-;;
-
 
 let str_to_type str = 
         match str with 

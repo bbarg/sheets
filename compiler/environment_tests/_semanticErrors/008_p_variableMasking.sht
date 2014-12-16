@@ -1,0 +1,8 @@
+#~ SHOULDPASS: Redeclared a variable in a scope block ~#
+
+func int f1 (int x, int y):
+    int scoped_variable
+    if(1<2):
+        float scoped_variable
+        x = 2.0
+    return x

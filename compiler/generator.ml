@@ -24,6 +24,27 @@ exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 
+
+(* TODO: Strategy for syntax checking 
+ * generate_expr will be a set of case matchings that will
+ * call gen_checked_<EXPRESSION_NAME> that can meaningfully be 
+ * checked 
+ * gen_checked_<EXPRESSION_NAME> will take a
+        * EXAMPLE: gen_checked_id 
+        * function <CHECKER> that returns a boolean 
+        * an expression 
+        * env 
+ * <CHECKER> can be in Environment as it is for variable ids 
+ * <CHECKER> takes 
+        * an expression 
+        * and env 
+ * or in Generator_utilities 
+ * Maybe there can be one universal <CHECKER> in generate_utilities 
+ * And that thing returns true/false 
+ * and from there generate_checked_<EXPRESSION_NAME> either 
+ * returns a string, env tuple 
+ * or makes recursive calls to generate_expression  
+ *)
 let generate_checked_id check_id id env = 
     if (check_id id env)  then id, env 
     else raise (VariableNotFound id)

@@ -123,10 +123,12 @@ let rec generate_type datatype env =
 					  
 let rec process_stmt_list stmt_list env = 
    match stmt_list with 
-     []     -> "//DEBUG: Done printing statements \n", env (* TODO this is a sanity check *) 
-   | stmt :: other_stmts -> process_stmt stmt env; 
+     stmt :: other_stmts -> Environment.append env [Text("/* DEBUG: found a statement */\n")]; 
+                            process_stmt stmt env; 
                             process_stmt_list other_stmts env; 
- and process_stmt stmt env = 
+   | []     -> "//DEBUG: Done printing statements \n", env (* TODO this is a sanity check *) 
+ and process_stmt stmt env =
+   Environment.append env [Text("/*DEBUG : Before matching any statements */\n")];
    match stmt with 
      Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] 
    | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list stmt_list) ] (* TODO check if we need braces/NewScope *) 

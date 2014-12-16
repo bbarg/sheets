@@ -1,5 +1,5 @@
-#~ SHOULDPASS:  ~#
+#~ SHOULDPASS: global variable multiplication ~#
 int a
 int b
-func int sum_global():
+func int prod_global():
     a * b

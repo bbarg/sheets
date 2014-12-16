@@ -2,7 +2,6 @@
 const  int    a
 float  my_list
 int ballon_volume
-String   im_a_str
 
 func int add (int x, int y):
     int b

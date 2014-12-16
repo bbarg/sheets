@@ -283,11 +283,24 @@ let generate_kernel_invocation_function fdecl env =
 			    Generator(generate_kernel_invocation_args fdecl.formals (get_array_formals fdecl.formals));
 			    Text(");\n")]
   in
-  (* ------------------------------------------------------------------- *)  
-  let generate_cl_enqueue_nd_range_kernel fdecl env = "TODO [barg]: gen enqueue ndrange\n", env in
-  (* ------------------------------------------------------------------- *)  
-  let generate_cl_enqueue_read_buffer fdecl env = "TODO [barg]: gen read buffers\n", env in
-  (* ------------------------------------------------------------------- *)
+  let generate_cl_enqueue_nd_range_kernel fdecl env =
+    Environment.append env [Text(sprintf "size_t *gdims = { __cl_size / %d + 1 };\n" fdecl.blocksize);
+			    Text("CALL_CL_GUARDED(clEnqueueNDRangeKernel,");
+			    Text("(__sheets_queue,");
+			    (* ocaml thinks this is type func_info *)
+			    Text(sprintf "%s_compiled_kernel," fdecl.fname); 
+			    Text("1,"); (* only 1 dimensional array support *)
+			    Text("0,"); (* 0 offset *)
+			    Text("gdims,");
+			    Text("NULL,");
+			    Text("0,");
+			    Text("NULL,");
+			    Text("NULL)");
+			    Text(");\n")]
+  in		       
+  let generate_cl_enqueue_read_buffer fdecl env =
+    "TODO [barg]: gen read buffers\n", env
+  in
   Environment.append env [Text(sprintf "%s %s(" fdecl.r_type fdecl.fname);
 			  (* generate type as point rather than array? *)
 		          Generator(generate_formals_vdecl_list fdecl.formals);
@@ -299,6 +312,7 @@ let generate_kernel_invocation_function fdecl env =
 			  Generator(generate_cl_enqueue_read_buffer fdecl);
 			  Text("return kernel_invocation_out;\n");
 			  Text("}\n")]
+
 (* end kernel invocations -------------------------------------------- *)
 (* ------------------------------------------------------------------- *)
 let generate_func_formals_and_body vdecl_list stmt_list env = 

@@ -334,7 +334,7 @@ let rec generate_formals_vdecl_list vdecl_list env =
      size and output arra*)
 (* ------------------------------------------------------------------- *)
 let generate_kernel_invocation_function fdecl env =
-
+  let base_r_type = Generator_utilities.arr_type_str_to_base_type fdecl.r_type in
   let get_array_formals formals =
     let rec f arg_number array_formals formals = 
       match formals with
@@ -355,7 +355,7 @@ let generate_kernel_invocation_function fdecl env =
        function *)
     let rec generate_input_cl_mem_buffers array_formals env =
       let generate_input_cl_mem_buffer arg_number env =
-	Environment.append env [Text(sprintf "cl_mem __arg%d = clCreateBuffer(__sheets_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(%s) * __arr_len, &__cl_err);\n" arg_number fdecl.r_type);
+	Environment.append env [Text(sprintf "cl_mem __arg%d = clCreateBuffer(__sheets_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(%s) * __arr_len, &__cl_err);\n" arg_number base_r_type);
 				Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n")]
       in
       match array_formals with
@@ -364,7 +364,7 @@ let generate_kernel_invocation_function fdecl env =
 	 Environment.append env [Generator(generate_input_cl_mem_buffer arg_n);
 				 Generator(generate_input_cl_mem_buffers other_array_formals)]
     in
-    Environment.append env [Text(sprintf "cl_mem __arg1 = clCreateBuffer(__sheets_context, CL_MEM_WRITE_ONLY, sizeof(%s) * __arr_len, &__cl_err);\n" fdecl.r_type);
+    Environment.append env [Text(sprintf "cl_mem __arg1 = clCreateBuffer(__sheets_context, CL_MEM_WRITE_ONLY, sizeof(%s) * __arr_len, &__cl_err);\n" base_r_type);
 			    Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n");
 			    Generator(generate_input_cl_mem_buffers (get_array_formals fdecl.formals))] 
   in
@@ -377,18 +377,42 @@ let generate_kernel_invocation_function fdecl env =
   let generate_cl_set_kernel_args fdecl env =
     let generate_kernel_invocation_args todo1 todo2 env = "", env (* TODO *)
     in
-    Environment.append env [Text(sprintf "SET_%dKERNEL_ARGS(" ((List.length fdecl.formals) + 2));
+    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 2));
 			    Text(sprintf "%s_compiled_kernel," fdecl.fname);
 			    Text("__cl_size, __arg1,");
 			    Generator(generate_kernel_invocation_args fdecl.formals (get_array_formals fdecl.formals));
 			    Text(");\n")]
   in
-  (* ------------------------------------------------------------------- *)  
-  let generate_cl_enqueue_nd_range_kernel fdecl env = "TODO [barg]: gen enqueue ndrange\n", env in
-  (* ------------------------------------------------------------------- *)  
-  let generate_cl_enqueue_read_buffer fdecl env = "TODO [barg]: gen read buffers\n", env in
-  (* ------------------------------------------------------------------- *)
-  Environment.append env [Text(sprintf "%s %s(" fdecl.r_type fdecl.fname);
+  let generate_cl_enqueue_nd_range_kernel fdecl env =
+    Environment.append env [Text(sprintf "size_t *gdims = { __cl_size / %d + 1 };\n" fdecl.blocksize);
+			    Text("CALL_CL_GUARDED(clEnqueueNDRangeKernel,");
+			    Text("(__sheets_queue,");
+			    (* ocaml thinks this is type func_info *)
+			    Text(sprintf "%s_compiled_kernel," fdecl.fname); 
+			    Text("1,"); (* only 1 dimensional array support *)
+			    Text("0,"); (* 0 offset *)
+			    Text("gdims,");
+			    Text("NULL,");
+			    Text("0,");
+			    Text("NULL,");
+			    Text("NULL)");
+			    Text(");\n")]
+  in		       
+  let generate_cl_enqueue_read_buffer fdecl env =
+    (* only one buffer to read, since there's only one output arg *)
+    Environment.append env [Text(sprintf "%s *__out[__cl_size];\n" base_r_type);
+			    Text("CALL_CL_GUARDED(clEnqueueReadBuffer,\n");
+			    Text("(__sheets_queue,\n");
+			    Text("CL_TRUE,\n"); (* blocking read *)
+			    Text("0,\n");	(* 0 offset *)
+			    Text(sprintf "sizeof(%s) * __cl_size,\n" base_r_type);
+			    Text("(void *) __out,\n");
+			    Text("0,\n"); (* empty wait queue *)
+			    Text("NULL,\n");
+			    Text("NULL)");
+			    Text(");\n")]
+  in
+  Environment.append env [Text(sprintf "%s %s(" base_r_type fdecl.fname);
 			  (* generate type as point rather than array? *)
 		          Generator(generate_formals_vdecl_list fdecl.formals);
 			  Text(")\n{\n");
@@ -397,8 +421,9 @@ let generate_kernel_invocation_function fdecl env =
 			  Generator(generate_cl_set_kernel_args fdecl);
 			  Generator(generate_cl_enqueue_nd_range_kernel fdecl);
 			  Generator(generate_cl_enqueue_read_buffer fdecl);
-			  Text("return kernel_invocation_out;\n");
+			  Text("return __out;\n");
 			  Text("}\n")]
+
 (* end kernel invocations -------------------------------------------- *)
 (* ------------------------------------------------------------------- *)
 let generate_func_formals_and_body stmt_list vdecl_list env = 

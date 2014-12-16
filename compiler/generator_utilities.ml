@@ -102,6 +102,7 @@ let print_everything (vdecls, sdefs, fdecls) =
     print_funcs fdecls
 ;;
 
+exception UnsupportedArrayTypeError;;
 
 (*
 let check_function_call f_call env =
@@ -220,6 +221,13 @@ let fdecl_to_func_info fdecl =
             return = str_to_type fdecl.r_type; 
             args = vdecl_list_to_type_list fdecl.formals;       
             arg_names = vdecl_list_to_string_list fdecl.formals;       
-            blocksize = fdecl.blocksize;
+            _blocksize = fdecl.blocksize;
         }
+;;
+let rec arr_type_str_to_base_type = function
+    "float[]" -> "float"
+  | "int[]" -> "int"
+  | "float[][]" -> "float"
+  | "int[][]" -> "int"
+  | _ -> raise UnsupportedArrayTypeError
 ;;

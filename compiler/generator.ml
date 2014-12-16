@@ -270,8 +270,8 @@ let rec process_stmt_list stmt_list env =
    | Assign(name, expr) -> Environment.append env [ Text("/* Assignment */\n");
    Generator(generate_assign name expr); Text(";\n")]
    | Return(expr) -> raise (NotImplementedError("expr")) 
-   | Init(vdecl, expr) -> raise (NotImplementedError("init"))(*Environment.append env [ Text("/*Initialization*/\n");
-   Generator(generate_init vdecl expr); Text(";\n")]*)
+   | Init(vdecl, expr) -> Environment.append env [ Text("/*Initialization*/\n");
+   Generator(generate_init vdecl expr); Text(";\n")]
    | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) 
    | While(expr, stmt) -> raise (NotImplementedError("while")) 
    | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 

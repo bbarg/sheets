@@ -457,6 +457,30 @@ let generate_kernel_invocation_function fdecl env =
 			    Text("NULL)");
 			    Text(");\n")]
   in
+  let generate_cl_release_list fdecl env =
+    let rec generate_cl_releases arg_n formals env =
+      let generate_cl_release arg_n formal env =
+	(* only release array args (those alloc-ed with
+           clCreateBuffer) *)
+	if Generator_utilities.is_array_type formal.v_type then
+	  Environment.append env [Text("CALL_CL_GUARDED(");
+				  Text("clReleaseMemObject, ");
+				  Text(sprintf "(__arg%d)" arg_n);
+				  Text(");\n")]
+	else "", env
+      in
+      match formals with
+	[] -> "", env
+      | formal :: other_formals ->
+	 Environment.append env [Text("CALL_CL_GUARDED("); (* always free output arr *)
+				 Text("clReleaseMemObject, ");
+				 Text("(__arg1)");
+				 Text(");\n");
+			         Generator(generate_cl_release arg_n formal);
+				 Generator(generate_cl_releases (arg_n + 1) other_formals)]
+    in				(* user args start at 2 *)
+    Environment.append env [Generator(generate_cl_releases 2 fdecl.formals)]
+  in				    
   Environment.append env [Text(sprintf "%s %s("
 				       (Generator_utilities.c_type_from_arr_type fdecl.r_type)
 				       fdecl.fname);
@@ -467,6 +491,7 @@ let generate_kernel_invocation_function fdecl env =
 			  Generator(generate_cl_set_kernel_args fdecl);
 			  Generator(generate_cl_enqueue_nd_range_kernel fdecl);
 			  Generator(generate_cl_enqueue_read_buffer fdecl);
+			  Generator(generate_cl_release_list fdecl);
 			  Text("return __out;\n");
 			  Text("}\n")]
 

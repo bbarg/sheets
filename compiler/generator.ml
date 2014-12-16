@@ -168,6 +168,41 @@ let rec generate_global_vdecl_list vdecls env =
 ;;
 
 (* ------------------------------------------------------------------ *)
+(* Kernel invocation declarations                                     *)
+(* ------------------------------------------------------------------ *)
+(* If we have a gfunc declared as 
+
+   > gfunc float[] my_gfunc(float[] arg1, float[] arg2, int arg3) 
+
+   then our generated c code will call this function in the same
+   way that cpu functions are called: 
+
+   > result = my_gfunc(arg1, arg2, arg3, arg4)
+
+   However, when my_gfunc is actually defined in the c file, its
+   contents will be the boilerplate OpenCL code that invokes the
+   kernel on the gpu.                                           
+
+   At this point, all semantic checking has been completed, so we
+   don't need to worry about checking the function map or anything
+   like that.
+
+   NOTES:
+   - Because each kernel invocation function has its own C scope, we
+     don't have to worry about variable name collision
+   - The definitions of these functions will appear interspersed with
+     cpu func definitions, but this will not interfere with namespace
+     conventions. Essentially, the cpu code thinks it's calling
+     another cpu function, but internally that cpu function is
+     implemented as a gpu function
+
+   - This method has the side-benefit that we don't have to process
+     literals passed to functions differently
+
+   TODO: find a good place for this comment block. *)
+  
+  
+(* ------------------------------------------------------------------ *)
 (* CPU functions                                                      *)
 (* ------------------------------------------------------------------ *)
 let rec generate_formals_vdecl_list vdecl_list env =  
@@ -187,7 +222,14 @@ let rec generate_formals_vdecl_list vdecl_list env =
 			     Generator(generate_formals_vdecl_list other_vdecls)]
 ;;
 
-
+(* kernel invocation ------------------------------------------------- *)
+let generate_kernel_invocation_function fdecl env =
+  Environment.append env [Generator(generate_formals_vdecl_list fdecl.formals);
+			  (* now we have the arguments, time to do the setup *)
+			  (* return array *)
+			 ]
+(* ------------------------------------------------------------------- *)
+			      
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
@@ -202,7 +244,9 @@ let rec generate_cpu_funcs fdecls env =
 			      Text("}\n"); 
 			     ]
                          
-    | true -> "", add_gfunc (Generator_utilities.fdecl_to_func_info fdecl) env
+    | true ->
+       Environment.append env [Env(add_gfunc (Generator_utilities.fdecl_to_func_info fdecl));
+			       NewScope(generate_checked_kernel_invocation_function check_gfdecl fdecl)]
   in
   match fdecls with
     [] -> "", env
@@ -270,11 +314,9 @@ let generate_cl_kernels env =
 (* ------------------------------------------------------------------ *)
 (* Main: opencl context creation and frees                            *)
 (* ------------------------------------------------------------------ *)
-
 (* ASSUMPTIONS: 
    - the incoming func_info list will not include any invalid names
-     (i.e. there won't be a gfunc called main) *)
-
+     (i.e. there won't be a gfunc called main)                        *)
 
 let rec generate_compile_kernels gf_info_list env =
   let generate_compile_kernel gf_info =

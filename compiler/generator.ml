@@ -49,7 +49,7 @@ exception BadExpressionError of string;;
  *)
 
 let generate_checked_id check_id id env = 
-    if (check_id id env)
+    if (check_id id env) then
         Environment.append env [Text(id)]
     else raise (VariableNotFound id)
 

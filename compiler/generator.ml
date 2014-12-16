@@ -226,11 +226,24 @@ let rec generate_type datatype env =
 		Generator(generate_type t); 
 		Text("[]")
 	]
-	
+
+let generate_init vdecl exp env =
+    if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
+    exp env)) then
+        Environment.append env [Env(add_var vdecl.v_name
+        (Generator_utilities.vdecl_type vdecl));
+        Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ " = "); Generator(generate_exp exp)]
+    else
+        raise(BadExpressionError("Assignment of incompatible types"))
+
 let generate_assign id exp env =
     match id with
     | Id(a) -> if (is_var_in_scope a env) then
-                    Environment.append env [Generator(generate_exp exp)]
+                    if(Generator_utilities.expr_typeof id = Generator_utilities.expr_typeof
+                    exp) then
+                        Environment.append env [Text(a ^ " =" ); Generator(generate_exp exp)]
+                    else
+                        raise(BadExpressionError("Assignment of incompatible types"))
                else
                     raise (BadExpressionError("assignment to undefined id"))
     | _-> raise (BadExpressionError("Invalid Assignment")) 
@@ -251,10 +264,11 @@ let rec process_stmt_list stmt_list env =
    stmt_list); Text(";\n") ] (* TODO check if we need braces/NewScope *) 
    | Expr(expr) -> Environment.append env [ Generator(generate_exp expr );
    Text(";\n") ]  
-   | Assign(name, expr) -> Environment.append env [ Generator(generate_assign
-   name expr); Text(";\n")] 
+   | Assign(name, expr) -> Environment.append env [ Text("/* Assignment */\n");
+   Generator(generate_assign name expr); Text(";\n")]
    | Return(expr) -> raise (NotImplementedError("expr")) 
-   | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
+   | Init(vdecl, expr) -> Environment.append env [ Text("/*Initialization*/\n");
+   Generator(generate_init vdecl expr); Text(";\n")]
    | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) 
    | While(expr, stmt) -> raise (NotImplementedError("while")) 
    | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 
@@ -265,7 +279,10 @@ let rec process_stmt_list stmt_list env =
    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in 
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
  	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name)] 
- ;; 
+
+;;
+
+
 (* ------------------------------------------------------------------ *)
 
 (* ------------------------------------------------------------------ *)
@@ -526,7 +543,7 @@ let generate_kernel_invocation_function fdecl env =
 let generate_func_formals_and_body stmt_list vdecl_list env = 
     Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
                             Text("){\n");
-                            Generator(process_stmt_list (List.rev stmt_list));
+                            Generator(process_stmt_list (stmt_list));
                             Text("}\n"); ]
 
 let rec generate_cpu_funcs fdecls env =

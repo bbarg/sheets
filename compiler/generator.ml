@@ -174,13 +174,15 @@ let rec generate_formals_vdecl_list vdecl_list env =
      Environment.append env [Generator(generate_formals_vdecl vdecl);
 			     Generator(generate_formals_vdecl_list other_vdecls)]
 ;;
-  
-let generate_checked_kernel_invocation_function valid_gfdecl fdecl env =
+
+(* kernel invocation ------------------------------------------------- *)
+let generate_kernel_invocation_function fdecl env =
   Environment.append env [Generator(generate_formals_vdecl_list fdecl.formals);
 			  (* now we have the arguments, time to do the setup *)
 			  (* return array *)
-			  Text(
-
+			 ]
+(* ------------------------------------------------------------------- *)
+			      
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with

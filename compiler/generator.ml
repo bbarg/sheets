@@ -201,17 +201,17 @@ let generate_checked_f_call check_f_call f_call env =
 
 let generate_exp exp env = 
     match exp with
-      Literal_int(i) -> Environment.append env [Text("/* Int
-      */\n"); Text(string_of_int(i))]  
+      Literal_int(i) -> Environment.append env [Text("/* Int*/\n"); Text(string_of_int(i))]  
       | Literal_float(f) -> Environment.append env [Text("/* Float */");
       Text(string_of_float(f))] 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
       | Id(s) -> Environment.append env [Text("/* Id */\n"); 
       Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(_,_,_) -> Environment.append env [Text("/* Binop */\n");  Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
-      | Call(func_id, formals_list) -> Environment.append env [Text("/* Function
-          Call */\n"); Generator(generate_checked_f_call
+      | Binop(_,_,_) -> Environment.append env [Text("/* Binop */\n");  
+      Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
+      | Call(func_id, formals_list) -> Environment.append env [Text("/* Function Call */\n");
+      Generator(generate_checked_f_call
           Generator_utilities.expr_typeof exp)]
       | ArrayAcc(_, _) -> Environment.append env [Text("/* Array Access */\n"); 
       Generator(generate_checked_array_access Generator_utilities.expr_typeof exp)]
@@ -235,6 +235,19 @@ let generate_init vdecl exp env =
         Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ " = "); Generator(generate_exp exp)]
     else
         raise(BadExpressionError("Assignment of incompatible types"))
+
+    (* TODO: make way to ensure return statements exist *)
+    (* TODO: make way to ensure returned expression has been initialized *)
+let generate_return exp env =
+    printf "curr func = %s" env.current_function;
+    let func_info = Environment.get_func_info env.current_function env in
+    let return_type = func_info.return in
+    let exp_type = Generator_utilities.expr_typeof exp env in
+    if(exp_type = return_type) then
+        Environment.append env [Text("return "); Generator(generate_exp exp)]
+    else
+        raise(BadExpressionError("Bad return type"))
+;;
 
 let generate_assign id exp env =
     match id with
@@ -267,7 +280,8 @@ let rec process_stmt_list stmt_list env =
    Text(";\n") ]  
    | Assign(name, expr) -> Environment.append env [ Text("/* Assignment */\n");
    Generator(generate_assign name expr); Text(";\n")]
-   | Return(expr) -> raise (NotImplementedError("expr")) 
+   | Return(expr) -> Environment.append env [ Text("/*Return */\n");
+   Generator(generate_return expr); Text(";\n")] 
    | Init(vdecl, expr) -> Environment.append env [ Text("/*Initialization*/\n");
    Generator(generate_init vdecl expr); Text(";\n")]
    | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) 
@@ -557,6 +571,7 @@ let rec generate_cpu_funcs fdecls env =
       in
       Environment.append env [Env(add_func
 				    fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl));
+                    Env(update_curr_func fdecl.fname);
 			      Text(sprintf "%s %s("
 					   fdecl.r_type (main_checked_name fdecl.fname));
 			      NewScope(generate_func_formals_and_body

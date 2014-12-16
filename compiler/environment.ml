@@ -202,12 +202,12 @@ let add_func id finfo env =
 	raise VariableAlreadyDeclared
    else
      (* XXX hack to convert sheets main to snuggle *)
-     match id with
+    (* match id with
        "main" ->
        let env_with_snuggle =
 	 update_only_func (FunctionMap.add "snuggle" finfo env.func_return_type_map) env
        in update_only_func (FunctionMap.add "main" finfo env.func_return_type_map) env
-     | _ ->
+     | _ ->*)
 	update_only_func (FunctionMap.add id finfo env.func_return_type_map) env	   
        
 (* Returns the datatype of a function or 

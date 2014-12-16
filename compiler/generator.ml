@@ -20,12 +20,12 @@
 open Ast;;
 open Environment;;
 open Printf;;
+open String;;
 
 exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 exception BadExpressionError of string;;
-
   
 let print_vdecls vdecls = 
   let f v =
@@ -149,7 +149,7 @@ let generate_checked_expr check_func expr env =
     if (check_func expr env) then expr, env
     else raise (BadExpressionError expr)
 
-let rec exp_to_txt exp = 
+let exp_to_txt exp = 
     match exp with 
         Literal_int(i) -> string_of_int(i)
       | Literal_float(f) -> string_of_float(f)
@@ -170,14 +170,22 @@ let op_to_txt op =
     | Neq -> "!="
     | _-> ""
 
+let rec args_to_txt arg_list str=
+    match arg_list with
+    | arg :: arg_tail -> args_to_txt arg_tail str ^ (exp_to_txt arg) ^ ", " 
+    | [] -> 
+            if (String.contains str ',') then
+                (String.sub str 0 (String.length str - 2))
+            else
+                str
+(* TODO: fix bug in string processing here*)
+
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 
         match binop with 
         Binop(e1, op , e2) -> Environment.append env [Text((exp_to_txt e1) ^ " "
         ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2))]
         | _->  raise (BadExpressionError("binop"))
-
-
 
 let generate_checked_array_access check_array_access array_expr env =
     check_array_access array_expr env;
@@ -186,11 +194,12 @@ let generate_checked_array_access check_array_access array_expr env =
     (exp_to_txt e2) ^ "]")]
     | _-> raise (BadExpressionError("Array Access"))
 
-(*
 let generate_checked_f_call check_f_call f_call env =
-    if (check_f_call f_call env) then f_call, env
-    else raise (BadExpressionError f_call)
-*)
+    check_f_call f_call env;
+    match f_call with
+    | Call(id, expressions) -> Environment.append env [Text(id ^ "(" ^
+    (args_to_txt expressions "") ^ ")")];
+    | _-> raise (BadExpressionError("Function Call"))
 
 let generate_exp exp env = 
     match exp with
@@ -203,7 +212,9 @@ let generate_exp exp env =
       | Id(s) -> Environment.append env [Text("/* Id */\n"); 
       Generator(generate_checked_id is_var_in_scope s )]  
       | Binop(_,_,_) -> Environment.append env [Text("/* Binop */\n");  Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
-      | Call(func_id, formals_list) -> Environment.append env [Text("/* Function Call */\n")]
+      | Call(func_id, formals_list) -> Environment.append env [Text("/* Function
+          Call */\n"); Generator(generate_checked_f_call
+          Generator_utilities.expr_typeof exp)]
       | ArrayAcc(_, _) -> Environment.append env [Text("/* Array Access */\n"); 
       Generator(generate_checked_array_access Generator_utilities.expr_typeof exp)]
       | _-> raise (NotImplementedError("unsupported expression"))
@@ -217,7 +228,14 @@ let rec generate_type datatype env =
 		Generator(generate_type t); 
 		Text("[]")
 	]
-	(* | _ -> raise UndefinedTypeError (\* TODO this should never happen *\) *)
+	
+let generate_assign id exp env =
+    match id with
+    | Id(a) -> if (is_var_in_scope a env) then
+                    Environment.append env [Generator(generate_exp exp)]
+               else
+                    raise (BadExpressionError("BadExpression"))
+    | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 (* ------------------------------------------------------------------ *)		  
 (* TODO combine-ify all of these functions *)
@@ -235,7 +253,8 @@ let rec process_stmt_list stmt_list env =
    stmt_list); Text(";\n") ] (* TODO check if we need braces/NewScope *) 
    | Expr(expr) -> Environment.append env [ Generator(generate_exp expr );
    Text(";\n") ]  
-   | Assign(name, expr) -> raise (NotImplementedError("assign")) 
+   | Assign(name, expr) -> Environment.append env [ Generator(generate_assign
+   name expr); Text(";\n")] 
    | Return(expr) -> raise (NotImplementedError("expr")) 
    | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
    | If(expr, bool_stmt, body) -> raise (NotImplementedError("if/else")) 

@@ -1,0 +1,7 @@
+func int a():
+    return 1
+
+func int main():
+    int i
+    for( i=0; a(); i=i+1):
+        return 2

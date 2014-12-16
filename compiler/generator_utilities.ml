@@ -24,6 +24,8 @@ let eval_basic_binop type1 type2 =
     else 
         raise (TypeError("Incompatible types"))
 ;;
+
+
 let eval_binop type1 type2 op = 
     match op with 
     | Plus -> (eval_basic_binop type1 type2)
@@ -39,6 +41,19 @@ let eval_binop type1 type2 op =
     | _->      raise (TypeError("Incompatible types"))
 
 
+let eval_array_acc array_ int_expr =
+    match array_ with
+        | Array ( Int) -> 
+                match int_expr with
+                | Int -> array_
+                | _-> raise (TypeError("Cannot access element in array with non-int datatype"))
+        | Array ( Float) -> 
+                match int_expr with
+                | Int -> array_
+                | _-> raise (TypeError("Cannot access element in array with non-int datatype"))
+        | _-> raise (TypeError("Cannot access element in non-array type"))
+;;
+
 let rec expr_typeof expr env = 
     match expr with 
      Literal_int(i) -> Int
@@ -48,7 +63,9 @@ let rec expr_typeof expr env =
     | Id(s) -> Environment.typeof s env  
     | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env)
     (expr_typeof exp2 env) op) 
-(*    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list env)*)
+    | ArrayAcc(exp1, exp2) -> (eval_array_acc (expr_typeof exp1 env)
+    (expr_typeof exp2 env) )
+    (*    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list env) *)
     | _-> raise (NotImplementedError("Undefined type of expression"))
 (* TODO : What do we need  
  *)

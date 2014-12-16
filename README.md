@@ -10,7 +10,6 @@ This is how I think we should proceed
 
 ### Types
 
-
 Ints
 Floats
 Strings (printing/IO - map to const char*) 
@@ -18,6 +17,8 @@ Arrays of Ints or Floats fixed size heap allocated - have to define a struct 1 o
 
 all arithmetic operations ( + - / * ) typed 
 boolean operations ( > < == >= <= != ) 
+No logical and &&
+No logical or ||
 
 gops for (vectors and vectors) and (vectors and scalars) 
 

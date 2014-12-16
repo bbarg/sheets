@@ -3,7 +3,8 @@ open Ast;;
 open Environment;;
 
 exception TypeError of string;;
-exception NotImplementedError of string;;  
+exception NotImplementedError of string;;
+exception UnsupportedArrayTypeError;;
 
 (*
 let check_function_call f_call env =
@@ -123,4 +124,11 @@ let fdecl_to_func_info fdecl =
             arg_names = vdecl_list_to_string_list fdecl.formals;       
             _blocksize = fdecl.blocksize;
         }
+;;
+let rec arr_type_str_to_base_type = function
+    "float[]" -> "float"
+  | "int[]" -> "int"
+  | "float[][]" -> "float"
+  | "int[][]" -> "int"
+  | _ -> raise UnsupportedArrayTypeError
 ;;

@@ -46,11 +46,11 @@ exception BadExpressionError of string;;
  * returns a string, env tuple 
  * or makes recursive calls to generate_expression  
  *)
-(*
+
 let generate_checked_id check_id id env = 
     if (check_id id env)  then id, env 
     else raise (VariableNotFound id)
-*)
+
 
 let generate_checked_expr check_func expr env =
     if (check_func expr env) then expr, env
@@ -80,7 +80,7 @@ let generate_exp exp env =
       | Literal_float(f) -> string_of_float(f), env 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.append env [Generator(generate_checked_expr is_var_in_scope s )]  
+      | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
       | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;

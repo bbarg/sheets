@@ -1,0 +1,4 @@
+#~ SHOULDPASS: single declared variable ~#
+int a
+func int sum_global():
+    a + 1

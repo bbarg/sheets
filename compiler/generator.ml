@@ -49,13 +49,10 @@ exception BadExpressionError of string;;
  *)
 
 let generate_checked_id check_id id env = 
-    if (check_id id env) then id, env 
+    if (check_id id env)
+        Environment.append env [Text(id)]
     else raise (VariableNotFound id)
 
-
-let generate_checked_expr check_func expr env =
-    if (check_func expr env) then expr, env
-    else raise (BadExpressionError expr)
 
 let exp_to_txt exp = 
     match exp with 
@@ -91,78 +88,92 @@ let rec args_to_txt arg_list str=
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 
         match binop with 
-        Binop(e1, op , e2) -> Environment.append env [Text((exp_to_txt e1) ^ " "
-        ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2))]
+        Binop(e1, op , e2) ->   Environment.append env [
+                                Text((exp_to_txt e1) ^ " "
+                                ^ (op_to_txt op) ^ " " ^ 
+                                (exp_to_txt e2))]
         | _->  raise (BadExpressionError("binop"))
 
 let generate_checked_array_access check_array_access array_expr env =
     check_array_access array_expr env;
     match array_expr with
-    | ArrayAcc(e1, e2) -> Environment.append env [Text((exp_to_txt e1) ^ "[" ^
-    (exp_to_txt e2) ^ "]")]
+    | ArrayAcc(e1, e2) ->       Environment.append env [
+                                Text((exp_to_txt e1) ^ "[" ^
+                                (exp_to_txt e2) ^ "]")]
     | _-> raise (BadExpressionError("Array Access"))
 
 let generate_checked_f_call check_f_call f_call env =
     check_f_call f_call env;
     match f_call with
-    | Call(id, expressions) -> Environment.append env [Text(id ^ "(" ^
-    (args_to_txt expressions "") ^ ")")];
+    | Call(id, expressions) ->  Environment.append env [
+                                Text(id ^ "(" ^
+                                (args_to_txt expressions "") ^ 
+                                ")")];
     | _-> raise (BadExpressionError("Function Call"))
 
 let generate_exp exp env = 
     match exp with
-      Literal_int(i) -> Environment.append env [Text(string_of_int(i))]  
-      | Literal_float(f) -> Environment.append env [Text(string_of_float(f))] 
-      | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
-      | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.append env [
-          Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(_,_,_) -> Environment.append env [
-                Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
-      | Call(func_id, formals_list) -> Environment.append env [
-                    Generator(generate_checked_f_call
+    | Literal_int(i) ->     Environment.append env [
+                            Text(string_of_int(i))]  
+    | Literal_float(f) ->   Environment.append env [
+                            Text(string_of_float(f))] 
+    | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
+    | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
+    | Id(s) ->          Environment.append env [
+                        Generator(generate_checked_id is_var_in_scope s )]  
+    | Binop(_,_,_) ->   Environment.append env [
+                        Generator(generate_checked_binop 
+                            Generator_utilities.expr_typeof exp )] 
+    | Call(func_id, formals_list) -> 
+                        Environment.append env [
+                        Generator(generate_checked_f_call
                             Generator_utilities.expr_typeof exp)]
-      | ArrayAcc(_, _) -> Environment.append env [ 
-      Generator(generate_checked_array_access Generator_utilities.expr_typeof exp)]
-      | _-> raise (NotImplementedError("unsupported expression"))
+    | ArrayAcc(_, _) -> Environment.append env [
+                        Generator(generate_checked_array_access  
+                            Generator_utilities.expr_typeof exp)]
+    | _-> raise (NotImplementedError("unsupported expression"))
 ;;
 
 let rec generate_type datatype env = 
-   match datatype with 
-	| Int -> "int", env 
-	| Float -> "float", env 
-	| Array(t) -> Environment.append env [ 
-		Generator(generate_type t); 
-		Text("[]")
+    match datatype with 
+    | Int ->        Environment.append env [Text("int")] 
+    | Float ->      Environment.append env [Text("float")]
+	| Array(t) ->   Environment.append env [ 
+		            Generator(generate_type t); 
+		            Text("[]")
 	]
 
 let generate_init vdecl exp env =
     if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
     exp env)) then
-        Environment.append env [Env(add_var vdecl.v_name
-        (Generator_utilities.vdecl_type vdecl));
-        Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ " = "); Generator(generate_exp exp)]
+        Environment.append env [
+        Env(add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl));
+        Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ " = ");   
+        Generator(generate_exp exp)]
     else
         raise(BadExpressionError("Assignment of incompatible types"))
 
     (* TODO: make way to ensure return statements exist *)
     (* TODO: make way to ensure returned expression has been initialized *)
 let generate_return exp env =
-    printf "curr func = %s" env.current_function;
     let func_info = Environment.get_func_info env.current_function env in
     let return_type = func_info.return in
     let exp_type = Generator_utilities.expr_typeof exp env in
     if(exp_type = return_type) then
-        Environment.append env [Text("return "); Generator(generate_exp exp)]
+        Environment.append env [
+        Text("return "); 
+        Generator(generate_exp exp)]
     else
         raise(BadExpressionError("Bad return type"))
 ;;
+
 let generate_assign id exp env =
     match id with
     | Id(a) -> if (is_var_in_scope a env) then
                   if(Generator_utilities.expr_typeof id env =
-                      Generator_utilities.expr_typeof exp env) then
-                        Environment.append env [Text(a ^ " =" ); Generator(generate_exp exp)]
+                     Generator_utilities.expr_typeof exp env) then
+                        Environment.append env [
+                        Text(a ^ " =" ); Generator(generate_exp exp)]
                   else
                         raise(BadExpressionError("Assignment of incompatible
                         types"))
@@ -171,13 +182,11 @@ let generate_assign id exp env =
     | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 (* ------------------------------------------------------------------ *)		  
-(* TODO combine-ify all of these functions *)
-					  
 let rec process_stmt_list stmt_list env = 
    match stmt_list with 
    stmt :: other_stmts -> Environment.append env [Generator(process_stmt
    stmt); Generator(process_stmt_list other_stmts)] 
-   | []     -> "\n", env (* TODO this is a sanity check *) 
+   | []     -> Environment.append env [ Text("\n") ] 
  and process_stmt stmt env =
    match stmt with 
    Vdecl(vdecl) ->          Environment.append env [ 
@@ -207,8 +216,10 @@ let rec process_stmt_list stmt_list env =
                             Environment.append env [ 
                             NewScope(generate_for s1 e2 s3 body)]
    | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 
-   | Continue -> raise (NotImplementedError("continue")) 
-   | Break ->    raise (NotImplementedError("break"))
+   | Continue ->            Environment.append env [
+                            Text("continue;\n")]
+   | Break ->               Environment.append env [
+                            Text("break;\n")]
    | _ -> raise (NotImplementedError("Undefined type of expression")) 
  and process_vdecl vdecl env = 
    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in 

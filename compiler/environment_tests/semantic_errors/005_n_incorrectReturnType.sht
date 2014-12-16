@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: Incorrect Type of Return ~#
+
+func int f1 (float x, int y):
+    return x

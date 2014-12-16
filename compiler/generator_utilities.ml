@@ -17,7 +17,10 @@ let check_function_call f_call env =
 
 let eval_basic_binop type1 type2 = 
     if (type1 = type2) then 
-        type1
+        match type1 with
+            | Int -> type1
+            | Float -> type1
+            | _-> raise (TypeError("Types not ID, int, or float"))
     else 
         raise (TypeError("Incompatible types"))
 ;;
@@ -43,7 +46,8 @@ let rec expr_typeof expr env =
     | Literal_int_a(i_a) -> Array( Int ) (* TODO: Check this *) 
     | Literal_float_a(i_a) -> Array(Float) 
     | Id(s) -> Environment.typeof s env  
-    | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op) 
+    | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env)
+    (expr_typeof exp2 env) op) 
 (*    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list env)*)
     | _-> raise (NotImplementedError("Undefined type of expression"))
 (* TODO : What do we need  

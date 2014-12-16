@@ -5,6 +5,16 @@ open Environment;;
 exception TypeError of string;;
 exception NotImplementedError of string;;  
 
+(*
+let check_function_call f_call env =
+    (* Check if function has been declared *)
+    (* Check if args match what they should be *)
+    match f_call with
+    | Call(id, args) -> 
+
+;;
+*)
+
 let eval_basic_binop type1 type2 = 
     if (type1 = type2) then 
         type1
@@ -34,11 +44,12 @@ let rec expr_typeof expr env =
     | Literal_float_a(i_a) -> Array(Float) 
     | Id(s) -> Environment.typeof s env  
     | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op) 
-    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list)
+(*    | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list env)*)
     | _-> raise (NotImplementedError("Undefined type of expression"))
 (* TODO : What do we need  
- *) 
-and typeof_func_call func_id expr_list = 
+ *)
+(*
+and typeof_func_call func_id expr_list env = 
     (* First make sure that all of the arguments are valid 
      * check all ids 
      * then return the type of the function 
@@ -48,13 +59,13 @@ and typeof_func_call func_id expr_list =
        [] -> Environment.return_typeof_func func_id env 
        | expr:: other_exprs -> let check_expr exp = 
              match exp with 
-              Id(s) -> if Environment.is_var_in_scope exp then 
+              Id(s) -> if Environment.is_var_in_scope expr env then 
                          check_expr_list other_exprs 
              | _-> check_expr_list other_exprs in 
-           check_expr expr in 
-       check_expr_list expr_list; 
+    check_expr expr in 
+  check_expr_list expr_list; 
 ;;
-
+*)
 
                  
                         

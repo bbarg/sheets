@@ -24,7 +24,7 @@ open Printf;;
 exception SyntaxError of int * int * string;;
 exception NotImplementedError of string;;
 exception UndefinedTypeError;;
-
+exception BadExpressionError of string;;
 
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
@@ -46,9 +46,33 @@ exception UndefinedTypeError;;
  * returns a string, env tuple 
  * or makes recursive calls to generate_expression  
  *)
+(*
 let generate_checked_id check_id id env = 
     if (check_id id env)  then id, env 
     else raise (VariableNotFound id)
+*)
+
+let generate_checked_expr check_func expr env =
+    if (check_func expr env) then expr, env
+    else raise (BadExpressionError expr)
+
+(*
+let generate_checked_binop check_binop binop env =
+    if (check_binop binop env) then binop, env
+    else raise (BadExpressionError binop)
+*)
+
+(*
+let generate_checked_array_access check_array_access access env =
+    if (check_array_access access env) then access, env
+    else raise (BadExpressionError access)
+*)
+
+(*
+let generate_checked_f_call check_f_call f_call env =
+    if (check_f_call f_call env) then f_call, env
+    else raise (BadExpressionError f_call)
+*)
 
 let generate_exp exp env = 
     match exp with
@@ -56,11 +80,11 @@ let generate_exp exp env =
       | Literal_float(f) -> string_of_float(f), env 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
+      | Id(s) -> Environment.append env [Generator(generate_checked_expr is_var_in_scope s )]  
       | Binop(e1, op, e2) -> raise (NotImplementedError("binop"))
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
-       
+
 let rec generate_type datatype env = 
    match datatype with 
 	| Int -> "int", env 

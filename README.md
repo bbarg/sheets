@@ -59,3 +59,47 @@ Multiline Block comments with
 Will Fail
 ~#
 ```
+
+## Final Push
+
+- When you return an array you need to:
+  + malloc space equal to the size of the array
+  + mem_cpy the expression into that address
+  + return the pointer
+  - we'll just let this memory leak
+
+- We need to find a solution for making a string literal out of the
+kernel body
+  + dumbest solution: remove ALL newlines from the generation (except
+  kernel invocation stuff)
+
+- general debugging of the gfunc calls
+
+- File IO OR some way of generating data (which we could do with a
+  gfunc; especially if we could use trig functions or something)
+
+- POSSIBLY implement Gop
+  + basically you just take every array element as an arg of the gfunc
+  and replace the gops with with scalar ops.
+  + e.g, for int arrays `a` and `b`
+
+```
+	my_arr = ((a :+ 2) :* 3) :/ b
+```
+
+would map to
+
+```
+__kernel
+void g_op_random_hash(__global const int __arr_len,
+                      __global int *__out,
+	                  __global const int *a,
+				      __global const int *b) {
+
+	const int _id = get_global_id(0);
+	const int __block_start = _id * __block_size;
+	const int __block_end = _id * __block_size + __block_size;
+
+	out[_id] = ((a[_id] :+ 2) * 3) / b[_id];
+}
+```

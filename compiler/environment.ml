@@ -282,7 +282,7 @@ let append init_env components =
     match on_gpu with
       true -> (match str with
 		 "" -> str
-	       | _  -> "\"" ^ str ^ "\"\n")
+	       | _  -> "\"" ^ str ^ "\"")
     | false -> str
   in
   let f (text, env) component =

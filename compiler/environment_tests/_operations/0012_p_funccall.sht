@@ -1,0 +1,6 @@
+func int function(float a):
+   int d
+
+func int main():
+   float x
+   function(x)

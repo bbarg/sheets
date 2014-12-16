@@ -111,19 +111,18 @@ let generate_checked_f_call check_f_call f_call env =
 
 let generate_exp exp env = 
     match exp with
-      Literal_int(i) -> Environment.append env [Text("/* Int*/\n"); Text(string_of_int(i))]  
-      | Literal_float(f) -> Environment.append env [Text("/* Float */");
-      Text(string_of_float(f))] 
+      Literal_int(i) -> Environment.append env [Text(string_of_int(i))]  
+      | Literal_float(f) -> Environment.append env [Text(string_of_float(f))] 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.append env [Text("/* Id */\n"); 
-      Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(_,_,_) -> Environment.append env [Text("/* Binop */\n");  
-      Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
-      | Call(func_id, formals_list) -> Environment.append env [Text("/* Function Call */\n");
-      Generator(generate_checked_f_call
-          Generator_utilities.expr_typeof exp)]
-      | ArrayAcc(_, _) -> Environment.append env [Text("/* Array Access */\n"); 
+      | Id(s) -> Environment.append env [
+          Generator(generate_checked_id is_var_in_scope s )]  
+      | Binop(_,_,_) -> Environment.append env [
+                Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
+      | Call(func_id, formals_list) -> Environment.append env [
+                    Generator(generate_checked_f_call
+                            Generator_utilities.expr_typeof exp)]
+      | ArrayAcc(_, _) -> Environment.append env [ 
       Generator(generate_checked_array_access Generator_utilities.expr_typeof exp)]
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
@@ -202,10 +201,11 @@ let rec process_stmt_list stmt_list env =
    | If(boolexpr, ifstmt, elsestmt) -> 
                             Environment.append env [ 
                             Generator(generate_if boolexpr ifstmt elsestmt)] 
-   | While(expr, body) -> raise (NotImplementedError("while")) 
+   | While(expr, body) ->   Environment.append env [
+                            NewScope(generate_while expr body)]
    | For(s1, e2, s3, body) -> 
                             Environment.append env [ 
-                            Generator(generate_for s1 e2 s3 body)]
+                            NewScope(generate_for s1 e2 s3 body)]
    | ForIn(obj, container, stmt) -> raise (NotImplementedError("for in")) 
    | Continue -> raise (NotImplementedError("continue")) 
    | Break ->    raise (NotImplementedError("break"))
@@ -215,7 +215,19 @@ let rec process_stmt_list stmt_list env =
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
  	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name)] 
 
-  and generate_for stmt1 bool_expr stmt2 body env =
+  and generate_while bool_expr body env =
+      match bool_expr with 
+      | Binop(e1, o, e2) ->
+               match o with
+                  | Equal -> append_while bool_expr body env
+                  | Neq -> append_while bool_expr body env
+                  | Greater -> append_while bool_expr body env 
+                  | Less -> append_while bool_expr body env 
+                  | Geq -> append_while bool_expr body env 
+                  | Leq -> append_while bool_expr body env 
+                  | _-> raise (BadExpressionError ("Binop is not boolean"))
+      | _-> raise(BadExpressionError ("Conditional expression is not binop")) 
+ and generate_for stmt1 bool_expr stmt2 body env =
       match bool_expr with
       | Binop(e1, o, e2) -> 
               match o with
@@ -239,6 +251,10 @@ let rec process_stmt_list stmt_list env =
                   | Leq -> append_if_else bool_expr ifbody elsebody env 
                   | _-> raise (BadExpressionError ("Binop is not boolean"))
       | _-> raise(BadExpressionError ("Conditional expression is not binop")) 
+and append_while bool_expr body env =
+    Generator_utilities.expr_typeof bool_expr env;
+    Environment.append env[Text("While("); Generator(generate_exp bool_expr);
+    Text("){\n"); Generator(process_stmt body); Text("}\n")]
 and append_if_else bool_exp ifbody elsebody env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("if("); Generator(generate_exp bool_exp);
@@ -248,7 +264,7 @@ and append_for stmt1 bool_exp stmt2 body env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("for("); Generator(process_stmt stmt1);
     Text("; "); Generator(generate_exp bool_exp); Text("; "); 
-    Generator(process_stmt stmt2); Text("){\n"); NewScope(process_stmt body);
+    Generator(process_stmt stmt2); Text("){\n"); Generator(process_stmt body);
     Text("}\n")]
 ;;
 

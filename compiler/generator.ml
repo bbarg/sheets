@@ -227,38 +227,67 @@ let rec generate_formals_vdecl_list vdecl_list env =
 
 (* kernel invocation ------------------------------------------------- *)
 (* INVARIANTS:
-   - 
    - the output array and input arrays of an individual gfunc MUST be
-   the same size *)
+     the same size 
+   - if there are non-array arguments, we rename them to __argn
+   - the actual args list starts at arg2 (first 2 are reserved for
+     size and output arra*)
+(* ------------------------------------------------------------------- *)
 let generate_kernel_invocation_function fdecl env =
+
+  let get_array_formals formals =
+    let rec f arg_number array_formals formals = 
+      match formals with
+	[] -> []
+      | formal :: other_formals ->
+	 match formal.v_type with (* XXX hack to find non-array types *)
+	   "int" | "float" -> f (arg_number + 1) array_formals other_formals
+	   | _ -> f (arg_number + 1) (array_formals @ [(arg_number, formal)]) other_formals
+    in
+    f 2 [] formals 		(* start with the 2nd argument *)
+  in
+  (* ------------------------------------------------------------------- *)
   let generate_cl_mem_buffers fdecl env =
     (* we need buffers for the output array and the input arrays 
 
        the size argument (arg0) will be __arr_len, and will always be
        called as such in the formals for this generated invokation
        function *)
-    let rec generate_input_cl_mem_buffers vdecl_formals arg_number env =
-      let generate_input_cl_mem_buffer vdecl_formal arg_number env =
+    let rec generate_input_cl_mem_buffers array_formals env =
+      let generate_input_cl_mem_buffer arg_number env =
 	Environment.append env [Text(sprintf "cl_mem __arg%d = clCreateBuffer(__sheets_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(%s) * __arr_len, &__cl_err);\n" arg_number fdecl.r_type);
 				Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n")]
       in
-      match vdecl_formals with
+      match array_formals with
 	[] -> "", env
-      | vdecl_formal :: other_vdecl_formals ->
-	 match vdecl_formal.v_type with
-	   "int" | "float" ->	(* int and float are only non-array types *)
-		    Environment.append env [Generator(generate_input_cl_mem_buffers other_vdecl_formals arg_number)]
-	   | _ -> Environment.append env [Generator(generate_input_cl_mem_buffer vdecl_formal arg_number);
-					  Generator(generate_input_cl_mem_buffers other_vdecl_formals (arg_number + 1))]
+      | (arg_n, arg_vdecl) :: other_array_formals ->
+	 Environment.append env [Generator(generate_input_cl_mem_buffer arg_n);
+				 Generator(generate_input_cl_mem_buffers other_array_formals)]
     in
     Environment.append env [Text(sprintf "cl_mem __arg1 = clCreateBuffer(__sheets_context, CL_MEM_WRITE_ONLY, sizeof(%s) * __arr_len, &__cl_err);\n" fdecl.r_type);
 			    Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n");
-			    Generator(generate_input_cl_mem_buffers fdecl.formals 2)] (* input args start w/ 2 *)
+			    Generator(generate_input_cl_mem_buffers (get_array_formals fdecl.formals))] 
   in
-  let generate_cl_enqueue_write_buffers	fdecl env = "TODO [barg]: gen write buffers\n", env in
-  let generate_cl_set_kernel_args fdecl env = "TODO [barg]: gen set kernel args\n", env in
+  (* ------------------------------------------------------------------- *)
+  let generate_cl_enqueue_write_buffers	fdecl env =
+    (* these are ONLY the function arguments; we need to know which
+    arg numbers were used *)
+    "TODO [barg]: gen write buffers\n", env in
+  (* ------------------------------------------------------------------- *)
+  let generate_cl_set_kernel_args fdecl env =
+    let generate_kernel_invocation_args todo1 todo2 env = "", env (* TODO *)
+    in
+    Environment.append env [Text(sprintf "SET_%dKERNEL_ARGS(" ((List.length fdecl.formals) + 2));
+			    Text(sprintf "%s_compiled_kernel," fdecl.fname);
+			    Text("__cl_size, __arg1,");
+			    Generator(generate_kernel_invocation_args fdecl.formals (get_array_formals fdecl.formals));
+			    Text(");\n")]
+  in
+  (* ------------------------------------------------------------------- *)  
   let generate_cl_enqueue_nd_range_kernel fdecl env = "TODO [barg]: gen enqueue ndrange\n", env in
+  (* ------------------------------------------------------------------- *)  
   let generate_cl_enqueue_read_buffer fdecl env = "TODO [barg]: gen read buffers\n", env in
+  (* ------------------------------------------------------------------- *)
   Environment.append env [Text(sprintf "%s %s(" fdecl.r_type fdecl.fname);
 			  (* generate type as point rather than array? *)
 		          Generator(generate_formals_vdecl_list fdecl.formals);
@@ -270,6 +299,7 @@ let generate_kernel_invocation_function fdecl env =
 			  Generator(generate_cl_enqueue_read_buffer fdecl);
 			  Text("return kernel_invocation_out;\n");
 			  Text("}\n")]
+(* end kernel invocations -------------------------------------------- *)
 (* ------------------------------------------------------------------- *)
 let generate_func_formals_and_body vdecl_list stmt_list env = 
         Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);

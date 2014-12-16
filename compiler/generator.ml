@@ -311,8 +311,8 @@ let rec process_stmt_list stmt_list env =
 and append_if_else bool_exp ifbody elsebody env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("if("); Generator(generate_exp bool_exp);
-    Text("){\n"); Generator(process_stmt ifbody); Text("\n} else {\n");
-    Generator(process_stmt elsebody); Text("}\n")]; 
+    Text("){\n"); NewScope(process_stmt ifbody); Text("\n} else {\n");
+    NewScope(process_stmt elsebody); Text("}\n")]; 
 ;;
 
 (* ------------------------------------------------------------------ *)

@@ -79,7 +79,7 @@ let op_to_txt op =
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 
         match binop with 
-        Binop(e1, op , e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n" , env 
+        Binop(e1, op , e2) -> Environment.append env [Text((exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n")]
         | _->  raise (BadExpressionError("binop"))
 
 
@@ -102,7 +102,9 @@ let generate_exp exp env =
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
       | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(_,_,_) -> Environment.append env [Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
+      | Binop(_,_,_) -> Environment.append env [
+              Text ("/* DEBUG: Printing Binop */\n");
+              Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
 
@@ -121,14 +123,17 @@ let rec generate_type datatype env =
 					  
 let rec process_stmt_list stmt_list env = 
    match stmt_list with 
-     []     -> "\n", env (* TODO this is a sanity check *) 
-   | stmt :: other_stmts -> process_stmt stmt env; 
+     stmt :: other_stmts -> Environment.append env [Text("/* DEBUG: found a statement */\n")]; 
+                            process_stmt stmt env; 
                             process_stmt_list other_stmts env; 
- and process_stmt stmt env = 
+   | []     -> "//DEBUG: Done printing statements \n", env (* TODO this is a sanity check *) 
+ and process_stmt stmt env =
+   Environment.append env [Text("/*DEBUG : Before matching any statements */\n")];
    match stmt with 
      Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] 
    | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list stmt_list) ] (* TODO check if we need braces/NewScope *) 
-   | Expr(expr) -> Environment.append env [ Generator(generate_exp expr ) ]  
+   | Expr(expr) -> Environment.append env [ Text("/* DEBUG: Printing Expr */\n");
+                                            Generator(generate_exp expr ) ]  
    | Assign(name, expr) -> raise (NotImplementedError("assign")) 
    | Return(expr) -> raise (NotImplementedError("expr")) 
    | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
@@ -295,9 +300,10 @@ let generate_kernel_invocation_function fdecl env =
 			  Text("}\n")]
 (* end kernel invocations -------------------------------------------- *)
 (* ------------------------------------------------------------------- *)
-let generate_func_formals_and_body vdecl_list stmt_list  env = 
+let generate_func_formals_and_body vdecl_list stmt_list env = 
         Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
                             Text("){\n");
+                            Text("/* DEBUG: About to print function body statement list */\n"); 
                             Generator(process_stmt_list stmt_list);
                             Text("}\n");
                         ] 

@@ -26,6 +26,98 @@ exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 exception BadExpressionError of string;;
 
+  
+let print_vdecls vdecls = 
+  let f v =
+    printf "DEBUG printing vdecl: v_type: %s, v_name: %s, isConst: %B, isStruct %B\n"
+	   v.v_type v.v_name v.isConst v.isStruct
+  in List.iter f vdecls
+;;
+
+let print_sdefs sdefs =
+  let f s =
+    printf "DEBUG printing sdefs: s_name=%s: s_elements=<"
+	   s.s_name;
+    print_vdecls s.s_elements;
+    printf ">\n";
+  in List.iter f sdefs
+;;
+
+
+let print_ops = function
+      Plus -> printf "+"
+    | Minus -> printf "-"
+    | Times -> printf "*"
+    | Divide -> printf "/"
+    | Mod ->printf "%c" '%'
+    | Neg ->printf "-"
+    | Equal ->printf "=="
+    | Neq -> printf"!="
+    | Less ->printf "<"
+    | Leq ->printf "<="
+    | Greater ->printf ">"
+    | Geq ->printf ">="
+    | Or ->printf "|"
+    | And ->printf "&"
+    | Xor ->printf "^"
+    | Not ->printf "~"
+    | Lshift ->printf "<<"
+    | Rshift -> printf">>"
+    | Land -> printf"&&"
+    | Lor -> printf"||" 
+;;
+
+let rec print_expr expr =
+    match expr with
+      Id(s) -> printf "ID=%s" s
+    | Binop(e1, o, e2) -> printf "Binop="; print_expr e1 ; print_ops o;
+    print_expr(e2)
+    | Call(fname, args) -> printf "Call to function %s" fname; List.iter
+    print_expr args
+    | StructId(struct_type, var_name) -> printf "StructId: struct_type=%s, var_name=%s" struct_type var_name
+    | Literal_int(i) -> printf "Int literal=%d" i
+    | Literal_char(c) -> printf "Char literal=%c" c
+    | Literal_float(f) -> printf "Float literal=%f" f
+    | Literal_string(s) -> printf "String literal=%s" s
+    | Literal_bool(b) -> printf "Bool literal=%B" b
+    | Literal_int_a(i) -> List.iter (printf "%d, ") i
+    | Literal_char_a(c) -> List.iter (printf "%c, ") c
+    | Literal_float_a(f) -> List.iter (printf "%f, ") f
+    | Literal_string_a(s) -> List.iter (printf "%s, ") s
+    | Literal_bool_a(b) -> List.iter (printf "%B, ") b
+    | _->printf "invalid expr"
+;;
+
+let rec print_stmt = function
+      Block(s) -> List.iter print_stmt s 
+    | Expr(e) -> print_expr e; printf "\n"
+    | Assign(e1, e2) -> print_expr e1; print_expr e2; printf "\n" 
+    | Return(e) -> printf "return "; print_expr e; printf "\n"
+    | If(e1, ifbody, elsebody) -> printf "if("; print_expr e1; printf "){";
+    print_stmt ifbody; printf "} else {"; print_stmt elsebody; printf "\n"
+    | For(e1, e2, e3, body) -> printf "For("; print_expr e1; printf "; ";
+    print_expr e2; printf "; "; print_expr e3; printf "){"; print_stmt body;
+    printf "}\n"
+    | While(e1, body) -> printf "While("; print_expr e1; printf "){"; print_stmt
+    body; printf "}\n"
+    | ForIn(e1, e2, body) -> printf "For("; print_expr e1; printf " in ";
+    print_expr e2; printf "){"; print_stmt body; printf "}\n"
+    | Continue -> printf "continue\n"
+    | Break -> printf "break\n"
+    | _-> printf "Statement error\n"
+;;
+let print_funcs fdecls = 
+    let f func =
+        printf "DEBUG: printing fdecl, fname=%s, gfunc=%B, blocksize=%d\n"
+        func.fname func.isGfunc func.blocksize;
+        printf "formals=<";
+        print_vdecls func.formals;
+        printf ">\n body=<";
+        List.iter print_stmt func.body;
+        printf ">\n";
+    in List.iter f fdecls 
+;;
+
 
 (* TODO: Strategy for syntax checking 
  * generate_expr will be a set of case matchings that will
@@ -57,12 +149,13 @@ let generate_checked_expr check_func expr env =
     if (check_func expr env) then expr, env
     else raise (BadExpressionError expr)
 
-let exp_to_txt exp = 
+let rec exp_to_txt exp = 
     match exp with 
         Literal_int(i) -> string_of_int(i)
       | Literal_float(f) -> string_of_float(f)
       | Id(s) -> s 
       | _-> ""
+
 let op_to_txt op = 
     match op with 
     | Plus -> "+"
@@ -80,15 +173,18 @@ let op_to_txt op =
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 
         match binop with 
-        Binop(e1, op , e2) -> Environment.append env [Text((exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2) ^ ";\n")]
+        Binop(e1, op , e2) -> Environment.append env [Text((exp_to_txt e1) ^ " "
+        ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2))]
         | _->  raise (BadExpressionError("binop"))
 
 
-(*
-let generate_checked_array_access check_array_access access env =
-    if (check_array_access access env) then access, env
-    else raise (BadExpressionError access)
-*)
+
+let generate_checked_array_access check_array_access array_expr env =
+    check_array_access array_expr env;
+    match array_expr with
+    | ArrayAcc(e1, e2) -> Environment.append env [Text((exp_to_txt e1) ^ "[" ^
+    (exp_to_txt e2) ^ "]")]
+    | _-> raise (BadExpressionError("Array Access"))
 
 (*
 let generate_checked_f_call check_f_call f_call env =
@@ -98,12 +194,18 @@ let generate_checked_f_call check_f_call f_call env =
 
 let generate_exp exp env = 
     match exp with
-      Literal_int(i) -> string_of_int(i), env  
-      | Literal_float(f) -> string_of_float(f), env 
+      Literal_int(i) -> Environment.append env [Text("/* Int
+      */\n"); Text(string_of_int(i))]  
+      | Literal_float(f) -> Environment.append env [Text("/* Float */");
+      Text(string_of_float(f))] 
       | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
       | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
-      | Id(s) -> Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
-      | Binop(_,_,_) -> Environment.append env [ Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
+      | Id(s) -> Environment.append env [Text("/* Id */\n"); 
+      Generator(generate_checked_id is_var_in_scope s )]  
+      | Binop(_,_,_) -> Environment.append env [Text("/* Binop */\n");  Generator(generate_checked_binop Generator_utilities.expr_typeof exp )] 
+      | Call(func_id, formals_list) -> Environment.append env [Text("/* Function Call */\n")]
+      | ArrayAcc(_, _) -> Environment.append env [Text("/* Array Access */\n"); 
+      Generator(generate_checked_array_access Generator_utilities.expr_typeof exp)]
       | _-> raise (NotImplementedError("unsupported expression"))
 ;;
 
@@ -127,9 +229,12 @@ let rec process_stmt_list stmt_list env =
    | []     -> "\n", env (* TODO this is a sanity check *) 
  and process_stmt stmt env =
    match stmt with 
-     Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl) ] 
-   | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list stmt_list) ] (* TODO check if we need braces/NewScope *) 
-   | Expr(expr) -> Environment.append env [ Generator(generate_exp expr ) ]  
+   Vdecl(vdecl) -> Environment.append env [ Generator(process_vdecl vdecl);
+   Text(";\n") ] 
+   | Block(stmt_list) -> Environment.append env [ Generator(process_stmt_list
+   stmt_list); Text(";\n") ] (* TODO check if we need braces/NewScope *) 
+   | Expr(expr) -> Environment.append env [ Generator(generate_exp expr );
+   Text(";\n") ]  
    | Assign(name, expr) -> raise (NotImplementedError("assign")) 
    | Return(expr) -> raise (NotImplementedError("expr")) 
    | Init(vdecl, expr) -> raise (NotImplementedError("init and assign")) 
@@ -142,7 +247,7 @@ let rec process_stmt_list stmt_list env =
  and process_vdecl vdecl env = 
    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in 
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
- 	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ ";\n ")] 
+ 	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name)] 
  ;; 
 (* ------------------------------------------------------------------ *)
 
@@ -299,7 +404,7 @@ let generate_kernel_invocation_function fdecl env =
 let generate_func_formals_and_body stmt_list vdecl_list env = 
     Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
                             Text("){\n");
-                            Generator(process_stmt_list stmt_list);
+                            Generator(process_stmt_list (List.rev stmt_list));
                             Text("}\n"); ]
 
 let rec generate_cpu_funcs fdecls env =
@@ -309,7 +414,7 @@ let rec generate_cpu_funcs fdecls env =
           Environment.append env [Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl) );
 			      Text(fdecl.r_type ^ " " ^ fdecl.fname ^ "(");
 			      NewScope(generate_func_formals_and_body fdecl.body
-                  fdecl.formals);
+                   fdecl.formals);
 			     ]
                          
     | true ->

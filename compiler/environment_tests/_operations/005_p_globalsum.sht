@@ -1,0 +1,7 @@
+#~ SHOULDPASS:  ~#
+int a
+int b
+func int sum_global(int c):
+    int d
+    a + b
+

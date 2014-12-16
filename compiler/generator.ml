@@ -374,7 +374,7 @@ let rec generate_global_vdecl_list vdecls env =
 (* ------------------------------------------------------------------ *)
 (* CPU functions                                                      *)
 (* ------------------------------------------------------------------ *)
-let rec generate_formals_vdecl_list vdecl_list env =  
+let rec generate_formals_vdecl_list vdecl_list env =
   let generate_formals_vdecl vdecl env =
     let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
     Environment.append env [Env((add_var vdecl.v_name v_datatype));
@@ -557,7 +557,7 @@ let generate_kernel_invocation_function fdecl env =
     }
   in
   Environment.append env [Text(sprintf "%s %s("
-				       (Generator_utilities.c_type_from_arr_type fdecl.r_type)
+				       (Generator_utilities.c_type_from_str fdecl.r_type)
 				       fdecl.fname);
 		          Generator(generate_formals_vdecl_list (__arr_len :: fdecl.formals));
 			  Text(")\n{\n");
@@ -626,20 +626,62 @@ let rec generate_cpu_funcs fdecls env =
    - the first argument of the __kernel is the size for the whole function 
    - the second argument of the __kernel is the output array *)
 
-let gfunc_to_cl_kernel_string gf_info env =
+let rec generate_cl_kernel_body stmt_list env =
+  (* TODO *) "TODO: kernel_text_body", env
+  
+(* return a comma separated list of kernel formal declarations and
+   adds the variables to the current scope *)
+let rec generate_cl_kernel_vdecl_list vdecl_list env =
+  let generate_cl_kernel_vdecl vdecl env =
+    let c_type = Generator_utilities.c_type_from_str vdecl.v_type in
+    let sheets_type = Generator_utilities.vdecl_type vdecl in
+    Environment.append env [Env(update_scope_add_var vdecl.v_name sheets_type);
+			    Text(sprintf "__global const %s %s" c_type vdecl.v_name)]
+  in
+  match vdecl_list with
+    [] -> "", env
+  | [vdecl] -> generate_cl_kernel_vdecl vdecl env
+  | vdecl :: other_vdecls ->
+     Environment.append env [Generator(generate_cl_kernel_vdecl vdecl);
+			     Text(", ");
+			     Generator(generate_cl_kernel_vdecl_list other_vdecls)]
+  
+let gfunc_to_cl_kernel_string gfdecl env =
   (* we have to reject all references to variables that aren't
-       immediately in scope *)
+     immediately in scope *)
   (* we're going to have to escape double-quotes when we write
-       these string literals *)
-  "TODO: cl_kernel string goes here", env
+     these string literals *)
+  (* here we use KernelText instead of Text, which surrounds the
+     string it takes in with quote marks and adds a newling at the end
+     so that the text shows up in the generated c code as a multi-line
+     string literal *)
+  let base_r_type = Generator_utilities.c_type_from_str gfdecl.r_type in
+  let sheets_r_type = Generator_utilities.str_to_type gfdecl.r_type in
+  Environment.append env [
+		       (* we have to manually modify scope because we're processing 
+			  gfunc bodies separately from their declarations*)
+		       Env(update_curr_func gfdecl.fname);
+		       Env(update_on_gpu true);
+		       Env(update_scope_add_var "__arr_len" Int);
+		       Env(update_scope_add_var "__out" sheets_r_type);
+		       KernelText("__kernel");
+		       KernelText(sprintf "void %s(__global const int __arr_len, __global %s__out,"
+				    gfdecl.fname base_r_type);
+		       KernelGen(generate_cl_kernel_vdecl_list gfdecl.formals);
+		       KernelText(")");
+		       KernelText("{");
+		       KernelGen(generate_cl_kernel_body gfdecl.body);
+		       KernelText("}");
+		     ]
 
 let gfunc_to_cl_kernel gfdecl env =
-  Environment.append env [Text(sprintf "const char *%s_kernel_string = \"" gfdecl.fname);
+  Environment.append env [Text(sprintf "const char *%s_kernel_string =\n" gfdecl.fname);
 			  (* we aren't ever changing the environment
-			      above the gfunc's scope, but we need to
-			      generate a new scope to parse the gfunc's contents *)
+			  above the gfunc's scope, but we need to
+			  generate a new scope to parse the gfunc's
+			  contents *)
 			  NewScope(gfunc_to_cl_kernel_string gfdecl);
-			  Text("\";\n");
+			  Text(";\n");
 			  Text(sprintf "const char *%s_kernel_name = \"%s\";\n"
 				       gfdecl.fname gfdecl.fname);
 			  Text(sprintf "cl_kernel %s_compiled_kernel;\n" gfdecl.fname)]

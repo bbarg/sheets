@@ -55,10 +55,12 @@ type env = {
  * either in the existing scope or in a new scope 
  *) 
 type source = 
- | Text of string
- | Env of (env -> env) 
- | Generator of ( env -> (string * env))
- | NewScope of (env -> (string * env))
+  | Text of string
+  | KernelText of string
+  | Env of (env -> env) 
+  | Generator of (env -> (string * env))
+  | KernelGen of (env -> (string * env))
+  | NewScope of (env -> (string * env))
 
 
 (* Create initializes an empty record for environment *)
@@ -265,14 +267,17 @@ let add_gfunc gfunc_fdecl env =
 
 
 let append init_env components =  
-   let f (text, env) component =  
-      match component with 
-       | Text(str) -> text ^ str, env 
-       | Env (env_gen) -> let new_env = env_gen env in 
-           text, new_env
-       | Generator(gen) -> let new_str, new_env = gen env in 
-           text ^ new_str, new_env 
-       | NewScope(gen) -> 
-         let new_str, new_env = gen (push_scope env) in 
-               text ^ new_str, pop_scope new_env in 
-   List.fold_left f("", init_env) components
+  let f (text, env) component =  
+    match component with 
+    | Text(str) -> text ^ str, env
+    | KernelText(str) -> text ^ "\"" ^ str ^ "\"\n", env
+    | Env (env_gen) -> let new_env = env_gen env in 
+		       text, new_env
+    | Generator(gen) -> let new_str, new_env = gen env in 
+			text ^ new_str, new_env
+    | KernelGen(gen) -> let new_str, new_env = gen env in 
+			text ^ "\"" ^ new_str ^ "\"\n", new_env
+    | NewScope(gen) -> 
+       let new_str, new_env = gen (push_scope env) in 
+       text ^ new_str, pop_scope new_env in 
+  List.fold_left f("", init_env) components

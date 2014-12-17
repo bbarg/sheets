@@ -1,0 +1,17 @@
+
+gfunc float[] filter(float[] a, int size).[1]:
+   int i
+   for(i=0; i<size; i=i+1;):
+     if(a[i] < 5.0):
+        Block.out[i] = 0.0
+     else:
+        Block.out[i] = a[i]
+
+func int main():
+   float[] a[5] = [ 10.0, 20.1, 5.2, 2.3, 90.4]
+   filter(a, 5)
+   if(3 < 0):
+       return 1
+   else:
+       return 0
+

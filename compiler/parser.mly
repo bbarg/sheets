@@ -255,9 +255,10 @@ gstmt:
     | vdecl ASSIGN blockexpr SEMI                       { Init($1, $3) }
     | IF bool_block COLON gblock_body %prec NOELSE      { If($2, $4, Block([])) }   
     | IF bool_block COLON gblock_body ELSE COLON gblock_body    { If($2, $4, $7) } 
-    | FOR for_pt1 for_pt2 for_pt3 gblock_body           { For($2, $3, $4, $5) }
+    | FOR gfor_pt1 gfor_pt2 gfor_pt3 COLON gblock_body           { For($2, $3,
+    $4, $6) }
     | FOR ID IN array_expr COLON gblock_body            { ForIn(Id($2), $4, $6) }
-    | WHILE bool_block gblock_body                      { While($2, $3) }
+    | WHILE bool_block COLON gblock_body                      { While($2, $4) }
 
 bool_block: LPAREN bool_expr RPAREN                     { $2 }
 
@@ -268,7 +269,11 @@ gblock_body: LBRACE gloop_stmt_list RBRACE              { Block(List.rev $2) }
 for_pt1: LPAREN stmt                                    { $2 }
 for_pt2: bool_expr SEMI                                 { $1 }
 for_pt3: stmt RPAREN                                    { $1 }
- 
+
+gfor_pt1: LPAREN gstmt                                  { $2 }
+gfor_pt2: gbool_expr SEMI                               { $1 }
+gfor_pt3: gstmt RPAREN                                  { $1 }
+
 /* Loops can contain all normal expressions, and also Break and Continues */
 loop_stmt_list:
     | /* Nothing */                                     { [] }
@@ -289,7 +294,9 @@ loopexpr:
     | BREAK SEMI                      { Break }
 
 blockexpr:
-    BLOCK PERIOD ID                   { StructId("Block", $3) }
+    | BLOCK PERIOD ID                            { BlockAcc($3, Literal_int(0)) }
+    | BLOCK PERIOD ID LBRACK INT_LITERAL RBRACK  { BlockAcc($3, Literal_int($5)) }
+    | BLOCK PERIOD ID LBRACK ID RBRACK           { BlockAcc($3, Id($5)) }
 
 bool_expr:
     | expr EQ expr                    { Binop($1, Equal, $3) }
@@ -323,7 +330,7 @@ assign_expr:
     | ID                              { Id($1) }
 
 g_assign_expr:
-    | BLOCK PERIOD ID                 { StructId("block", $3) }
+    | blockexpr                      { $1 }
     | assign_expr                     { $1 }
 
 literal:

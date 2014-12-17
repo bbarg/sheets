@@ -92,13 +92,12 @@ let rec exp_to_txt exp =
 
 let rec args_to_txt arg_list str=
     match arg_list with
-    | arg :: arg_tail -> args_to_txt arg_tail str ^ (exp_to_txt arg) ^ ", " 
-    | [] -> 
-            if (String.contains str ',') then
-                (String.sub str 0 (String.length str - 2))
+     | [] -> 
+            if(String.contains str ',') then
+                String.sub str 0 (String.length str - 2)
             else
                 str
-(* TODO: fix bug in string processing here*)
+    | arg :: arg_tail -> args_to_txt arg_tail (str ^ (exp_to_txt arg) ^ ", ") 
 
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 

@@ -1,3 +1,10 @@
+(*
+ * Sheets scanner
+ *
+ * Authors: Gabriel Blanco, Ruchir Khaitan
+ * Copyright 2014, Symposium Software
+ *)
+
 { open Parser;; }
 
 let num = ['0'-'9']
@@ -11,63 +18,38 @@ rule token = parse
 | "#~" { comment lexbuf }
 
 (* Punctuation *)
-| '('  { LPAREN }     | ')' { RPAREN }
-| '{'  { LBRACE }     | '}' { RBRACE }
-| '['  { LBRACK }     | ']' { RBRACK }
-| ';'  { SEMI }       | ',' { COMMA }
-| '.'  { PERIOD }     | '\\'{ BACKSLASH }
-| ':'  { COLON }
+| '('        { LPAREN }  | ')'        { RPAREN }
+| '{'        { LBRACE }  | '}'        { RBRACE }
+| '['        { LBRACK }  | ']'        { RBRACK }
+| ';'        { SEMI }    | ','        { COMMA }
+| '.'        { PERIOD }  | ':'        { COLON }
 
 (* Arithmetic Operators *)
-| '+' { PLUS }        | ":+" { G_PLUS }
-| '-' { MINUS }       | ":-" { G_MINUS }
-| '*' { TIMES }       | ":*" { G_TIMES }
-| '/' { DIVIDE }      | ":/" { G_DIVIDE } 
-| '%' { MOD }         | ":%" { G_MOD }
+| '+'        { PLUS }    | '-'        { MINUS }
+| '*'        { TIMES }   | '/'        { DIVIDE }
 
-(*Bit Operations*)
-| '~'  { NOT }        | ":~"  { G_NOT}
-| '^'  { XOR }        | ":^"  { G_MOD }
-| '&'  { AND }        | ":%"  { G_MOD } 
-| '|'  { OR }         | ":|"  { G_OR }
-| ">>" { RSHIFT }     | ":>>" { G_RSHIFT } 
-| "<<" { LSHIFT }     | ":<<" { G_LSHIFT }  
+(* Relational Operators *)
+| "=="       { EQ }      | "!="       { NEQ }
+| '<'        { LT }      | "<="       { LEQ }
+| ">"        { GT }      | ">="       { GEQ }
 
-(* Assignment Operators *)
-| '=' { ASSIGN }      | ":=" { G_ASSIGN }
-| '!' { NEG}          | ":!" { G_NEG }
-
-
-(* Equivalence Operators *)
-| "==" { EQ }         | ":==" { G_EQ }
-| "!=" { NEQ }        | ":!=" { G_NEQ }
-| '<'  { LT }         | ":<"  { G_LT }
-| "<=" { LEQ }        | ":<=" { G_LEQ }     
-| ">"  { GT }         | ":>"  { G_GT }
-| ">=" { GEQ }        | ":>=" { G_GEQ }
-| "&&" { LAND }       | ":&&" { G_LAND }
-| "||" { LOR }        | ":||" { G_LOR }
+(* Assignment Operator *)
+| '='        { ASSIGN }
 
 (* Conditional Keywords *)
-| "if"   { IF }       | "else" { ELSE } 
+| "if"       { IF }      | "else"     { ELSE } 
 
 (* Loop Keywords*)
-| "while"  { WHILE }  | "for"    { FOR }
-| "in"     { IN }     | "break"  { BREAK}   
-| "continue" { CONTINUE }
+| "while"    { WHILE }   | "for"      { FOR }
+| "break"    { BREAK}    | "continue" { CONTINUE }
 
 (* Function Keywords *)
-| "func" { FUNC }     | "gfunc"  { GFUNC }
-| "struct" { STRUCT } | "return" { RETURN }
+| "func"     { FUNC }    | "gfunc"    { GFUNC }
+| "return"   { RETURN }
 
 (* Type Keywords*)
-| "int"    { INT }    | "float"  { FLOAT } 
-| "const"  { CONST }  | "String" { STRING } 
-| "Block"  { BLOCK }
-
-| "char" { CHAR }  | "TRUE" { TRUE } 
-| "FALSE" { FALSE} | "boolean" { BOOL } 
-| "long" { LONG }  | "double" { DOUBLE }
+| "int"      { INT }     | "float"    { FLOAT }
+| "Block"    { BLOCK }
 
 (* End-of-File *)
 | eof { EOF }
@@ -77,9 +59,7 @@ rule token = parse
 
 (* Literals *)
 | '-'?num+ as intlit { INT_LITERAL(int_of_string intlit) }
-| flt  as fltlit { FLOAT_LITERAL(float_of_string fltlit) }
-| '"' ([^'"']* as str_lit) '"' { STRING_LITERAL(str_lit) }
-| '\'' ([^'\'']* as str_lit) '\'' { STRING_LITERAL(str_lit) }
+| flt      as fltlit { FLOAT_LITERAL(float_of_string fltlit) }
 
 (* Throw Error for Invalid Token *)
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }

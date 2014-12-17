@@ -516,7 +516,8 @@ let generate_kernel_invocation_function fdecl env =
       in
       Environment.append env [Generator(_helper num_user_args 2)]
     in
-    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 2));
+    (* only need to add 1 because __arr_len is already in formals list *)
+    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 1));
 			    Text(sprintf "%s_compiled_kernel," fdecl.fname);
 			    Text("__arr_len,\n");
 			    Text("__arg1,\n");
@@ -787,6 +788,7 @@ let generate_main env =
 			  Generator(generate_release_kernels env.gfunc_list);
 			  Text("CALL_CL_GUARDED(clReleaseCommandQueue, (__sheets_queue));\n");
 			  Text("CALL_CL_GUARDED(clReleaseContext, (__sheets_context));\n");
+			  Text("return 0;\n");
 			  Text("}\n")]
 		     
 (* ------------------------------------------------------------------ *)
@@ -813,7 +815,8 @@ let _ =
   print_string ("#include <stdio.h>\n"
 		^ "#include \"aws-g2.2xlarge.h\"\n"
 		^ "#include \"cl-helper.h\"\n"
-		^ "#include <CL/cl.h>\n\n\n\n"
+		^ "#include \"timing.h\"\n"
+		^ "#include <CL/cl.h>\n\n"
                 ^ "#define time_start() get_timestamp(&start)\n"
                 ^ "#define time_end() get_timestamp(&end)\n" 
                 ^ "timestamp_type start;\n"

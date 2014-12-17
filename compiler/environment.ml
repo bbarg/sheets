@@ -272,20 +272,21 @@ let add_gfunc gfunc_fdecl env =
     raise (ReservedWordError("a gfunc cannot be the main method"))
   else
     update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env
-  
+
+let quote_and_strip_newline str =
+  match str with
+    "" -> ""
+  | s ^ "\n" -> s
+		      
 let append init_env components =
   (* add quotes around gpu statements so they print as c multi-line
      strings *)
-  let quotes str on_gpu =	
-    match on_gpu with
-      true -> (match str with
-		 "" -> str
-	       | _  -> "\"" ^ str ^ "\"")
-    | false -> str
-  in
   let f (text, env) component =
     match component with 
-    | Text(str) -> text ^ (quotes str env.on_gpu), env
+    | Text(str) -> if env.on_gpu then
+		     text ^ (quote_and_strip_newline str), env
+		   else
+		     text ^ str, env
     | Env (env_gen) -> let new_env = env_gen env in 
 		       text, new_env
     | Generator(gen) -> let new_str, new_env = gen env in 

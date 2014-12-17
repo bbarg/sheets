@@ -49,13 +49,13 @@ exception BadExpressionError of string;;
  *)
 
 let rec generate_type datatype env = 
-    match datatype with 
-    | Int ->        Environment.append env [Text("int")] 
-    | Float ->      Environment.append env [Text("float")]
-	| Array(t) ->   Environment.append env [ 
-		            Generator(generate_type t); 
-		            Text("[]")
-	]
+  match datatype with 
+  | Int ->        Environment.append env [Text("int")] 
+  | Float ->      Environment.append env [Text("float")]
+  | Array(t) ->   Environment.append env [ 
+				       Generator(generate_type t); 
+				       Text("[]")
+				     ]
 
 let generate_checked_id check_id id env = 
     if (check_id id env) then
@@ -159,7 +159,7 @@ let rec generate_exp exp env =
     | Literal_int_a(list_i) -> Environment.append env [
                                 Text("{ ");
                                 Text(print_int_array list_i "");
-                                Text("}")]
+				Text("}")]
     | Literal_float_a(list_f) -> Environment.append env [
                                 Text("{ ");
                                 Text(print_float_array list_f "");
@@ -190,7 +190,7 @@ and generate_checked_block id exp env =
                         raise (BadExpressionError("Invalid block access"))
                     else
                         Environment.append env [Text("__out[" ^ (string_of_int a) ^ "]")]
-            | _-> Environment.append env [Text("__out"); Generator(generate_exp exp)]
+            | _ -> Environment.append env [Text("__out"); Generator(generate_exp exp)]
     | _-> raise (BadExpressionError("Invalid block access"))
 ;;
 

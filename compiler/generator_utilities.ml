@@ -1,4 +1,4 @@
-(* Utilities to parse expressions for generate.ml *)
+(* utilities to parse expressions for generate.ml *)
 open Ast;;
 open Environment;;
 open Printf;;
@@ -69,6 +69,7 @@ let rec expr_typeof expr env =
     | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op) 
     | ArrayAcc(exp1, exp2) -> (eval_array_acc (expr_typeof exp1 env) (expr_typeof exp2 env) )
     | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list (Environment.get_func_args func_id env) env)
+    | 
     | _-> raise (NotImplementedError("Undefined type of expression"))
 
 and typeof_func_call func_id expr_list arg_list env = 

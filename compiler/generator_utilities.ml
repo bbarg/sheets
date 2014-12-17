@@ -58,6 +58,15 @@ let eval_array_acc array_ int_expr =
         | _-> raise (TypeError("Cannot access element in non-array type"))
 ;;
 
+(* Returns typeof block access 
+ * TODO doesn't check expr type 
+ *) 
+let typeof_block_acc id env = 
+    match id with 
+   "start" -> Int 
+   | "end" -> Int 
+   | "out" -> (Environment.return_typeof_func env.current_function env)  
+   | _-> raise (TypeError("Invalid block access"))
 let rec expr_typeof expr env = 
     (*print_expr expr;*)
     match expr with 
@@ -69,6 +78,7 @@ let rec expr_typeof expr env =
     | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op) 
     | ArrayAcc(exp1, exp2) -> (eval_array_acc (expr_typeof exp1 env) (expr_typeof exp2 env) )
     | Call(func_id, expr_list ) -> (typeof_func_call func_id expr_list (Environment.get_func_args func_id env) env)
+    | BlockAcc(id, _) -> (typeof_block_acc id env) 
     | _-> raise (NotImplementedError("Undefined type of expression"))
 
 and typeof_func_call func_id expr_list arg_list env = 

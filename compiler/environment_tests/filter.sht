@@ -1,17 +1,39 @@
 
-gfunc float[] filter(float[] a, int size).[1]:
-   int i
-   for(i=0; i<size; i=i+1;):
-     if(a[i] < 5.0):
+gfunc float[] filter(float[] a, float low, float high).[1]:
+   int i = Block.start
+   if(a[i] < low):
         Block.out[i] = 0.0
-     else:
-        Block.out[i] = a[i]
-
-func int main():
-   float[] a[5] = [ 10.0, 20.1, 5.2, 2.3, 90.4]
-   filter(a, 5)
-   if(3 < 0):
-       return 1
    else:
-       return 0
+        if(a[i] > high):
+            Block.out[i] = 0.0
+        else:
+            Block.out[i] = a[i]
+func int cpu_filtered (float[] a, int size, float low, float high):
+   int i
+   for(i = 0; i < size; i = i + 1;):
+        if(a[i] < low):
+            a[i] = 0.0
+        else:
+            if(a[i] > high):
+                a[i] = 0.0
+   return 0  
+
+
+func float[] snuggle():
+   float[] a[10000] = read_file(arg1)
+   float[] b[10000] = a 
+   float[] c[10000]
+   
+   
+   time_start()
+   cpu_filtered(a, 10000, 0.122,0.788)
+   time_end()
+
+   print("CPU execution took %f seconds \n", time)
+    time_start()
+   c = filter(b, 0.122,0.788)
+   time_end()
+
+   print("GPU execution took %f seconds \n", time)
+
 

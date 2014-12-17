@@ -122,7 +122,7 @@ let generate_checked_f_call check_f_call f_call env =
   match f_call with
   | Call(id, expressions) ->
      if Environment.id_is_gfunc id env then
-       Environment.append env [Text(id ^ "(100000"
+       Environment.append env [Text(id ^ "(100000, "
 				    ^ (args_to_txt expressions "")
                                     ^ ")");]
      else
@@ -729,7 +729,8 @@ let gfunc_to_cl_kernel_string gfdecl env =
 		       (* we have to manually modify scope because we're processing 
 			  gfunc bodies separately from their declarations*)
 		       Env(update_curr_func gfdecl.fname);
-		       Env(update_on_gpu true);
+		       Text("\"");
+                       Env(update_on_gpu true);
 		       Env(update_scope_add_var "__arr_len" Int);
 		       Env(update_scope_add_var "__out" sheets_r_type);
 		       Text("__kernel ");
@@ -741,6 +742,7 @@ let gfunc_to_cl_kernel_string gfdecl env =
 		       Generator(generate_cl_kernel_body gfdecl.body gfdecl);
 		       Text("}");
 		       Env(update_on_gpu false);
+		       Text("\"");
 		     ]
 
 let gfunc_to_cl_kernel gfdecl env =

@@ -332,8 +332,8 @@ let quote_and_strip_newline str =
   if str = "" then ""
   else
     match last_char str with
-      '\n' -> "\"" ^ (String.sub str 0 (len - 2)) ^ "\"\n"
-    | _    -> "\"" ^ str ^ "\"\n"
+      '\n' -> (String.sub str 0 (len - 2))
+    | _    -> str
     
 		      
 let append init_env components =

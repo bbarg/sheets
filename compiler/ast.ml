@@ -26,6 +26,8 @@ type expr =
   (* ArrayAcc: expr1=expression that evaluates to an array, expr2=expression
    * that evaluates to the index in the array to be accessed *)
   | BlockAcc of string * expr
+  (* string = field of block (i.e. block."start") *)
+  (* expr = index of block.out (set of Literal_int(0) on non-"out" *)
 
 type vdecl = {
     v_type    : string;	   (* PARSER *)

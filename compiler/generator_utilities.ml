@@ -134,7 +134,7 @@ let rec vdecl_list_to_string_list vdecl_list =
 let fdecl_to_func_info fdecl = 
         { 
             id = fdecl.fname;
-            on_gpu = fdecl.isGfunc; 
+            gpu = fdecl.isGfunc; 
             return = str_to_type fdecl.r_type; 
             args = vdecl_list_to_type_list fdecl.formals;       
             arg_names = vdecl_list_to_string_list fdecl.formals;       

@@ -120,10 +120,16 @@ let generate_checked_array_access check_array_access array_expr env =
 let generate_checked_f_call check_f_call f_call env =
     check_f_call f_call env;
     match f_call with
-    | Call(id, expressions) ->  Environment.append env [
-                                Text(id ^ "(" ^
-                                (args_to_txt expressions "") ^ 
-                                ")")];
+    | Call(id, expressions) ->
+       if env.on_gpu then
+	 Environment.append env [Text(id ^ "("
+				      (* TODO size of array args *)
+				      ^ (args_to_txt expressions "")
+				      ^ ")")];
+       else
+	 Environment.append env [Text(id ^ "(" 
+				      ^ (args_to_txt expressions "")
+				      ^ ")")];
     | _-> raise (BadExpressionError("Function Call"))
 
 let rec print_int_array array_list str =

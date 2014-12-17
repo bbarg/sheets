@@ -220,15 +220,14 @@ let rec process_stmt_list stmt_list env =
    match stmt_list with 
    stmt :: other_stmts -> Environment.append env [Generator(process_stmt
    stmt); Generator(process_stmt_list other_stmts)] 
-   | []     -> Environment.append env [ Text("\n") ] 
+   | []     -> Environment.append env [ Text("") ] 
  and process_stmt stmt env =
    match stmt with 
    Vdecl(vdecl) ->          Environment.append env [ 
                             Generator(process_vdecl vdecl);
                             Text(";\n") ] 
    | Block(stmt_list) ->    Environment.append env [ 
-                            Generator(process_stmt_list
-                            stmt_list); Text(";\n") ]
+                            Generator(process_stmt_list stmt_list) ]
    | Expr(expr) ->          Environment.append env [ 
                             Generator(generate_exp expr );
                             Text(";\n") ]  

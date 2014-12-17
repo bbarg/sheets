@@ -33,7 +33,6 @@ type func_info  = {
 	args : datatype list;
 	arg_names: string list;
 	_blocksize : int;
-	
 }
 (* Create a record type for env 
  *)
@@ -283,7 +282,7 @@ let append init_env components =
     match on_gpu with
       true -> (match str with
 		 "" -> str
-	       | _  -> "\"" ^ str ^ "\"\n")
+	       | _  -> "\"" ^ str ^ "\"")
     | false -> str
   in
   let f (text, env) component =

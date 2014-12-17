@@ -619,8 +619,22 @@ let rec generate_cpu_funcs fdecls env =
    - the first argument of the __kernel is the size for the whole function 
    - the second argument of the __kernel is the output array *)
 
-let rec generate_cl_kernel_body stmt_list env =
-  (* TODO *) "\"TODO: kernel_text_body\"\n", env
+(* add the blocksize variables and then process the statment list
+   *)
+let rec generate_cl_kernel_body stmt_list fdecl env =
+  Environment.append env
+		     [Env(update_scope_add_var "__block_start" Int);
+		      Env(update_scope_add_var "__block_end" Int);
+		      Env(update_scope_add_var "_id" Int);
+		      Text("const int _id = get_global_id(0);");
+		      Text(sprintf "const int __block_start = _id * %d;"
+				   fdecl.blocksize);
+		      Text(sprintf "const int __block_end = _id * %d + %d;"
+				   fdecl.blocksize
+				   fdecl.blocksize);
+		      Generator(process_stmt_list stmt_list);
+		     ]
+
 (* return a comma separated list of kernel formal declarations and
    adds the variables to the current scope *)
 let rec generate_cl_kernel_vdecl_list vdecl_list env =
@@ -662,7 +676,7 @@ let gfunc_to_cl_kernel_string gfdecl env =
 		       Generator(generate_cl_kernel_vdecl_list gfdecl.formals);
 		       Text(")");
 		       Text("{");
-		       Generator(generate_cl_kernel_body gfdecl.body);
+		       Generator(generate_cl_kernel_body gfdecl.body gfdecl);
 		       Text("}");
 		       Env(update_on_gpu false);
 		     ]

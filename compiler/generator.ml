@@ -813,7 +813,11 @@ let _ =
   print_string ("#include <stdio.h>\n"
 		^ "#include \"aws-g2.2xlarge.h\"\n"
 		^ "#include \"cl-helper.h\"\n"
-		^ "#include <CL/cl.h>\n\n\n\n");
+		^ "#include <CL/cl.h>\n\n\n\n"
+                ^ "#define time_start() get_timestamp(&start)\n"
+                ^ "#define time_end() get_timestamp(&end)\n" 
+                ^ "timestamp_type start;\n"
+                ^ "timestamp_type end;\n");
   print_string cl_kernels;
   print_string global_vdecls;
   print_string cpu_funcs;

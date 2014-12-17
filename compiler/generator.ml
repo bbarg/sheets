@@ -524,12 +524,12 @@ let generate_kernel_invocation_function fdecl env =
       Environment.append env [Generator(_helper num_user_args 2)]
     in
     (* only need to add 1 because __arr_len is already in formals list *)
-    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 1));
-			    Text(sprintf "%s_compiled_kernel," fdecl.fname);
+    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 2));
+			    Text(sprintf "(%s_compiled_kernel," fdecl.fname);
 			    Text("__arr_len,\n");
 			    Text("__arg1,\n");
 			    Generator(generate_arg_ns (List.length fdecl.formals));
-			    Text(");\n")]
+			    Text("));\n")]
   in
   let global_work_items = function
       (* provide a buffer for when block_size doesn't divide array

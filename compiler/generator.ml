@@ -54,7 +54,7 @@ let rec generate_type datatype env =
   | Float ->      Environment.append env [Text("float")]
   | Array(t) ->   Environment.append env [ 
 				       Generator(generate_type t); 
-				       Text("[]")
+				       Text("*") (* Handling array types differently *)
 				     ]
 
 let generate_checked_id check_id id env = 
@@ -201,7 +201,7 @@ let generate_init vdecl exp env =
     exp env)) then
         Environment.append env [
         Env(add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl));
-        Text(vdecl.v_type ^ " " ^ vdecl.v_name ^ " = ");   
+        Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name ^ " = ");   
         Generator(generate_exp exp)]
     else
         raise(BadExpressionError("Assignment of incompatible types"))
@@ -282,7 +282,7 @@ let rec process_stmt_list stmt_list env =
  and process_vdecl vdecl env = 
    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in 
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
- 	                   Text(vdecl.v_type ^ " " ^ vdecl.v_name)] 
+ 	                   Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name)] 
 
   and generate_while bool_expr body env =
       match bool_expr with 
@@ -420,7 +420,7 @@ let rec generate_formals_vdecl_list vdecl_list env =
     [] -> "", env
   | [vdecl] -> Environment.append env [Env((add_var vdecl.v_name
 						    (Generator_utilities.vdecl_type vdecl)));
-				       Text(vdecl.v_type ^ " " ^ vdecl.v_name)]
+				       Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name)]
 
   | vdecl :: other_vdecls ->
      Environment.append env [Generator(generate_formals_vdecl vdecl);

@@ -733,7 +733,7 @@ let gfunc_to_cl_kernel_string gfdecl env =
 		       Env(update_on_gpu true);
 		       Env(update_scope_add_var "__arr_len" Int);
 		       Env(update_scope_add_var "__out" sheets_r_type);
-		       Text("__kernel");
+		       Text("__kernel ");
 		       Text(sprintf "void %s(__global const int __arr_len, __global %s__out,"
 				    gfdecl.fname base_r_type);
 		       Generator(generate_cl_kernel_vdecl_list gfdecl.formals);

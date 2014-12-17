@@ -321,12 +321,25 @@ and append_if_else bool_exp ifbody elsebody env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("if("); Generator(generate_exp bool_exp);
     Text("){\n"); NewScope(process_stmt ifbody); Text("\n} else {\n");
-    NewScope(process_stmt elsebody); Text("}\n")] 
+    NewScope(process_stmt elsebody); Text("}\n")]
+
+(* For loops have to have assignment, boolean expression, assignment 
+ *)
+and print_in_for_loop stmt first env = 
+    match stmt with 
+     Assign(name, expr) ->  if first then Environment.append env [ 
+                            Generator(generate_assign name expr); 
+                            Text(";")]
+                            else  Environment.append env [ 
+                            Generator(generate_assign name expr);]
+
+      | _-> raise (BadExpressionError("Argument in for loop invalid")) 
+   
 and append_for stmt1 bool_exp stmt2 body env =
     Generator_utilities.expr_typeof bool_exp env;
-    Environment.append env [Text("for("); Generator(process_stmt stmt1);
-    Text("; "); Generator(generate_exp bool_exp); Text("; "); 
-    Generator(process_stmt stmt2); Text("){\n"); Generator(process_stmt body);
+    Environment.append env [Text("for("); Generator(print_in_for_loop stmt1 true );
+    Generator(generate_exp bool_exp); Text("; "); 
+    Generator(print_in_for_loop stmt2 false); Text("){\n"); Generator(process_stmt body);
     Text("}\n")]
 ;;
 

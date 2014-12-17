@@ -48,6 +48,15 @@ exception BadExpressionError of string;;
  * or makes recursive calls to generate_expression  
  *)
 
+let rec generate_type datatype env = 
+    match datatype with 
+    | Int ->        Environment.append env [Text("int")] 
+    | Float ->      Environment.append env [Text("float")]
+	| Array(t) ->   Environment.append env [ 
+		            Generator(generate_type t); 
+		            Text("[]")
+	]
+
 let generate_checked_id check_id id env = 
     if (check_id id env) then
         Environment.append env [Text(id)]
@@ -111,14 +120,44 @@ let generate_checked_f_call check_f_call f_call env =
                                 ")")];
     | _-> raise (BadExpressionError("Function Call"))
 
+let rec print_int_array array_list str =
+    match array_list with
+    | [] -> 
+            if(String.contains str ',') then
+                String.sub str 0 (String.length str - 2)
+            else
+                str
+    | head :: array_tail -> 
+        print_int_array array_tail (str ^ (string_of_int head) ^ ", ")
+;;
+
+let rec print_float_array array_list str =    
+    match array_list with
+    | [] -> 
+            if(String.contains str ',') then
+                String.sub str 0 (String.length str - 2)
+            else
+                str
+    | head :: array_tail -> 
+        print_float_array array_tail (str ^ 
+          (string_of_float head) ^ ", ")
+
+;;
+
 let generate_exp exp env = 
     match exp with
     | Literal_int(i) ->     Environment.append env [
                             Text(string_of_int(i))]  
     | Literal_float(f) ->   Environment.append env [
                             Text(string_of_float(f))] 
-    | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
-    | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
+    | Literal_int_a(list_i) -> Environment.append env [
+                                Text("{ ");
+                                Text(print_int_array list_i "");
+                                Text("}")]
+    | Literal_float_a(list_f) -> Environment.append env [
+                                Text("{ ");
+                                Text(print_float_array list_f "");
+                                Text("}")]
     | Id(s) ->          Environment.append env [
                         Generator(generate_checked_id is_var_in_scope s )]  
     | Binop(_,_,_) ->   Environment.append env [
@@ -133,16 +172,6 @@ let generate_exp exp env =
                             Generator_utilities.expr_typeof exp)]
     | _-> raise (NotImplementedError("unsupported expression"))
 ;;
-
-let rec generate_type datatype env = 
-    match datatype with 
-    | Int ->        Environment.append env [Text("int")] 
-    | Float ->      Environment.append env [Text("float")]
-	| Array(t) ->   Environment.append env [ 
-		            Generator(generate_type t); 
-		            Text("[]")
-	]
-
 let generate_init vdecl exp env =
     if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
     exp env)) then

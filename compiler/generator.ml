@@ -129,7 +129,7 @@ let generate_checked_f_call check_f_call f_call env =
        else
 	 Environment.append env [Text(id ^ "(" 
 				      ^ (args_to_txt expressions "")
-				      ^ ")")];
+				      ^ ")")]
     | _-> raise (BadExpressionError("Function Call"))
 
 let rec print_int_array array_list str =
@@ -469,7 +469,7 @@ let generate_kernel_invocation_function fdecl env =
 				  Text("__sheets_context,\n");
 				  Text("CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,\n");
 				  Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);
-				  Text(sprintf "(void *) %s," formal.v_name);
+				  Text(sprintf "(void *) %s,\n" formal.v_name);
 				  Text("&__cl_err);\n");
 				  Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n")]
 	else
@@ -488,6 +488,7 @@ let generate_kernel_invocation_function fdecl env =
 			    Text("__sheets_context,\n");
 			    Text("CL_MEM_WRITE_ONLY,\n");
 			    Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);
+			    Text("NULL,\n");
 			    Text("&__cl_err);\n");
 			    Text("CHECK_CL_ERROR(__cl_err, \"clCreateBuffer\");\n");
 			    (* user-defined args start at 2 *)
@@ -526,6 +527,7 @@ let generate_kernel_invocation_function fdecl env =
       let rec _helper num_arg_ns_left arg_n env =
 	match num_arg_ns_left with
 	  0 -> "", env
+	| 1 -> Environment.append env [Text(sprintf "__arg%d\n" arg_n)]
 	| _ -> Environment.append env [Text(sprintf "__arg%d,\n" arg_n);
 				       Generator(_helper (num_arg_ns_left - 1) (arg_n + 1))]
 				  
@@ -533,7 +535,7 @@ let generate_kernel_invocation_function fdecl env =
       Environment.append env [Generator(_helper num_user_args 2)]
     in
     (* only need to add 1 because __arr_len is already in formals list *)
-    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 1));
+    Environment.append env [Text(sprintf "SET_%d_KERNEL_ARGS(" ((List.length fdecl.formals) + 2));
 			    Text(sprintf "%s_compiled_kernel," fdecl.fname);
 			    Text("__arr_len,\n");
 			    Text("__arg1,\n");
@@ -567,6 +569,7 @@ let generate_kernel_invocation_function fdecl env =
     Environment.append env [Text(sprintf "%s *__out = (%s*) malloc(__arr_len * sizeof(%s));\n" base_r_type base_r_type base_r_type);
 			    Text("CALL_CL_GUARDED(clEnqueueReadBuffer,\n");
 			    Text("(__sheets_queue,\n");
+			    Text("__out,\n");
 			    Text("CL_TRUE,\n"); (* blocking read *)
 			    Text("0,\n");	(* 0 offset *)
 			    Text(sprintf "sizeof(%s) * __arr_len,\n" base_r_type);

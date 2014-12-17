@@ -1,15 +1,20 @@
 #!/bin/bash
 
+set -e
+
+SHEETS_BUILD_DIR=$PWD
+
 ####################### WEAVE SHEETS ######################
 # This is the executable to invoke to 
 # 1. Make compiler
 echo "#~~~~~Weaving your sheet!~~~~~~~~~~~~~~~~~~~~~~"
 
-../compiler/make 
+cd ../compiler/ && make
 echo "~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+cd $SHEETS_BUILD_DIR
 ../compiler/preprocessor.py $PWD/$1.sht
 echo "~~~~~~~~~~~~~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~"
-cat $1.proc.sht | ../compiler/generator.ml > $1.c
+cat $1.proc.sht | ../compiler/generator > $1.c
 
 echo "~~~~~~~~~~~~~~~~~Almost there...~~~#~~~~~~~~~~~~"
 # 2. Make OpenCL file 

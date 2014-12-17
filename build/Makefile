@@ -17,4 +17,4 @@ $(SHEET) : ../opencl/cl-helper.o
 
 .PHONY : clean
 clean : 
-	rm -f *.o $(EXE)
+	rm -f *.o *.c *.proc.sht

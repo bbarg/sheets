@@ -142,18 +142,18 @@ let fdecl_to_func_info fdecl =
         }
 ;;
 let arr_type_str_to_base_type = function
-    "float[]" -> "float"
+    "float[]" -> "double"
   | "int[]" -> "int"
-  | "float[][]" -> "float"
+  | "float[][]" -> "double"
   | "int[][]" -> "int"
   | _ -> raise UnsupportedArrayTypeError
 ;;
 let c_type_from_str = function
     "int" -> "int"
-  | "float" -> "float"
-  | "float[]" -> "float *"
+  | "float" -> "double"
+  | "float[]" -> "double *"
   | "int[]" -> "int *"
-  | "float[][]" -> "float **"
+  | "float[][]" -> "double **"
   | "int[][]" -> "int **"
   | _ -> raise UnsupportedArrayTypeError
 ;;

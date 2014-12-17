@@ -51,7 +51,7 @@ exception BadExpressionError of string;;
 let rec generate_type datatype env = 
   match datatype with 
   | Int ->        Environment.append env [Text("int")] 
-  | Float ->      Environment.append env [Text("float")]
+  | Float ->      Environment.append env [Text("double")]
   | Array(t) ->   Environment.append env [ 
 				       Generator(generate_type t); 
 				       Text("*") (* Handling array types differently *)

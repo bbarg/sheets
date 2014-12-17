@@ -48,19 +48,26 @@ exception BadExpressionError of string;;
  * or makes recursive calls to generate_expression  
  *)
 
+let rec generate_type datatype env = 
+    match datatype with 
+    | Int ->        Environment.append env [Text("int")] 
+    | Float ->      Environment.append env [Text("float")]
+	| Array(t) ->   Environment.append env [ 
+		            Generator(generate_type t); 
+		            Text("[]")
+	]
+
 let generate_checked_id check_id id env = 
     if (check_id id env) then
         Environment.append env [Text(id)]
     else raise (VariableNotFound id)
 
-
-let exp_to_txt exp = 
-    match exp with 
-        Literal_int(i) -> string_of_int(i)
-      | Literal_float(f) -> string_of_float(f)
-      | Id(s) -> s 
-      | _-> ""
-
+(* TODO : This is an attempt to fix the lack of curried addition (wow curry yum) 
+ * but I think what is happening is that one of the expressions on the side 
+ * of a binop is a binop and that is getting ignored here 
+ * note therefore that expressions need to be fully checked before being called 
+ * to exp_to_txt
+ *)
 let op_to_txt op = 
     match op with 
     | Plus -> "+"
@@ -75,15 +82,22 @@ let op_to_txt op =
     | Neq -> "!="
     | _-> ""
 
+let rec exp_to_txt exp = 
+    match exp with 
+        Literal_int(i) -> string_of_int(i)
+      | Literal_float(f) -> string_of_float(f)
+      | Id(s) -> s
+      | Binop(e1, op, e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2)
+      | _-> ""
+
 let rec args_to_txt arg_list str=
     match arg_list with
-    | arg :: arg_tail -> args_to_txt arg_tail str ^ (exp_to_txt arg) ^ ", " 
-    | [] -> 
-            if (String.contains str ',') then
-                (String.sub str 0 (String.length str - 2))
+     | [] -> 
+            if(String.contains str ',') then
+                String.sub str 0 (String.length str - 2)
             else
                 str
-(* TODO: fix bug in string processing here*)
+    | arg :: arg_tail -> args_to_txt arg_tail (str ^ (exp_to_txt arg) ^ ", ") 
 
 let generate_checked_binop check_binop binop env =
         check_binop binop env; 
@@ -111,14 +125,44 @@ let generate_checked_f_call check_f_call f_call env =
                                 ")")];
     | _-> raise (BadExpressionError("Function Call"))
 
+let rec print_int_array array_list str =
+    match array_list with
+    | [] -> 
+            if(String.contains str ',') then
+                String.sub str 0 (String.length str - 2)
+            else
+                str
+    | head :: array_tail -> 
+        print_int_array array_tail (str ^ (string_of_int head) ^ ", ")
+;;
+
+let rec print_float_array array_list str =    
+    match array_list with
+    | [] -> 
+            if(String.contains str ',') then
+                String.sub str 0 (String.length str - 2)
+            else
+                str
+    | head :: array_tail -> 
+        print_float_array array_tail (str ^ 
+          (string_of_float head) ^ ", ")
+
+;;
+
 let generate_exp exp env = 
     match exp with
     | Literal_int(i) ->     Environment.append env [
                             Text(string_of_int(i))]  
     | Literal_float(f) ->   Environment.append env [
                             Text(string_of_float(f))] 
-    | Literal_int_a(int_a) -> raise (NotImplementedError("int array literal"))
-    | Literal_float_a(float_a) -> raise (NotImplementedError("float array literal"))
+    | Literal_int_a(list_i) -> Environment.append env [
+                                Text("{ ");
+                                Text(print_int_array list_i "");
+                                Text("}")]
+    | Literal_float_a(list_f) -> Environment.append env [
+                                Text("{ ");
+                                Text(print_float_array list_f "");
+                                Text("}")]
     | Id(s) ->          Environment.append env [
                         Generator(generate_checked_id is_var_in_scope s )]  
     | Binop(_,_,_) ->   Environment.append env [
@@ -133,16 +177,6 @@ let generate_exp exp env =
                             Generator_utilities.expr_typeof exp)]
     | _-> raise (NotImplementedError("unsupported expression"))
 ;;
-
-let rec generate_type datatype env = 
-    match datatype with 
-    | Int ->        Environment.append env [Text("int")] 
-    | Float ->      Environment.append env [Text("float")]
-	| Array(t) ->   Environment.append env [ 
-		            Generator(generate_type t); 
-		            Text("[]")
-	]
-
 let generate_init vdecl exp env =
     if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
     exp env)) then
@@ -186,15 +220,14 @@ let rec process_stmt_list stmt_list env =
    match stmt_list with 
    stmt :: other_stmts -> Environment.append env [Generator(process_stmt
    stmt); Generator(process_stmt_list other_stmts)] 
-   | []     -> Environment.append env [ Text("\n") ] 
+   | []     -> Environment.append env [ Text("") ] 
  and process_stmt stmt env =
    match stmt with 
    Vdecl(vdecl) ->          Environment.append env [ 
                             Generator(process_vdecl vdecl);
                             Text(";\n") ] 
    | Block(stmt_list) ->    Environment.append env [ 
-                            Generator(process_stmt_list
-                            stmt_list); Text(";\n") ]
+                            Generator(process_stmt_list stmt_list) ]
    | Expr(expr) ->          Environment.append env [ 
                             Generator(generate_exp expr );
                             Text(";\n") ]  
@@ -270,12 +303,25 @@ and append_if_else bool_exp ifbody elsebody env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("if("); Generator(generate_exp bool_exp);
     Text("){\n"); NewScope(process_stmt ifbody); Text("\n} else {\n");
-    NewScope(process_stmt elsebody); Text("}\n")] 
+    NewScope(process_stmt elsebody); Text("}\n")]
+
+(* For loops have to have assignment, boolean expression, assignment 
+ *)
+and print_in_for_loop stmt first env = 
+    match stmt with 
+     Assign(name, expr) ->  if first then Environment.append env [ 
+                            Generator(generate_assign name expr); 
+                            Text(";")]
+                            else  Environment.append env [ 
+                            Generator(generate_assign name expr);]
+
+      | _-> raise (BadExpressionError("Argument in for loop invalid")) 
+   
 and append_for stmt1 bool_exp stmt2 body env =
     Generator_utilities.expr_typeof bool_exp env;
-    Environment.append env [Text("for("); Generator(process_stmt stmt1);
-    Text("; "); Generator(generate_exp bool_exp); Text("; "); 
-    Generator(process_stmt stmt2); Text("){\n"); Generator(process_stmt body);
+    Environment.append env [Text("for("); Generator(print_in_for_loop stmt1 true );
+    Generator(generate_exp bool_exp); Text("; "); 
+    Generator(print_in_for_loop stmt2 false); Text("){\n"); Generator(process_stmt body);
     Text("}\n")]
 ;;
 
@@ -476,7 +522,7 @@ let generate_kernel_invocation_function fdecl env =
   in		       
   let generate_cl_enqueue_read_buffer fdecl env =
     (* only one buffer to read, since there's only one output arg *)
-    Environment.append env [Text(sprintf "%s *__out[__arr_len];\n" base_r_type);
+    Environment.append env [Text(sprintf "%s *__out = (%s*) malloc(__arr_len * sizeof(%s));\n" base_r_type base_r_type base_r_type);
 			    Text("CALL_CL_GUARDED(clEnqueueReadBuffer,\n");
 			    Text("(__sheets_queue,\n");
 			    Text("CL_TRUE,\n"); (* blocking read *)

@@ -22,6 +22,8 @@ let eval_basic_binop type1 type2 =
         match type1 with
             | Int -> type1
             | Float -> type1
+            | Array (Int) -> type1
+            | Array (Float) -> type2
             | _-> raise (TypeError("Types not ID, int, or float"))
     else 
         raise (TypeError("Incompatible types"))
@@ -47,11 +49,11 @@ let eval_array_acc array_ int_expr =
     match array_ with
         | Array ( Int) -> 
                 match int_expr with
-                | Int -> array_
+                | Int -> Int
                 | _-> raise (TypeError("Cannot access element in array with non-int datatype"))
         | Array ( Float) -> 
                 match int_expr with
-                | Int -> array_
+                | Int -> Float
                 | _-> raise (TypeError("Cannot access element in array with non-int datatype"))
         | _-> raise (TypeError("Cannot access element in non-array type"))
 ;;
@@ -61,7 +63,7 @@ let rec expr_typeof expr env =
     match expr with 
      Literal_int(i) -> Int
     | Literal_float(f) -> Float 
-    | Literal_int_a(i_a) -> Array( Int ) (* TODO: Check this *) 
+    | Literal_int_a(i_a) -> Array( Int ) 
     | Literal_float_a(i_a) -> Array(Float) 
     | Id(s) -> Environment.typeof s env  
     | Binop(exp1, op, exp2) -> (eval_binop (expr_typeof exp1 env) (expr_typeof exp2 env) op) 

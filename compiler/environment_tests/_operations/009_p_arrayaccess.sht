@@ -1,8 +1,4 @@
 func int main():
-   int a
-   int b
-   int c
-
-   float d
-   float e
-   float f
+   int[] a[3] = [1, 2, 4]
+   int b = a[0]
+   return b

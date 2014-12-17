@@ -62,14 +62,12 @@ let generate_checked_id check_id id env =
         Environment.append env [Text(id)]
     else raise (VariableNotFound id)
 
-
-let exp_to_txt exp = 
-    match exp with 
-        Literal_int(i) -> string_of_int(i)
-      | Literal_float(f) -> string_of_float(f)
-      | Id(s) -> s 
-      | _-> ""
-
+(* TODO : This is an attempt to fix the lack of curried addition (wow curry yum) 
+ * but I think what is happening is that one of the expressions on the side 
+ * of a binop is a binop and that is getting ignored here 
+ * note therefore that expressions need to be fully checked before being called 
+ * to exp_to_txt
+ *)
 let op_to_txt op = 
     match op with 
     | Plus -> "+"
@@ -83,6 +81,14 @@ let op_to_txt op =
     | Leq -> "<="
     | Neq -> "!="
     | _-> ""
+
+let rec exp_to_txt exp = 
+    match exp with 
+        Literal_int(i) -> string_of_int(i)
+      | Literal_float(f) -> string_of_float(f)
+      | Id(s) -> s
+      | Binop(e1, op, e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2)
+      | _-> ""
 
 let rec args_to_txt arg_list str=
     match arg_list with

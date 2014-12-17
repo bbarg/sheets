@@ -266,14 +266,19 @@ let is_gfunc_declared gfunc_fdecl env =
      
 
 let add_gfunc gfunc_fdecl env = 
-    (* TODO decide whether I want to check gfunc *)
-    if (is_gfunc_declared gfunc_fdecl env) then 
-      raise (AlreadyDeclaredError)
-    else if (gfunc_fdecl.fname = "main") then
-      raise (ReservedWordError("a gfunc cannot be the main method"))
-    else 
-       update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env 
-
+  (* TODO decide whether I want to check gfunc *)
+  if (is_gfunc_declared gfunc_fdecl env) then 
+    raise (AlreadyDeclaredError)
+  else if (gfunc_fdecl.fname = "main") then
+    raise (ReservedWordError("a gfunc cannot be the main method"))
+  else
+    let gfunc_info = Generator_utilities.fdecl_to_func_info gfunc_fdecl in
+    (* we have to update gfunc list but also manually add to function
+       map so that CPU funcs can see this function *)
+    let new_env = update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env in
+    update_only_func
+      (FunctionMap.add gfunc_info.id gfunc_info new_env.func_return_type_map)
+      new_env
 
 let append init_env components =
   (* add quotes around gpu statements so they print as c multi-line

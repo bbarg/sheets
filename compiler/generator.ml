@@ -122,10 +122,10 @@ let generate_checked_f_call check_f_call f_call env =
     match f_call with
     | Call(id, expressions) ->
        if env.on_gpu then
-	 Environment.append env [Text(id ^ "("
+	 Environment.append env [Text(id ^ "(10, "
 				      (* TODO size of array args *)
 				      ^ (args_to_txt expressions "")
-				      ^ ")")]
+                                      ^ ")");]
        else
 	 Environment.append env [Text(id ^ "(" 
 				      ^ (args_to_txt expressions "")
@@ -204,11 +204,21 @@ and generate_checked_block id exp env =
 
 let generate_init vdecl exp env =
     if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
-    exp env)) then
-        Environment.append env [
-        Env(add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl));
-        Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name ^ " = ");   
-        Generator(generate_exp exp)]
+    exp env)) then 
+            let v_type = Generator_utilities.vdecl_type vdecl in 
+
+            match v_type with 
+            Array(Int) ->  Environment.append env [Env(add_var vdecl.v_name (v_type));
+                                                Text("int" ^ " " ^ vdecl.v_name ^ "[]  = ");   
+                                                Generator(generate_exp exp);] 
+           | Array(Float) ->  Environment.append env [Env(add_var vdecl.v_name (v_type));
+                                                Text("float" ^ " " ^ vdecl.v_name ^ "[]  = ");   
+                                                Generator(generate_exp exp);] 
+
+          | _-> Environment.append env [
+            Env(add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl));
+            Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name ^ " = ");   
+            Generator(generate_exp exp)]
     else
         raise(BadExpressionError("Assignment of incompatible types"))
 
@@ -286,7 +296,7 @@ let rec process_stmt_list stmt_list env =
                             Text("break;\n")]
    | _ -> raise (NotImplementedError("Undefined type of expression")) 
  and process_vdecl vdecl env = 
-   let v_datatype = Generator_utilities.str_to_type vdecl.v_type in 
+   let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
  	                   Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name)] 
 

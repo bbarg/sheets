@@ -28,7 +28,7 @@ exception ReservedWordError of string;;
   
 type func_info  = {
 	id : string; 
-	on_gpu : bool;
+        gpu : bool;
 	return : datatype; 
 	args : datatype list;
 	arg_names: string list;
@@ -47,6 +47,7 @@ type env = {
                                    gfunc so we can do kernel string
                                    generation *)
     num_array_returns : int;
+    var_array_sizes : int VariableMap.t; 
   } 
 (* Types that can be returned by the generator as it modifies 
  * either the text of the generated code 
@@ -66,7 +67,7 @@ let add_default_func f_id fmap =
     let f_info = 
         { 
             id = f_id; 
-            on_gpu = false;
+            gpu = false;
             return = Int; 
             args = [];
             arg_names = [];
@@ -96,13 +97,14 @@ let create =
        on_gpu = false;
        gfunc_list = [];
        num_array_returns = 0;
+       var_array_sizes = VariableMap.empty;   
    }
 
 (* Update gives a new env record with updated values 
  * of the record 
  *) 
 
-let update v_stack f_map curr_f gpu g_list num_arr_ret = 
+let update v_stack f_map curr_f gpu g_list num_arr_ret  v_a_s= 
   { 
     var_stack = v_stack; 
     func_return_type_map = f_map;
@@ -110,22 +112,31 @@ let update v_stack f_map curr_f gpu g_list num_arr_ret =
     on_gpu = gpu; 
     gfunc_list = g_list;
     num_array_returns = num_arr_ret;
+    var_array_sizes = v_a_s; 
   }
 (* Functions that let us modify only one 
  * variable in environment at a time 
  *)
 let update_only_scope new_scope env = 
-	update new_scope env.func_return_type_map env.current_function env.on_gpu env.gfunc_list env.num_array_returns
+	update new_scope env.func_return_type_map env.current_function env.on_gpu env.gfunc_list env.num_array_returns env.var_array_sizes
 let update_only_func new_func env = 
-	update env.var_stack new_func env.current_function env.on_gpu env.gfunc_list env.num_array_returns
+	update env.var_stack new_func env.current_function env.on_gpu env.gfunc_list env.num_array_returns env.var_array_sizes
+
 let update_curr_func new_curr_func env = 
-	update env.var_stack env.func_return_type_map new_curr_func env.on_gpu env.gfunc_list env.num_array_returns
+	update env.var_stack env.func_return_type_map new_curr_func env.on_gpu env.gfunc_list env.num_array_returns env.var_array_sizes
+
 let update_on_gpu gpu env = 
-	update env.var_stack env.func_return_type_map env.current_function gpu env.gfunc_list env.num_array_returns
+	update env.var_stack env.func_return_type_map env.current_function gpu env.gfunc_list env.num_array_returns env.var_array_sizes
+
 let update_gfunc_list g_list env = 
-  update env.var_stack env.func_return_type_map env.current_function env.on_gpu g_list env.num_array_returns
+  update env.var_stack env.func_return_type_map env.current_function env.on_gpu g_list env.num_array_returns env.var_array_sizes
+
 let increment_num_array_rets env =
-  update env.var_stack env.func_return_type_map env.current_function env.on_gpu env.gfunc_list (env.num_array_returns + 1)
+  update env.var_stack env.func_return_type_map env.current_function env.on_gpu env.gfunc_list (env.num_array_returns + 1) env.var_array_sizes
+
+let add_array_size id size env = 
+     update env.var_stack env.func_return_type_map env.current_function env.on_gpu env.gfunc_list env.num_array_returns  (VariableMap.add id size env.var_array_sizes)
+
 
 (* Checks all scopes to see if variable has been declared *)
 let is_var_in_scope id env = 
@@ -187,7 +198,13 @@ let add_var id datatype env =
 			raise VariableAlreadyDeclared
 		else 
 		update_scope_add_var id datatype env
-     
+
+
+let get_arr_size id env = 
+    if VariableMap.mem id env.var_array_sizes then 
+      (VariableMap.find id env.var_array_sizes)
+    else 
+     raise VariableAlreadyDeclared 
 
 (* adds a new empty variableMap to the top of var stack 
  * used to enter a subscope 

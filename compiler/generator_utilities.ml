@@ -48,13 +48,13 @@ let eval_binop type1 type2 op =
 let eval_array_acc array_ int_expr =
     match array_ with
         | Array ( Int) -> 
-                match int_expr with
+                (match int_expr with
                 | Int -> Int
-                | _-> raise (TypeError("Cannot access element in array with non-int datatype"))
+                | _-> raise (TypeError("Cannot access element in array with non-int datatype")))
         | Array ( Float) -> 
-                match int_expr with
+                (match int_expr with
                 | Int -> Float
-                | _-> raise (TypeError("Cannot access element in array with non-int datatype"))
+                | _-> raise (TypeError("Cannot access element in array with non-int datatype")))
         | _-> raise (TypeError("Cannot access element in non-array type"))
 ;;
 

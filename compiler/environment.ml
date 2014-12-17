@@ -253,17 +253,16 @@ let return_typeof_func id env =
  *)
 
 let rec check_gfunc_name_in_list glist gfunc_fdecl = 
-    match glist with 
+  match glist with 
     [] -> false 
-   | gfunc_fdecl :: rest_of_gfuncs -> if gfunc_fdecl.fname = gfunc_fdecl.fname then true
-                                      else (check_gfunc_name_in_list rest_of_gfuncs gfunc_fdecl) 
+  | gfunc_fdecl :: rest_of_gfuncs -> if gfunc_fdecl.fname = gfunc_fdecl.fname then true
+                                     else (check_gfunc_name_in_list rest_of_gfuncs gfunc_fdecl) 
 let is_gfunc_declared gfunc_fdecl env = 
-    if check_gfunc_name_in_list env.gfunc_list gfunc_fdecl then 
-        raise (AlreadyDeclaredError) 
-    else if is_func_declared gfunc_fdecl.fname env then 
-        raise (AlreadyDeclaredError) 
-    else false   
-     
+  if check_gfunc_name_in_list env.gfunc_list gfunc_fdecl then 
+    raise (AlreadyDeclaredError) 
+  else if is_func_declared gfunc_fdecl.fname env then 
+    raise (AlreadyDeclaredError) 
+  else false   
 
 let add_gfunc gfunc_fdecl env = 
   (* TODO decide whether I want to check gfunc *)
@@ -272,14 +271,8 @@ let add_gfunc gfunc_fdecl env =
   else if (gfunc_fdecl.fname = "main") then
     raise (ReservedWordError("a gfunc cannot be the main method"))
   else
-    let gfunc_info = Generator_utilities.fdecl_to_func_info gfunc_fdecl in
-    (* we have to update gfunc list but also manually add to function
-       map so that CPU funcs can see this function *)
-    let new_env = update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env in
-    update_only_func
-      (FunctionMap.add gfunc_info.id gfunc_info new_env.func_return_type_map)
-      new_env
-
+    update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env
+  
 let append init_env components =
   (* add quotes around gpu statements so they print as c multi-line
      strings *)
@@ -300,3 +293,4 @@ let append init_env components =
     | NewScope(gen) -> let new_str, new_env = gen (push_scope env) in 
 		       text ^ new_str, pop_scope new_env in
   List.fold_left f("", init_env) components
+;;

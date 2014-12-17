@@ -624,6 +624,7 @@ let rec generate_cpu_funcs fdecls env =
                          
     | true ->
        Environment.append env [Env(add_gfunc fdecl);
+			       Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl));
 			       NewScope(generate_kernel_invocation_function fdecl)]
   in
   match fdecls with

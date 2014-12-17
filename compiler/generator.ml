@@ -504,7 +504,7 @@ let generate_kernel_invocation_function fdecl env =
   in		       
   let generate_cl_enqueue_read_buffer fdecl env =
     (* only one buffer to read, since there's only one output arg *)
-    Environment.append env [Text(sprintf "%s *__out[__arr_len];\n" base_r_type);
+    Environment.append env [Text(sprintf "%s *__out = (%s*) malloc(__arr_len * sizeof(%s));\n" base_r_type base_r_type base_r_type);
 			    Text("CALL_CL_GUARDED(clEnqueueReadBuffer,\n");
 			    Text("(__sheets_queue,\n");
 			    Text("CL_TRUE,\n"); (* blocking read *)

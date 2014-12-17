@@ -539,7 +539,7 @@ let generate_kernel_invocation_function fdecl env =
     | n -> "__arr_len /" ^ string_of_int n ^ " + 1"
   in
   let generate_cl_enqueue_nd_range_kernel fdecl env =
-    Environment.append env [Text(sprintf "size_t *gdims = { %s };\n"
+    Environment.append env [Text(sprintf "size_t gdims[] = { %s };\n"
 					 (global_work_items fdecl.blocksize));
 			    Text("CALL_CL_GUARDED(clEnqueueNDRangeKernel,");
 			    Text("(__sheets_queue,\n");

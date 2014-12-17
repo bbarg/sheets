@@ -295,6 +295,16 @@ let return_typeof_func id env =
  * also makes sure it is a gfunc 
  *)
 
+let id_is_gfunc id env =
+  let rec name_in_gfunc_list gfunc_list =
+    match gfunc_list with
+      [] -> false
+    | gfunc :: other_gfuncs ->
+       if id = gfunc.fname then true
+       else name_in_gfunc_list other_gfuncs
+  in
+  name_in_gfunc_list env.gfunc_list
+
 let rec check_gfunc_name_in_list glist gfunc_fdecl = 
   match glist with 
     [] -> false 

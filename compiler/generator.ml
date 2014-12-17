@@ -118,19 +118,18 @@ let generate_checked_array_access check_array_access array_expr env =
     | _-> raise (BadExpressionError("Array Access"))
 
 let generate_checked_f_call check_f_call f_call env =
-    check_f_call f_call env;
-    match f_call with
-    | Call(id, expressions) ->
-       if env.on_gpu then
-	 Environment.append env [Text(id ^ "(10, "
-				      (* TODO size of array args *)
-				      ^ (args_to_txt expressions "")
-                                      ^ ")");]
-       else
-	 Environment.append env [Text(id ^ "(" 
-				      ^ (args_to_txt expressions "")
-				      ^ ")")]
-    | _-> raise (BadExpressionError("Function Call"))
+  check_f_call f_call env;
+  match f_call with
+  | Call(id, expressions) ->
+     if Environment.id_is_gfunc id env then
+       Environment.append env [Text(id ^ "(100000"
+				    ^ (args_to_txt expressions "")
+                                    ^ ")");]
+     else
+       Environment.append env [Text(id ^ "(" 
+				    ^ (args_to_txt expressions "")
+				    ^ ")")]
+  | _-> raise (BadExpressionError("Function Call"))
 
 let rec print_int_array array_list str =
     match array_list with

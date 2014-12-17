@@ -62,10 +62,25 @@ type source =
 
 
 (* Create initializes an empty record for environment *)
+let init_func_map = 
+    let printf_info = 
+        { 
+            id = "printf"; 
+            on_gpu = false;
+            return = Int; 
+            args = [];
+            arg_names = [];
+            _blocksize = -1; 
+       }
+    in 
+    (FunctionMap.add "printf" printf_info FunctionMap.empty) 
+
+
+
 let create = 
    {
        var_stack = VariableMap.empty::[];
-       func_return_type_map = FunctionMap.empty; 
+       func_return_type_map = init_func_map; 
        current_function = ""; (* TODO maybe this needs a better convention *)
        on_gpu = false;
        gfunc_list = [];

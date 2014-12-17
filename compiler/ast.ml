@@ -72,4 +72,5 @@ type program = vdecl list * sdef list * fdecl list
 type datatype = 
   | Int
   | Float
+  | String 
   | Array of datatype

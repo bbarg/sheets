@@ -95,8 +95,10 @@ and typeof_func_call func_id expr_list arg_list env =
             else
                 check_expr_list other_exprs other_args
        | _-> raise (TypeError("Incorrect number of function arguments"))
-    in
-    check_expr_list expr_list arg_list 
+    in 
+      match func_id with 
+      "printf" -> Int (* TODO this is a super hacky fix *) 
+     | _ -> check_expr_list expr_list arg_list 
 ;;
 
 let str_to_type str = 

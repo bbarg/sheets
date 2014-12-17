@@ -232,6 +232,12 @@ let generate_assign id exp env =
                         types"))
                else
                     raise (BadExpressionError("assignment to undefined id"))
+    | BlockAcc(s, expr) -> Environment.append env [Text("__out["); 
+                                                  Generator(generate_exp expr); 
+                                                  Text("] = "); 
+                                                  Generator(generate_exp exp); 
+                                                  Text(";");
+                                                ]
     | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 (* ------------------------------------------------------------------ *)		  

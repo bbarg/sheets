@@ -517,6 +517,7 @@ let generate_kernel_invocation_function fdecl env =
       let rec _helper num_arg_ns_left arg_n env =
 	match num_arg_ns_left with
 	  0 -> "", env
+	| 1 -> Environment.append env [Text(sprintf "__arg%d\n" arg_n)]
 	| _ -> Environment.append env [Text(sprintf "__arg%d,\n" arg_n);
 				       Generator(_helper (num_arg_ns_left - 1) (arg_n + 1))]
 				  

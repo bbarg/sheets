@@ -62,10 +62,10 @@ type source =
 
 
 (* Create initializes an empty record for environment *)
-let init_func_map = 
-    let printf_info = 
+let add_default_func f_id fmap = 
+    let f_info = 
         { 
-            id = "printf"; 
+            id = f_id; 
             on_gpu = false;
             return = Int; 
             args = [];
@@ -73,7 +73,18 @@ let init_func_map =
             _blocksize = -1; 
        }
     in 
-    (FunctionMap.add "printf" printf_info FunctionMap.empty) 
+    (FunctionMap.add f_id f_info fmap)
+
+
+let init_func_map = 
+    let time_start_fmap = 
+        let printf_fmap = 
+          add_default_func "printf" FunctionMap.empty 
+        in 
+     add_default_func "time_start" printf_fmap 
+    in 
+  add_default_func "time_end" time_start_fmap 
+  
 
 
 

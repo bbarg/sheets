@@ -294,7 +294,7 @@ loopexpr:
     | BREAK SEMI                      { Break }
 
 blockexpr:
-    | BLOCK PERIOD ID                            { BlockAcc($3, Literal_int(0)) }
+    | BLOCK PERIOD ID                            { BlockAcc($3, Literal_int(-1)) }
     | BLOCK PERIOD ID LBRACK INT_LITERAL RBRACK  { BlockAcc($3, Literal_int($5)) }
     | BLOCK PERIOD ID LBRACK ID RBRACK           { BlockAcc($3, Id($5)) }
 

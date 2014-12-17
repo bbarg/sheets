@@ -149,7 +149,8 @@ let rec print_float_array array_list str =
 
 ;;
 
-let generate_exp exp env = 
+
+let rec generate_exp exp env = 
     match exp with
     | Literal_int(i) ->     Environment.append env [
                             Text(string_of_int(i))]  
@@ -175,8 +176,25 @@ let generate_exp exp env =
     | ArrayAcc(_, _) -> Environment.append env [
                         Generator(generate_checked_array_access  
                             Generator_utilities.expr_typeof exp)]
+    | BlockAcc(id, exp) ->Environment.append env [
+                          Generator(generate_checked_block id exp)]
     | _-> raise (NotImplementedError("unsupported expression"))
+and generate_checked_block id exp env =
+    match id with
+    | "start" -> Environment.append env [Text("__block_start")]
+    | "end" -> Environment.append env [Text("__block_end")]
+    | "out" -> 
+            match exp with
+            | Literal_int(a) -> 
+                    if(a = -1) then
+                        raise (BadExpressionError("Invalid block access"))
+                    else
+                        Environment.append env [Text("__out[" ^ (string_of_int a) ^ "]")]
+            | _-> Environment.append env [Text("__out"); Generator(generate_exp exp)]
+    | _-> raise (BadExpressionError("Invalid block access"))
 ;;
+
+
 let generate_init vdecl exp env =
     if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
     exp env)) then

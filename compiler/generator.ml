@@ -88,6 +88,7 @@ let rec exp_to_txt exp =
       | Literal_float(f) -> string_of_float(f)
       | Id(s) -> s
       | Binop(e1, op, e2) -> (exp_to_txt e1) ^ " " ^ (op_to_txt op) ^ " " ^ (exp_to_txt e2)
+      | Literal_string(s) -> "\"" ^ s ^ "\""
       | _-> ""
 
 let rec args_to_txt arg_list str=
@@ -231,6 +232,12 @@ let generate_assign id exp env =
                         types"))
                else
                     raise (BadExpressionError("assignment to undefined id"))
+    | BlockAcc(s, expr) -> Environment.append env [Text("__out["); 
+                                                  Generator(generate_exp expr); 
+                                                  Text("] = "); 
+                                                  Generator(generate_exp exp); 
+                                                  Text(";");
+                                                ]
     | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 (* ------------------------------------------------------------------ *)		  

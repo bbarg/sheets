@@ -62,10 +62,25 @@ type source =
 
 
 (* Create initializes an empty record for environment *)
+let init_func_map = 
+    let printf_info = 
+        { 
+            id = "printf"; 
+            on_gpu = false;
+            return = Int; 
+            args = [];
+            arg_names = [];
+            _blocksize = -1; 
+       }
+    in 
+    (FunctionMap.add "printf" printf_info FunctionMap.empty) 
+
+
+
 let create = 
    {
        var_stack = VariableMap.empty::[];
-       func_return_type_map = FunctionMap.empty; 
+       func_return_type_map = init_func_map; 
        current_function = ""; (* TODO maybe this needs a better convention *)
        on_gpu = false;
        gfunc_list = [];
@@ -274,9 +289,14 @@ let add_gfunc gfunc_fdecl env =
     update_gfunc_list (gfunc_fdecl :: env.gfunc_list) env
 
 let quote_and_strip_newline str =
-  match str with
-    "" -> ""
-  | s ^ "\n" -> s
+  let len = String.length str in
+  let last_char s = s.[(len - 1)] in
+  if str = "" then ""
+  else
+    match last_char str with
+      '\n' -> "\"" ^ (String.sub str 0 (len - 2)) ^ "\"\n"
+    | _    -> "\"" ^ str ^ "\"\n"
+    
 		      
 let append init_env components =
   (* add quotes around gpu statements so they print as c multi-line

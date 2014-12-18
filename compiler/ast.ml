@@ -13,6 +13,7 @@ type expr =
     | Literal_int_a of int list
     | Literal_float of float    
     | Literal_float_a of float list
+    | Literal_string of string
     | Id of string
     | Binop of expr * op * expr
     | Call of string * expr list
@@ -60,4 +61,5 @@ type program = vdecl list * fdecl list
 type datatype = 
     | Int
     | Float
+    | String
     | Array of datatype

@@ -39,6 +39,7 @@
 %token <float> FLOAT_LITERAL
 %token <int list> INT_ARRAY_LITERAL
 %token <float list> FLOAT_ARRAY_LITERAL
+%token <string> STRING_LITERAL					
 %token <string> ID
 
 /* Precedence Definition */
@@ -269,6 +270,7 @@ literal:
     | INT_LITERAL                     { Literal_int($1) }
     | FLOAT_LITERAL                   { Literal_float($1) }
     | array_literal                   { $1 }
+    | STRING_LITERAL                  { Literal_string($1) }
 
 array_literal:
     | LBRACK int_literal_list RBRACK          { Literal_int_a(List.rev $2) }

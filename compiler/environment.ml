@@ -1,4 +1,9 @@
-(* environment.ml *)
+(*
+ * Sheets Environment Types
+ *
+ * Authors: Ruchir Khaitan, Ben Barg, Amelia Brunner
+ * Copyright 2014, Symposium Software
+ *)
 
 open Ast;;
 

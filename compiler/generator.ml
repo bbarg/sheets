@@ -1,3 +1,10 @@
+(*
+ * Sheets Code Generator
+ *
+ * Authors: Ruchir Khaitan, Ben Barg, Amelia Brunner
+ * Copyright 2014, Symposium Software
+ *)
+
 open Ast;;
 open Environment;;
 open Printf;;

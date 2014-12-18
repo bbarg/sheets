@@ -1,5 +1,9 @@
-(* generator_utilities.ml 
-   utilities to parse expressions for generate.ml *)
+(*
+ * Sheets Code Generator Utilities
+ *
+ * Authors: Ruchir Khaitan, Ben Barg, Amelia Brunner
+ * Copyright 2014, Symposium Software
+ *)
 
 open Ast;;
 open Environment;;

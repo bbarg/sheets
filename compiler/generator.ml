@@ -1,22 +1,3 @@
-(* generator.ml
-
-  Semantic checking and code generation for Sheets. May later be split
-  into two files.
- 
-  Current Objectives: 
-  - generate symbol table for global vdecls 
-  - make sure that no variables are reused.
-  
-  Conventions: 
-  - generation functionality will result in a series of
-    strings that can be printed to a file or printed to stdout
-  - scoped symbol tables will be implemented with a list of
-    Map.Make(String) (we may need several maps for variables,
-    structs, etc 
-  - any name collision exceptions raised by the Environment module
-    will simply cause the generator to fail, reporting the cause of
-    the error *)
-
 open Ast;;
 open Environment;;
 open Printf;;
@@ -27,45 +8,30 @@ exception NotImplementedError of string;;
 exception UndefinedTypeError;;
 exception BadExpressionError of string;;
 
-(* Strategy for syntax checking 
- * generate_expr will be a set of case matchings that will
- * call gen_checked_<EXPRESSION_NAME> that can meaningfully be 
- * checked 
- * gen_checked_<EXPRESSION_NAME> will take a
-        * EXAMPLE: gen_checked_id 
-        * function <CHECKER> that returns a boolean 
-        * an expression 
-        * env 
- * <CHECKER> can be in Environment as it is for variable ids 
- * <CHECKER> takes 
-        * an expression 
-        * and env 
- * or in Generator_utilities 
- * Maybe there can be one universal <CHECKER> in generate_utilities 
- * And that thing returns true/false 
- * and from there generate_checked_<EXPRESSION_NAME> either 
- * returns a string, env tuple 
- * or makes recursive calls to generate_expression  
- *)
-
+(* ------------------------------------------------------------------ *)
+(* Process Statements and expressions                                 *)
+(* ------------------------------------------------------------------ *)
+(* Strategy for syntax checking:
+   generate_expr will be a set of case matchings that will
+   call gen_checked_<EXPRESSION_NAME> that can meaningfully be 
+   checked.
+   
+   gen_checked_<EXPRESSION_NAME> will take a function <CHECKER> that
+   returns a boolean an expression env.  <CHECKER> can be in
+   Environment as it is for variable ids <CHECKER> takes an expression
+   and env *)
 let rec generate_type datatype env = 
   match datatype with 
   | Int ->        Environment.append env [Text("int")] 
   | Float ->      Environment.append env [Text("double")]
   | Array(t) ->   Environment.append env [Generator(generate_type t); 
 					  Text("*")] (* Handling array types differently *)
-					 
 
 let generate_checked_id check_id id env = 
     if (check_id id env) then
         Environment.append env [Text(id)]
     else raise (VariableNotFound id)
 
-(* This is an attempt to fix the lack of curried addition (wow curry
-   yum) but I think what is happening is that one of the expressions on
-   the side of a binop is a binop and that is getting ignored here note
-   therefore that expressions need to be fully checked before being
-   called to exp_to_txt *)
 let op_to_txt op = 
   match op with 
   | Plus -> "+"
@@ -138,7 +104,6 @@ let rec print_int_array array_list str =
        str
   | head :: array_tail -> 
      print_int_array array_tail (str ^ (string_of_int head) ^ ", ")
-;;
 
 let rec print_float_array array_list str =    
   match array_list with
@@ -151,37 +116,25 @@ let rec print_float_array array_list str =
      print_float_array array_tail (str ^ 
 				     (string_of_float head) ^ ", ")
 
-;;
-
-
 let rec generate_exp exp env = 
   match exp with
-  | Literal_int(i) ->     Environment.append env [
-					       Text(string_of_int(i))]  
-  | Literal_float(f) ->   Environment.append env [
-					       Text(string_of_float(f))] 
-  | Literal_int_a(list_i) -> Environment.append env [
-						  Text("{ ");
-						  Text(print_int_array list_i "");
-						  Text("}")]
-  | Literal_float_a(list_f) -> Environment.append env [
-						    Text("{ ");
-						    Text(print_float_array list_f "");
-						    Text("}")]
-  | Id(s) ->          Environment.append env [
-					   Generator(generate_checked_id is_var_in_scope s )]  
-  | Binop(_,_,_) ->   Environment.append env [
-					   Generator(generate_checked_binop 
-						       Generator_utilities.expr_typeof exp )] 
+  | Literal_int(i) ->     Environment.append env [Text(string_of_int(i))]  
+  | Literal_float(f) ->   Environment.append env [Text(string_of_float(f))] 
+  | Literal_int_a(list_i) -> Environment.append env [Text("{ ");
+						     Text(print_int_array list_i "");
+						     Text("}")]
+  | Literal_float_a(list_f) -> Environment.append env [Text("{ ");
+						       Text(print_float_array list_f "");
+						       Text("}")]
+  | Id(s) ->          Environment.append env [Generator(generate_checked_id is_var_in_scope s )]  
+  | Binop(_,_,_) ->   Environment.append env [Generator(generate_checked_binop 
+							  Generator_utilities.expr_typeof exp)] 
   | Call(func_id, formals_list) -> 
-     Environment.append env [
-                          Generator(generate_checked_f_call
-				      Generator_utilities.expr_typeof exp)]
-  | ArrayAcc(_, _) -> Environment.append env [
-					   Generator(generate_checked_array_access  
-						       Generator_utilities.expr_typeof exp)]
-  | BlockAcc(id, exp) ->Environment.append env [
-					     Generator(generate_checked_block id exp)]
+     Environment.append env [Generator(generate_checked_f_call
+					 Generator_utilities.expr_typeof exp)]
+  | ArrayAcc(_, _) -> Environment.append env [Generator(generate_checked_array_access  
+							  Generator_utilities.expr_typeof exp)]
+  | BlockAcc(id, exp) ->Environment.append env [Generator(generate_checked_block id exp)]
   | _-> raise (NotImplementedError("unsupported expression"))
 and generate_checked_block id exp env =
   match id with
@@ -203,7 +156,6 @@ let generate_init vdecl exp env =
   if((Generator_utilities.vdecl_type vdecl) = (Generator_utilities.expr_typeof
 						 exp env)) then 
     let v_type = Generator_utilities.vdecl_type vdecl in 
-
     match v_type with 
       Array(Int) ->  Environment.append env [Env(add_var vdecl.v_name (v_type));
                                              Text("int" ^ " " ^ vdecl.v_name ^ "[]  = ");   
@@ -211,11 +163,10 @@ let generate_init vdecl exp env =
     | Array(Float) ->  Environment.append env [Env(add_var vdecl.v_name (v_type));
                                                Text("float" ^ " " ^ vdecl.v_name ^ "[]  = ");   
                                                Generator(generate_exp exp);] 
-
-    | _-> Environment.append env [
-			       Env(add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl));
-			       Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name ^ " = ");   
-			       Generator(generate_exp exp)]
+    | _-> Environment.append env [Env(add_var vdecl.v_name (Generator_utilities.vdecl_type vdecl));
+				  Text((Generator_utilities.c_type_from_str vdecl.v_type)
+				       ^ " " ^ vdecl.v_name ^ " = ");   
+				  Generator(generate_exp exp)]
   else
     raise(BadExpressionError("Assignment of incompatible types"))
 
@@ -229,7 +180,6 @@ let generate_return exp env =
         Generator(generate_exp exp)]
     else
         raise(BadExpressionError("Bad return type"))
-;;
 
 let generate_assign id exp env =
     match id with
@@ -247,8 +197,7 @@ let generate_assign id exp env =
                                                   Generator(generate_exp expr); 
                                                   Text("] = "); 
                                                   Generator(generate_exp exp); 
-                                                  Text(";");
-                                                ]
+                                                  Text(";")]
     | _-> raise (BadExpressionError("Invalid Assignment")) 
 
 let rec process_stmt_list stmt_list env = 
@@ -291,8 +240,8 @@ let rec process_stmt_list stmt_list env =
  and process_vdecl vdecl env = 
    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
    Environment.append env [Env(add_var vdecl.v_name v_datatype);
- 	                   Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name)] 
-
+ 	                   Text((Generator_utilities.c_type_from_str vdecl.v_type)
+				^ " " ^ vdecl.v_name)] 
   and generate_while bool_expr body env =
       match bool_expr with 
       | Binop(e1, o, e2) ->
@@ -338,9 +287,8 @@ and append_if_else bool_exp ifbody elsebody env =
     Environment.append env [Text("if("); Generator(generate_exp bool_exp);
     Text("){\n"); NewScope(process_stmt ifbody); Text("\n} else {\n");
     NewScope(process_stmt elsebody); Text("}\n")]
-
-(* For loops have to have assignment, boolean expression, assignment 
- *)
+(* For loops have to have assignment, boolean expression,
+   assignment *)
 and print_in_for_loop stmt first env = 
     match stmt with 
      Assign(name, expr) ->  if first then Environment.append env [ 
@@ -348,18 +296,13 @@ and print_in_for_loop stmt first env =
                             Text(";")]
                             else  Environment.append env [ 
                             Generator(generate_assign name expr);]
-
       | _-> raise (BadExpressionError("Argument in for loop invalid")) 
-   
 and append_for stmt1 bool_exp stmt2 body env =
     Generator_utilities.expr_typeof bool_exp env;
     Environment.append env [Text("for("); Generator(print_in_for_loop stmt1 true );
     Generator(generate_exp bool_exp); Text("; "); 
     Generator(print_in_for_loop stmt2 false); Text("){\n"); Generator(process_stmt body);
     Text("}\n")]
-;;
-
-(* ------------------------------------------------------------------ *)
 
 (* ------------------------------------------------------------------ *)
 (* Global Variable Declarations                                       *)
@@ -378,7 +321,23 @@ let rec generate_global_vdecl_list vdecls env =
   | vdecl :: other_vdecls ->
      Environment.append env [Generator(generate_global_vdecl vdecl);
 			     Generator(generate_global_vdecl_list other_vdecls)]
-;;
+
+let rec generate_formals_vdecl_list vdecl_list env =
+  let generate_formals_vdecl vdecl env =
+    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
+    Environment.append env [Env((add_var vdecl.v_name v_datatype));
+			    Generator(generate_type v_datatype);
+			    Text(" " ^ vdecl.v_name ^ ", ")]
+  in
+  match vdecl_list with
+    [] -> "", env
+  | [vdecl] -> Environment.append env [Env((add_var vdecl.v_name
+						    (Generator_utilities.vdecl_type vdecl)));
+				       Text((Generator_utilities.c_type_from_str vdecl.v_type)
+					    ^ " " ^ vdecl.v_name)]
+  | vdecl :: other_vdecls ->
+     Environment.append env [Generator(generate_formals_vdecl vdecl);
+			     Generator(generate_formals_vdecl_list other_vdecls)]
 
 (* ------------------------------------------------------------------ *)
 (* Kernel invocation declarations                                     *)
@@ -410,31 +369,9 @@ let rec generate_global_vdecl_list vdecls env =
      implemented as a gpu function
 
    - This method has the side-benefit that we don't have to process
-     literals passed to functions differently *)
-  
-(* ------------------------------------------------------------------ *)
-(* CPU functions                                                      *)
-(* ------------------------------------------------------------------ *)
-let rec generate_formals_vdecl_list vdecl_list env =
-  let generate_formals_vdecl vdecl env =
-    let v_datatype = Generator_utilities.str_to_type vdecl.v_type in
-    Environment.append env [Env((add_var vdecl.v_name v_datatype));
-			    Generator(generate_type v_datatype);
-			    Text(" " ^ vdecl.v_name ^ ", ")]
-  in
-  match vdecl_list with
-    [] -> "", env
-  | [vdecl] -> Environment.append env [Env((add_var vdecl.v_name
-						    (Generator_utilities.vdecl_type vdecl)));
-				       Text((Generator_utilities.c_type_from_str vdecl.v_type) ^ " " ^ vdecl.v_name)]
+     literals passed to functions differently 
 
-  | vdecl :: other_vdecls ->
-     Environment.append env [Generator(generate_formals_vdecl vdecl);
-			     Generator(generate_formals_vdecl_list other_vdecls)]
-;;
-
-(* kernel invocation ------------------------------------------------- *)
-(* INVARIANTS:
+   INVARIANTS:
    - the output array and input arrays of an individual gfunc MUST be
      the same size 
    - if there are non-array arguments, we rename them to __argn
@@ -443,14 +380,6 @@ let rec generate_formals_vdecl_list vdecl_list env =
 let generate_kernel_invocation_function fdecl env =
   let base_r_type = Generator_utilities.arr_type_str_to_base_type fdecl.r_type in
   let generate_cl_arg_list fdecl env =
-    (* we need buffers for the output array and the input arrays 
-
-       the size argument (arg0) will be __arr_len, and will always be
-       called as such in the formals for this generated invocation
-       function
-
-       our job here is to assign __argn to either a cl_mem object for
-       an array or simply the formal for primitives *)
     let rec generate_cl_args arg_n formals env =
       let generate_cl_arg arg_n formal env =
 	if Generator_utilities.is_array_type formal.v_type then
@@ -543,7 +472,6 @@ let generate_kernel_invocation_function fdecl env =
 					 (global_work_items fdecl.blocksize));
 			    Text("CALL_CL_GUARDED(clEnqueueNDRangeKernel,");
 			    Text("(__sheets_queue,\n");
-			    (* ocaml thinks this is type func_info *)
 			    Text(sprintf "%s_compiled_kernel,\n" fdecl.fname); 
 			    Text("1,\n"); (* only 1 dimensional array support *)
 			    Text("0,\n"); (* 0 offset *)
@@ -613,14 +541,15 @@ let generate_kernel_invocation_function fdecl env =
 			  Text("return __out;\n");
 			  Text("}\n")]
 
-(* end kernel invocations -------------------------------------------- *)
-(* ------------------------------------------------------------------- *)
+(* ------------------------------------------------------------------ *)
+(* CPU functions                                                      *)
+(* ------------------------------------------------------------------ *)
+		     
 let generate_func_formals_and_body stmt_list vdecl_list env = 
     Environment.append env [Generator(generate_formals_vdecl_list vdecl_list);
                             Text("){\n");
                             Generator(process_stmt_list (stmt_list));
-                            Text("}\n"); ]
-
+                            Text("}\n")]
 let rec generate_cpu_funcs fdecls env =
   let generate_cpu_func fdecl env =
     match fdecl.isGfunc with
@@ -639,7 +568,8 @@ let rec generate_cpu_funcs fdecls env =
                          
     | true ->
        Environment.append env [Env(add_gfunc fdecl);
-			       Env(add_func fdecl.fname (Generator_utilities.fdecl_to_func_info fdecl));
+			       Env(add_func fdecl.fname
+					    (Generator_utilities.fdecl_to_func_info fdecl));
 			       NewScope(generate_kernel_invocation_function fdecl)]
   in
   match fdecls with
@@ -648,7 +578,6 @@ let rec generate_cpu_funcs fdecls env =
   | fdecl :: other_fdecls ->
      Environment.append env [Generator(generate_cpu_func fdecl);
 			     Generator(generate_cpu_funcs other_fdecls);]
-;;
 
 (* ------------------------------------------------------------------ *)
 (* OpenCL Kernels                                                     *)
@@ -764,9 +693,6 @@ let generate_cl_kernels env =
 (* ------------------------------------------------------------------ *)
 (* Main: opencl context creation and frees                            *)
 (* ------------------------------------------------------------------ *)
-(* ASSUMPTIONS: 
-   - the incoming func_info list will not include any invalid names
-     (i.e. there won't be a gfunc called main)                        *)
 
 let rec generate_compile_kernels gfdecl_list env =
   let generate_compile_kernel gfdecl =
@@ -833,4 +759,3 @@ let _ =
   print_string global_vdecls;
   print_string cpu_funcs;
   print_string main
-;; 

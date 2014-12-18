@@ -1,7 +1,0 @@
-#~ SHOULDFAIL: Function overload ~#
-
-func int f1 (int x, int y):
-    return x
-
-func float f1 (float x, float y):
-    return x

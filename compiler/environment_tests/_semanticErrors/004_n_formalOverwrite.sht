@@ -1,6 +1,0 @@
-#~ SHOULDFAIL: Incorrect Type of Return ~#
-
-func int f1 (float x, int y):
-    int x
-    x = 3
-    return x

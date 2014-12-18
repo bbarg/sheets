@@ -1,6 +1,0 @@
-#~ SHOULDFAIL: Used a variable before it was declared ~#
-
-func int f1 (int x, int y):
-    p = 3
-    int p
-    return p

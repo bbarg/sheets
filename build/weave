@@ -1,24 +1,28 @@
 #!/bin/bash
 
+if [[ $# -eq 0 ]] ; then
+    echo 'Error: no source file chosen'
+    exit 0
+fi
+
 set -e
 
 SHEETS_BUILD_DIR=$PWD
 
-####################### WEAVE SHEETS ######################
+##################### WEAVE SHEETS ####################
 # This is the executable to invoke to 
+
 # 1. Make compiler
 echo "#~~~~~Weaving your sheet!~~~~~~~~~~~~~~~~~~~~~~"
-
 cd ../compiler/ && make
 echo "~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 cd $SHEETS_BUILD_DIR
 ../compiler/preprocessor.py $PWD/$1.sht
-echo "~~~~~~~~~~~~~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~"
+echo "~~~~~~~~~~~~~~~~~~~~~~~#~~~~~~~~~~~~~~~~~~~~~~~"
 cat $1.proc.sht | ../compiler/generator > $1.c
+echo "~~~~~~~~~~~~~~~~~Almost there...~~~#~~~~~~~~~~~"
 
-echo "~~~~~~~~~~~~~~~~~Almost there...~~~#~~~~~~~~~~~~"
 # 2. Make OpenCL file 
-
 make weave SHEET=$1
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Done!~~~~~#"

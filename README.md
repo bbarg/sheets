@@ -9,10 +9,18 @@ Ruchir Khaitan - rk2660
 
 Project Completion Date: December 17th 2014
 
----------------------------
+## Build
 
-####Note: 
-*Sheets* is currently platform specific to E3 instances of
-Amazon Web Services running on an **Nvidia Grid K520** GPU.
-No other configurations are currently supported, and cannot
-run the generated OpenCL code.
+To compile a sheets program, follow these instructions:
+
+1. Move your_file.sht to the `build` directory.
+1. Run `./weave SHEET=your_file`
+1. `your_file.c` and `your_file` (the executable) will now exist in `build`.
+
+Note that the only currently supported platform is on the our `g2.2xlarge` instance. The `opencl` directory, which contains our support OpenCl helper libraries requires the following files to exist at the following locations:
+
+- `/usr/lib64/libnvidia-opencl.so.1`
+- `/opt/opencl-headers-1.1/include/CL/cl.h`
+- `/opt/intel-opencl-icd-4.6.0.92/lib64/libOpenCl.so.1`
+- `/etc/OpenCL/vendors/nvidia.icd`
+- `/etc/OpenCL/vendors/intel64.icd`

@@ -1,0 +1,8 @@
+#~ SHOULDPASS: Calls a function with argument ~#
+
+func int function(float a):
+   int d
+
+func int snuggle():
+   float x
+   function(x)

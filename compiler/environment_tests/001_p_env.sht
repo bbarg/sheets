@@ -1,8 +1,0 @@
-#~ SHOULDPASS: Top-level variable declaration, const assignment ~#
-const  int    a
-float  my_list
-
-func int add (int x, int y):
-    int b
-    float c
-    const float d

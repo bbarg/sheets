@@ -1,0 +1,5 @@
+#~ SHOULDPASS: Return with variable ~#
+
+func int snuggle():
+    int a = 5
+    return a

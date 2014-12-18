@@ -1,8 +1,0 @@
-#~ SHOULDPASS: Int Array Literal  ~#
-
-int x
-float f 
-
-func int main():
-    int a[3]
-    a = [1, 2, 3]

@@ -1,3 +1,0 @@
-func int main():
-    for(i=0; i<3; i=i+1; ):
-        return 2

@@ -1,0 +1,9 @@
+#~ SHOULDFAIL: Invalid Boolean Expression ~#
+
+func int main():
+    int a = 5
+    int b = 3
+    if(a < c):
+        return 1
+    else:
+        return 0

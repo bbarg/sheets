@@ -1,0 +1,5 @@
+#~ SHOULDFAIL: Return with incorrectly typed variable ~#
+
+func int snuggle():
+    float b = 5.2
+    return a

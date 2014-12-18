@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: Return Float Literal, expecting int ~#
+
+func int main():
+    return 2.5

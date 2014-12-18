@@ -1,7 +1,0 @@
-func int f():
-    int a = 5
-    int b = 3
-    if(1):
-        return 1
-    else:
-        return 0

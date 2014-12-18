@@ -1,0 +1,3 @@
+#~ SHOULDFAIL: double declaration of int type ~#
+int balloon_volume
+int balloon_volume

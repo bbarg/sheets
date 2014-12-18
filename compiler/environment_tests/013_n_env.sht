@@ -1,6 +1,0 @@
-#~ SHOULDFAIL: Illegal floating point literal ~#
-
-float x 
-
-func int main():
-     x = 1.2e-10

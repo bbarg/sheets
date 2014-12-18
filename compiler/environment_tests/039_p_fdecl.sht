@@ -1,0 +1,4 @@
+#~ SHOULDPASS: Function Declaration ~#
+
+func int add1 (int x, int y):
+    int b

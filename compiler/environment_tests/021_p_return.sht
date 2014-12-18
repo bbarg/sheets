@@ -1,0 +1,3 @@
+#~ SHOULDPASS: Return int literal ~#
+func int a():
+    return 5

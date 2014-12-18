@@ -1,4 +1,0 @@
-#~ SHOULDPASS: single declared variable product ~#
-int a
-func int prod_global():
-    a * 1

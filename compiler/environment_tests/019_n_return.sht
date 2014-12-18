@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: Return an undeclared variable ~#
+
+func int main():
+    return a

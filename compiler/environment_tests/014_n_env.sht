@@ -1,5 +1,0 @@
-#~ SHOUDLFAIL: Invalid ID type ~#
-float 9erd 
-
-func int main():
-     9erd = 1.2e-10

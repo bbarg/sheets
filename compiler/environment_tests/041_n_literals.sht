@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: Float literal into int ~#
+int x
+func int snuggle():
+    x = 4.7

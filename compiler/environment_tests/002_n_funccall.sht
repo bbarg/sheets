@@ -1,0 +1,7 @@
+#~ SHOULDFAIL: Calls an undeclared function ~#
+
+func int function():
+   int d
+
+func int snuggle():
+   function2()

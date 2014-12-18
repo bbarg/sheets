@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: Mixed declaration of Int and  Floats Literal Arrays ~#
+func int main():
+     int[] my_array[2]
+     my_array = [1.0,3]

@@ -1,0 +1,4 @@
+#~ SHOULDFAIL: Redeclaring argument variable "y" ~#
+
+func int snuggle(int x, int y, int z):
+    int y = 6

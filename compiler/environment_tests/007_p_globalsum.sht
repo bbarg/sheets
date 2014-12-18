@@ -1,0 +1,7 @@
+#~ SHOULDPASS: repeated addition ~#
+int a
+int b
+func int snuggle():
+    a = b + a
+    b = a + b
+    b = a + b + a

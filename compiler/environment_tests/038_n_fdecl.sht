@@ -1,0 +1,7 @@
+#~ SHOULDFAIL: Function add() overloaded ~#
+
+func int add (int x, int y):
+    int b
+
+func int add (int z):
+    float a

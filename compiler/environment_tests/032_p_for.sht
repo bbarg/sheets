@@ -1,0 +1,6 @@
+#~ SHOULDPASS: Nested expressions in for loop declaration ~#
+
+func int main():
+    int i
+    for(i=0; (i+1)>3; i=i+1; ):
+        return 2

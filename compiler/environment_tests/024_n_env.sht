@@ -1,6 +1,0 @@
-#~ SHOULDFAIL: Parser detects illegal identifier ~#
-
-float 9erd 
-
-func int main():
-     9erd = 1.2e-10

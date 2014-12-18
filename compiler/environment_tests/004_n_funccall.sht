@@ -1,0 +1,7 @@
+#~ SHOULDFAIL: Calls function that takes arg with no arg ~#
+
+func int function(float a):
+   int d
+
+func int snuggle():
+   function()

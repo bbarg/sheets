@@ -1,0 +1,5 @@
+#~ SHOULDPASS: Seperate declaration and assignment ~#
+
+func int snuggle():
+   int x
+   x = 5

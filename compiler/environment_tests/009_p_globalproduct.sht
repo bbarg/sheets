@@ -1,0 +1,5 @@
+#~ SHOULDPASS: global variable multiplication ~#
+int a
+int b
+func int snuggle():
+    a * b

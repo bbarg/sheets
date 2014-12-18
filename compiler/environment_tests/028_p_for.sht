@@ -1,0 +1,6 @@
+#~ SHOULDPASS: For Loop accessing lower scope ~#
+func int main():
+    int i
+    int j
+    for(i=0; i<3; i=i+1;):
+        j = j + i

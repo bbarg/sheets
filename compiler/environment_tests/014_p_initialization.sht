@@ -1,0 +1,4 @@
+#~ SHOULDPASS: Inline assignment and initialization ~#
+
+func int snuggle():
+    int x = 5

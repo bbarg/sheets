@@ -1,5 +1,0 @@
-func int function():
-   int d
-
-func int main():
-   function2()

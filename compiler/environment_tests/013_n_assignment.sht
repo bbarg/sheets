@@ -1,0 +1,5 @@
+#~ SHOULDFAIL: Assigning float to integer variable ~#
+
+func int snuggle():
+   int x
+   x = 5.5

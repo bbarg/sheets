@@ -1,5 +1,0 @@
-func int function(float a):
-   int d
-
-func int main():
-   function()

@@ -1,0 +1,5 @@
+#~ SHOULDPASS: multiplication curried ~#
+int a
+int b
+func int snuggle():
+    a * b * a

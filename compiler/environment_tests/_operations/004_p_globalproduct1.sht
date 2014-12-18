@@ -1,5 +1,0 @@
-#~ SHOULDPASS: global variable multiplication ~#
-int a
-int b
-func int prod_global():
-    a * b

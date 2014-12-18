@@ -1,0 +1,4 @@
+#~ SHOULDPASS: single declared variable product ~#
+int a
+func int snuggle():
+    a * 1

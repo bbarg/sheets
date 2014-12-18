@@ -1,5 +1,0 @@
-#~ SHOULDFAIL: String literals not supported ~#
-String s
-
-func int main():
-     s = "hello world"

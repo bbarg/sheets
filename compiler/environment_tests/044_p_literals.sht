@@ -1,0 +1,5 @@
+#~ SHOULDPASS: Declaration of Float Array Literal ~#
+
+func int main():
+     float[] my_array[3]
+     my_array = [1.0,2.0,3.0]

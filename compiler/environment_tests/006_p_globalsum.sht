@@ -1,0 +1,7 @@
+#~ SHOULDPASS: sum of two globally declared ints ~#
+
+int a
+int b
+
+func int snuggle():
+    a + b

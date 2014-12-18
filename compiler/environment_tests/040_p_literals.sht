@@ -1,0 +1,6 @@
+#~ SHOULDPASS: int and float literals ~#
+func int snuggle():
+    int x
+    float f 
+    x = 7
+    f = 4.56 

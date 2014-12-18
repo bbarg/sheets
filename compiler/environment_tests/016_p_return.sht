@@ -1,0 +1,4 @@
+#~ SHOULDPASS: Return Statement ~#
+
+func int snuggle():
+    return 1

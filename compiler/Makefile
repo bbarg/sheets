@@ -21,7 +21,7 @@ parser.ml parser.mli : parser.mly
 
 .PHONY : test
 test : generator
-	cd ./environment_tests && ./run_all.sh
+	cd ./compiler_tests && ./run_all.sh
 
 .PHONY : clean
 clean :

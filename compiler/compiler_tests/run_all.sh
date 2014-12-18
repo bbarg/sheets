@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Sheets Automated Testing Script
+# Author: Gabriel Blanco
+
 executable="./test_env.sh"
 output_file="envtests.output"
 
@@ -61,10 +64,8 @@ for file in $environment_tests ; do
         fi
     fi
 
-
     echo "===================================" >> $output_file
     echo "" >> $output_file
-    
 done
 
 echo "done"
